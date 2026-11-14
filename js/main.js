@@ -44,7 +44,9 @@ $i('istart').onclick = () => enter(() => ui.showTab('desk'));
 $i('irank').onclick = () => enter(() => { ui.showTab('rank'); refresh(); });
 $i('iguide').onclick = () => enter(() => bus.emit('tut', 0));
 $i('isound').onclick = () => { bus.emit('mute'); $i('isound').textContent = $i('mute').textContent; };
-$i('titleb').onclick = showIntro;
+// 메인 화면으로: 바로 저장하고 타이틀로 나간다 (상단 ⌂ 버튼, 설정의 타이틀 버튼)
+const goHome = () => { Repo.save(store.getState()); showIntro(); ui.toast('저장했어요.'); };
+$i('titleb').onclick = goHome; $i('homeb').onclick = goHome;
 // 새로 시작: 모든 기록을 지우므로 두 번 눌러야 실행. 이름 변경: 기록은 그대로 두고 방송국 이름만 바꾼다
 let newT = 0;
 $i('inew').onclick = () => {
@@ -156,6 +158,9 @@ GameLoop({
   step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); },
   render: t => scene.draw(store.getState(), t, ui.sel()),
 }).start();
-setInterval(() => Repo.save(store.getState()), 5000);
+setInterval(() => Repo.save(store.getState()), 5000); // 자동 저장: 5초마다
+// 앱을 닫거나 다른 앱으로 넘어갈 때도 즉시 저장
+document.addEventListener('visibilitychange', () => { if (document.hidden) Repo.save(store.getState()); });
+addEventListener('pagehide', () => Repo.save(store.getState()));
 setInterval(refresh, 60000);
 setInterval(checkDates, 60000);

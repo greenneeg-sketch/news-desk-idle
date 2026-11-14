@@ -127,13 +127,14 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .iticker.ifix{position:absolute;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-width:456px;margin:0 auto}
 .ifoot{padding-bottom:calc(42px + env(safe-area-inset-bottom,0px))!important}
 .iver{position:absolute;left:8px;top:calc(8px + env(safe-area-inset-top,0px));font-size:10px;color:#ffffffa0;text-shadow:1px 1px 0 #14141f;pointer-events:none}
+.hbtns{display:flex;gap:6px;align-self:flex-end}.hbtns .help{align-self:auto}.help.home{font:18px/1 sans-serif;font-weight:700}
 </style>
 </head>
 <body>
 <main class="app">
   <header class="panel hud">
     <div><div class="sname" id="sname"></div><span class="px">SCORE</span><strong id="score">0</strong><small id="rank"></small><div class="ms"><i id="rkb"></i></div></div>
-    <div class="chips"><button class="help" id="helpb" aria-label="튜토리얼 다시 보기">?</button><span id="ps"></span><span id="pt"></span></div>
+    <div class="chips"><div class="hbtns"><button class="help home" id="homeb" aria-label="메인 화면으로">⌂</button><button class="help" id="helpb" aria-label="튜토리얼 다시 보기">?</button></div><span id="ps"></span><span id="pt"></span></div>
   </header>
   <section class="panel offline" id="offline" hidden>
     <p id="offd"></p>
@@ -264,7 +265,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-0827</span>
+  <span class="iver">v2026.11.15-0838</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button></div>
@@ -1535,7 +1536,9 @@ $i('istart').onclick = () => enter(() => ui.showTab('desk'));
 $i('irank').onclick = () => enter(() => { ui.showTab('rank'); refresh(); });
 $i('iguide').onclick = () => enter(() => bus.emit('tut', 0));
 $i('isound').onclick = () => { bus.emit('mute'); $i('isound').textContent = $i('mute').textContent; };
-$i('titleb').onclick = showIntro;
+// 메인 화면으로: 바로 저장하고 타이틀로 나간다 (상단 ⌂ 버튼, 설정의 타이틀 버튼)
+const goHome = () => { Repo.save(store.getState()); showIntro(); ui.toast('저장했어요.'); };
+$i('titleb').onclick = goHome; $i('homeb').onclick = goHome;
 // 새로 시작: 모든 기록을 지우므로 두 번 눌러야 실행. 이름 변경: 기록은 그대로 두고 방송국 이름만 바꾼다
 let newT = 0;
 $i('inew').onclick = () => {
@@ -1647,7 +1650,10 @@ GameLoop({
   step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); },
   render: t => scene.draw(store.getState(), t, ui.sel()),
 }).start();
-setInterval(() => Repo.save(store.getState()), 5000);
+setInterval(() => Repo.save(store.getState()), 5000); // 자동 저장: 5초마다
+// 앱을 닫거나 다른 앱으로 넘어갈 때도 즉시 저장
+document.addEventListener('visibilitychange', () => { if (document.hidden) Repo.save(store.getState()); });
+addEventListener('pagehide', () => Repo.save(store.getState()));
 setInterval(refresh, 60000);
 setInterval(checkDates, 60000);
 
