@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NEWS DESK 8BIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<main class="app">
+  <header class="panel hud">
+    <div><div class="sname" id="sname"></div><span class="px">SCORE</span><strong id="score">0</strong><small id="rank"></small><div class="ms"><i id="rkb"></i></div></div>
+    <div class="chips"><button class="help" id="helpb" aria-label="튜토리얼 다시 보기">?</button><span id="ps"></span><span id="pt"></span></div>
+  </header>
+  <section class="panel offline" id="offline" hidden>
+    <p id="offd"></p>
+    <div class="row"><button class="btn" id="offOk">받기</button><button class="btn alt" id="offAd">2배 (광고 자리)</button></div>
+  </section>
+  <section class="panel alert" id="alert" hidden>
+    <div><b id="evt"></b><small id="evd"></small></div>
+    <button class="btn warn" id="evb">우선 편집</button>
+  </section>
+
+  <div class="pane" data-tab="desk">
+    <section class="panel" id="rate">
+      <div class="fh"><b>8시 뉴스 시청률</b><span class="cnt" id="clock"></span></div>
+      <div class="ms"><i id="dayb"></i></div>
+      <div class="rt"><strong id="rnow">-</strong><small id="rdiff"></small></div>
+      <div class="bars" id="hist"></div>
+      <p class="note" id="rnote"></p>
+    </section>
+    <button class="btn warn wide" id="spdb"></button>
+    <div class="seg" id="seg"><span class="px">BUY</span><button data-n="1">x1</button><button data-n="10">x10</button><button data-n="max">MAX</button></div>
+    <p class="note" id="note"></p>
+    <div id="floors"></div>
+    <h2 class="px">HQ</h2>
+    <div id="hq"></div>
+    <section class="panel floor" id="flc"><div class="fh"><div><b>영상편집팀장</b> <small>실시간 편집 모니터링 · 속보 우선 편집 자동</small></div><button class="btn mini" id="chiefb"></button></div><canvas width="320" height="64"></canvas></section>
+  </div>
+
+  <div class="pane" data-tab="scout" hidden>
+    <section class="panel" id="scout">
+      <div class="fh"><b>스카우트 도감</b><span class="cnt" id="scd"></span></div>
+      <canvas id="cards" width="240" height="88"></canvas>
+      <p class="note" id="cinfo"></p>
+      <p class="note" id="odds"></p>
+      <div class="row"><button class="btn" id="scoutb"></button><button class="btn warn" id="scouta"></button></div>
+      <p class="note" id="cbonus"></p>
+    </section>
+    <section class="panel" id="weekly">
+      <div class="fh"><b>주간 목표</b><span class="cnt" id="wkd"></span></div>
+      <div id="wlist"></div>
+    </section>
+  </div>
+
+  <div class="pane" data-tab="rank" hidden>
+    <section class="panel" id="seasonp">
+      <div class="fh"><b id="sn">시즌</b><span class="cnt" id="sleft"></span></div>
+      <p class="note" id="sth"></p>
+      <div class="rt"><strong id="stier"></strong><small id="spts"></small></div>
+      <div class="ms"><i id="sbar"></i></div>
+      <p class="note" id="slast"></p>
+    </section>
+    <section class="panel" id="board">
+      <div class="fh"><b>방송국 순위</b><button class="btn mini" id="boardb">새로고침</button></div>
+      <div class="seg" id="lbseg"><button data-v="all">전체</button><button data-v="season">이번 시즌</button></div>
+      <p class="note">순위 점수 = 누적 점수 + 최대 레벨 + 최고 시청률 + 유튜브 조회수</p>
+      <ol class="lb" id="lb"></ol><p class="note" id="lbn"></p>
+    </section>
+  </div>
+
+  <div class="pane" data-tab="grow" hidden>
+    <section class="panel" id="presp">
+      <div class="fh"><b>개편</b></div>
+      <p class="note" id="presd"></p>
+      <div class="row"><button class="btn" id="presb">개편</button></div>
+    </section>
+    <section class="panel" id="chalp">
+      <div class="fh"><b>챌린지</b><span class="cnt" id="chd"></span></div>
+      <div id="clist"></div>
+      <p class="note">시작하면 이번 회차가 초기화돼요(개편 포인트·카드·업적은 유지). 제약 속에서 목표를 달성하면 영구 점수 +10%. 버튼은 두 번 눌러야 실행돼요.</p>
+    </section>
+    <section class="panel"><div class="fh"><b>업적</b><span class="cnt" id="achd"></span></div><div class="ach" id="ach"></div><p class="note" id="achn"></p></section>
+    <section class="panel">
+      <div class="fh"><b>설정</b></div>
+      <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="renameb">이름 변경</button><button class="btn alt" id="resetb">RESET</button></div>
+    </section>
+  </div>
+</main>
+<p class="toast" id="toast"></p>
+<section class="panel tut" id="tut" hidden>
+  <div class="fh"><b>보도국 가이드</b><span class="cnt" id="tutn"></span></div>
+  <p id="tutt"></p>
+  <div class="row"><button class="btn" id="tutnext">다음</button><button class="btn alt" id="tutskip">건너뛰기</button></div>
+</section>
+<nav class="tabs" id="tabs">
+  <button data-t="desk" id="tab-desk">보도국</button>
+  <button data-t="scout" id="tab-scout">스카우트<i class="dot" id="dot-scout" hidden></i></button>
+  <button data-t="rank" id="tab-rank">순위</button>
+  <button data-t="grow" id="tab-grow">성장</button>
+</nav>
+<div class="modal" id="start" hidden>
+  <div class="panel"><h1>NEWS DESK</h1><p>방송국 이름을 정해 주세요.<br><small>다른 사용자와의 순위 보드에 표시돼요.</small></p>
+  <input id="nameIn" maxlength="12" placeholder="예: 한강뉴스" autocomplete="off"><p class="note" id="nameErr"></p>
+  <div class="row"><button class="btn" id="startb">방송 시작</button><button class="btn alt" id="cancelb" hidden>취소</button></div></div>
+</div>
+<button class="gold" id="gold" hidden>특종!</button>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

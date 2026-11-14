@@ -1,0 +1,75 @@
+export const SAVE_KEY = 'newsDeskIdle.v2';
+export const STAGES = ['취재', '인제스트', '편집', 'CG', '송출'];
+export const BASE = [2, 1.6, 1, 1.4, 1.8];
+export const RANKS = [{ n: '지역 뉴스', at: 0 }, { n: '저녁 종합', at: 5e3 }, { n: '8시 메인', at: 2e5 }, { n: '24시 채널', at: 1e7 }];
+export const MILESTONES = [10, 25, 50, 100];
+export const UPGRADES = [
+  { id: 'ing', n: '인제스트 서버', d: '등록 속도 +12%', base: 50, g: 1.12, st: 1, pct: .12 },
+  { id: 'edit', n: '편집기자 충원', d: '편집 속도 +15%', base: 200, g: 1.15, st: 2, pct: .15 },
+  { id: 'cg', n: 'CG 템플릿', d: 'CG 처리 +12%', base: 800, g: 1.15, st: 3, pct: .12 },
+  { id: 'out', n: '송출 자동화', d: '송출 처리 +10%', base: 3000, g: 1.17, st: 4, pct: .10 },
+  { id: 'live', n: '중계 장비', d: '속보 보상 +10%', base: 4000, g: 1.18, st: -1, pct: .10 },
+  { id: 'crew', n: '취재팀 확장', d: '취재 유입 +15%', base: 15000, g: 1.2, st: 0, pct: .15 },
+  { id: 'qual', n: '방송 품질', d: '점수 +20%', base: 300, g: 1.4, st: -1, pct: .2, nm: true },
+];
+export const EVENTS = [
+  { id: 'crime', k: '사건사고', names: ['도심 건물 화재', '강력 사건 발생'], dur: 30, inf: 3, sc: 2, min: 0 },
+  { id: 'weather', k: '날씨', names: ['한파와 폭설, 교통 마비', '집중 호우, 도심 침수'], dur: 120, inf: .5, sc: 1.5, min: 0 },
+  { id: 'politics', k: '정치', names: ['대선 개표 중계 (가상)'], dur: 180, inf: 2, sc: 3, min: 5e3 },
+  { id: 'world', k: '국제', names: ['인접국 미사일 발사'], dur: 45, inf: 2.5, sc: 2.5, min: 2e5 },
+  { id: 'sports', k: '스포츠', names: ['세계 종합 스포츠 대회 금메달'], dur: 120, inf: 4, sc: 4, min: 2e5 },
+];
+export const MANAGER = [2000, 8000, 30000, 120000, 500000];
+export const CHIEF = 40000;
+export const ACHIEVEMENTS = [
+  { id: 'a1', n: '첫 송출', d: '누적 10점', t: s => s.run >= 10 },
+  { id: 'a2', n: '지역 방송 기자', d: '누적 1만 점', t: s => s.run >= 1e4 },
+  { id: 'a3', n: '메인 뉴스 입성', d: '누적 100만 점', t: s => s.run >= 1e6 },
+  { id: 'a4', n: '시청률 왕', d: '누적 1억 점', t: s => s.run >= 1e8 },
+  { id: 'a5', n: '속보 초보', d: '속보 5회 대응', t: s => s.evCount >= 5 },
+  { id: 'a6', n: '속보 베테랑', d: '속보 25회 대응', t: s => s.evCount >= 25 },
+  { id: 'a7', n: '첫 매니저', d: '매니저 1명 고용', t: s => s.mg.some(Boolean) },
+  { id: 'a8', n: '전 층 매니저', d: '모든 층 매니저 고용', t: s => s.mg.every(Boolean) },
+  { id: 'a9', n: '시설 강화', d: '업그레이드 Lv.25 달성', t: s => Object.values(s.lv).some(l => l >= 25) },
+  { id: 'a10', n: '시설 만렙급', d: '업그레이드 Lv.100 달성', t: s => Object.values(s.lv).some(l => l >= 100) },
+  { id: 'a11', n: '팀장 영입', d: '영상편집팀장 고용', t: s => !!s.chief },
+  { id: 'a12', n: '특종 사냥꾼', d: '특종 5회 획득', t: s => s.goldCount >= 5 },
+  { id: 'a13', n: '시청률 두 자릿수', d: '시청률 10% 돌파', t: s => s.bestRating >= 10 },
+  { id: 'a14', n: '유튜브 100만 뷰', d: '유튜브 누적 조회수 100만', t: s => s.views >= 1e6 },
+  { id: 'a15', n: '스카우트 단장', d: '직원 카드 6종 수집', t: s => Object.keys(s.cards).length >= 6 },
+  { id: 'a16', n: '한계 돌파', d: '챌린지 1개 완료', t: s => Object.keys(s.chalDone).length >= 1 },
+];
+export const DAY_SEC = 600; // 게임 속 하루(오전 6시 → 8시 뉴스)의 실제 시간(초): 10분
+// 사용자 간 순위 서버 (Supabase REST). 비워두면 오프라인 모드(샘플 방송국과 비교)로 동작한다. README 참고
+export const LEADERBOARD = { url: '', key: '' };
+// 직원 카드 도감 (AFK Arena식 수집): 가진 카드는 해당 층 속도를 영구로 올리고, 중복으로 뽑으면 별(최대 3)이 올라 효과가 커진다
+export const RARITY = [{ n: '일반', b: .05, c: '#94b0c2' }, { n: '희귀', b: .10, c: '#41a6f6' }, { n: '영웅', b: .20, c: '#b45bff' }, { n: '전설', b: .25, c: '#ffd24a' }];
+export const CARDS = [
+  { id: 'c1', n: '신입 카메라기자', st: 0, rar: 0 }, { id: 'c2', n: '수습 인제스트 요원', st: 1, rar: 0 }, { id: 'c3', n: '막내 영상편집기자', st: 2, rar: 0 },
+  { id: 'c4', n: '인턴 그래픽 디자이너', st: 3, rar: 0 }, { id: 'c5', n: '신입 아나운서', st: 4, rar: 0 }, { id: 'c6', n: '베테랑 영상기자', st: 0, rar: 1 },
+  { id: 'c7', n: '야근 영상편집기자', st: 2, rar: 1 }, { id: 'c8', n: '모션 그래픽 전문가', st: 3, rar: 1 }, { id: 'c9', n: '탐사 취재기자', st: 0, rar: 2 },
+  { id: 'c10', n: '편집 달인', st: 2, rar: 2 }, { id: 'c11', n: '메인 앵커', st: 4, rar: 2 }, { id: 'c12', n: '전설의 보도국장', st: -1, rar: 3 },
+];
+// 주간 목표 (Egg Inc의 계약식): 매주 월요일에 초기화
+export const WEEKLY = [
+  { id: 'w1', n: '속보 20회 대응', k: 'ev', goal: 20 }, { id: 'w2', n: '시청률 6% 이상 3일', k: 'rate', goal: 3 }, { id: 'w3', n: '특종 5회 획득', k: 'gold', goal: 5 },
+  { id: 'w4', n: '업그레이드 50레벨 구매', k: 'buy', goal: 50 }, { id: 'w5', n: '스카우트 3회', k: 'pull', goal: 3 },
+];
+// 스카우트 확률(등급 순서: 일반, 희귀, 영웅, 전설). 합계의 나머지가 꽝이다. PITY번째 스카우트는 영웅 이상 보장
+export const ODDS = [.30, .17, .065, .015];
+export const PITY = 30;
+// 시즌(매월 1일 시작): 시즌 점수로 등급을 매기고, 시즌이 끝나면 등급에 따라 스카우트 티켓 1~5장 지급
+export const TIERS = [{ n: '브론즈', at: 0 }, { n: '실버', at: 1e5 }, { n: '골드', at: 1e6 }, { n: '플래티넘', at: 1e7 }, { n: '다이아', at: 1e8 }];
+// 시즌 테마: 해당 속보가 3배 자주 발생 (name: 같은 카테고리 안에서 쓸 속보 이름 번호)
+export const SEASON_THEMES = [
+  { months: [12, 1, 2], n: '한파 시즌', ev: 'weather', name: 0, d: '한파·폭설 속보가 3배 자주 터져요.' },
+  { months: [3, 4, 5], n: '선거 시즌', ev: 'politics', d: '개표 중계 속보가 3배 자주 터져요. (누적 5천 점부터)' },
+  { months: [6, 7, 8], n: '장마 시즌', ev: 'weather', name: 1, d: '집중 호우 속보가 3배 자주 터져요.' },
+  { months: [9, 10, 11], n: '스포츠 대회 시즌', ev: 'sports', d: '금메달 속보가 3배 자주 터져요. (누적 20만 점부터)' },
+];
+// 챌린지: 시작하면 이번 회차가 초기화되고, 제약 속에서 목표(이번 회차 누적 점수)를 달성하면 영구 점수 +10%
+export const CHALLENGES = [
+  { id: 'noMgr', n: '매니저 없이 운영', d: '매니저·영상편집팀장 고용 불가 · 누적 20만 점', goal: 2e5 },
+  { id: 'calm', n: '평온한 보도국', d: '속보와 특종이 오지 않음 · 누적 5만 점', goal: 5e4 },
+  { id: 'noQual', n: '저예산 방송', d: '방송 품질 업그레이드 불가 · 누적 20만 점', goal: 2e5 },
+];
