@@ -13,11 +13,12 @@ import { Repo } from './services/storage.js';
 import { createBoard } from './services/leaderboard.js';
 import { Sfx } from './services/audio.js';
 import { Scene } from './ui/scene.js';
+import { Bubbles } from './ui/bubbles.js';
 import { Hud, fmt } from './ui/hud.js';
 
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
-const ui = Hud(bus), scene = Scene(ui.canvases, ui.cardCanvas), scheduler = EventScheduler(store);
+const ui = Hud(bus), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
 let pending = 0, board = null;
 const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -116,7 +117,7 @@ store.subscribe((s, p) => {
 });
 
 GameLoop({
-  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random() }); scheduler.update(); ui.render(store.getState()); },
+  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random() }); scheduler.update(); ui.render(store.getState()); },
   render: t => scene.draw(store.getState(), t, ui.sel()),
 }).start();
 setInterval(() => Repo.save(store.getState()), 5000);
