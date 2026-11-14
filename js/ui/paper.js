@@ -1,6 +1,6 @@
 import { RIVAL } from '../data/config.js';
 import { QUOTES } from '../data/quotes.js';
-import { fmt } from './scene.js';
+import { fmt } from './hud.js';
 // 오늘의 헤드라인: 하루 결과(report)를 신문 1면 문구로 바꾼다 (순수 함수)
 export function paper(name, r) {
   const diff = Math.abs(r.rating - r.rival).toFixed(1), rt = r.rating.toFixed(1) + '%';
