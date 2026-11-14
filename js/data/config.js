@@ -38,8 +38,11 @@ export const ACHIEVEMENTS = [
   { id: 'a14', n: '유튜브 100만 뷰', d: '유튜브 누적 조회수 100만', t: s => s.views >= 1e6 },
   { id: 'a15', n: '스카우트 단장', d: '직원 카드 6종 수집', t: s => Object.keys(s.cards).length >= 6 },
   { id: 'a16', n: '한계 돌파', d: '챌린지 1개 완료', t: s => Object.keys(s.chalDone).length >= 1 },
+  { id: 'a17', n: '동시간대 1위', d: '라이벌에게 3일 연속 승리', t: s => (s.bestWin || 0) >= 3 },
+  { id: 'a18', n: '단독의 신', d: '단독 보도 10회 성공', t: s => (s.scoopT || 0) >= 10 },
+  { id: 'a19', n: '성실한 보도국', d: '오늘의 미션 올클리어 5회', t: s => (s.misAll || 0) >= 5 },
 ];
-export const DAY_SEC = 600; // 게임 속 하루(오전 6시 → 8시 뉴스)의 실제 시간(초): 10분
+export const DAY_SEC = 300; // 게임 속 하루(오전 6시 → 8시 뉴스)의 실제 시간(초): 5분
 // 사용자 간 순위 서버 (Supabase REST). 비워두면 오프라인 모드(샘플 방송국과 비교)로 동작한다. README 참고
 export const LEADERBOARD = { url: '', key: '' };
 // 직원 카드 도감 (AFK Arena식 수집): 가진 카드는 해당 층 속도를 영구로 올리고, 중복으로 뽑으면 별(최대 3)이 올라 효과가 커진다
@@ -72,4 +75,46 @@ export const CHALLENGES = [
   { id: 'noMgr', n: '매니저 없이 운영', d: '매니저·영상편집팀장 고용 불가 · 누적 20만 점', goal: 2e5 },
   { id: 'calm', n: '평온한 보도국', d: '속보와 특종이 오지 않음 · 누적 5만 점', goal: 5e4 },
   { id: 'noQual', n: '저예산 방송', d: '방송 품질 업그레이드 불가 · 누적 20만 점', goal: 2e5 },
+];
+// 라이벌 방송국: 매일 8시 뉴스에서 시청률 대결 (가상 이름)
+export const RIVAL = '한누리방송';
+// 오늘의 미션: 게임 속 하루마다 3개. {g}는 목표치. out 목표는 현재 처리 속도로 정한다
+export const MISSIONS = [
+  { k: 'out', n: '뉴스 {g}건 송출' },
+  { k: 'ev', n: '속보 {g}건 대응', g: 2 },
+  { k: 'gold', n: '특종 {g}번 잡기', g: 1 },
+  { k: 'buy', n: '업그레이드 {g}레벨 올리기', g: 10 },
+  { k: 'pull', n: '스카우트 {g}회', g: 1 },
+  { k: 'scoop', n: '단독 보도 {g}회 성공', g: 1 },
+];
+// 속보 판단: 바로 단독으로 내보낼지, 확인 후 내보낼지 고르는 순간 (category id → 상황)
+export const DILEMMAS = {
+  crime: '출처 미확인 현장 영상 제보가 들어왔어요.',
+  weather: 'SNS에 침수 영상이 퍼지는 중. 원본 확인 전이에요.',
+  politics: '출구조사 결과라는 문서가 들어왔어요.',
+  world: '외신 단독 보도가 떴어요. 국내 확인 전이에요.',
+  sports: '선수 독점 인터뷰 영상, 사용 허락 확인 중이에요.',
+};
+export const SCOOP_P = .65, DIL_SEC = 15;
+// 방송 기술 연구소: 연구 포인트(RP)로 영구 강화 (개편해도 유지). req = [선행 연구, 필요 레벨]
+// RP 획득: 8시 뉴스 평가(1 + 시청률/4), 미션 달성 1, 단독 성공 1, 라이벌 승리 1
+export const RESEARCH = [
+  { id: 'speed', n: '장비 고도화', d: '모든 층 처리 속도 +10%', max: 10, c: 2 },
+  { id: 'rating', n: '앵커 트레이닝', d: '8시 뉴스 시청률 +0.3', max: 5, c: 3 },
+  { id: 'event', n: '속보 대응 매뉴얼', d: '속보 점수 +15%', max: 5, c: 3, req: ['speed', 2] },
+  { id: 'cost', n: '예산 협상', d: '업그레이드 비용 -3%', max: 5, c: 4, req: ['speed', 3] },
+  { id: 'scoop', n: '취재원 관리', d: '단독 성공률 +4%p', max: 5, c: 4, req: ['rating', 2] },
+  { id: 'gold', n: '특종 감각', d: '특종 등장 간격 -8%', max: 5, c: 4, req: ['rating', 2] },
+  { id: 'night', n: '야간 근무조', d: '오프라인 수익 +10%p · 최대 +1시간', max: 5, c: 5, req: ['event', 2] },
+];
+// 사무실 꾸미기: 하나당 점수 +2% (개편해도 유지). at = 점수 가격, need = 해금 조건
+export const DECOS = [
+  { id: 'plant', n: '편집실 화분', fl: 2, at: 2e4 },
+  { id: 'coffee', n: '인제스트실 커피 머신', fl: 1, at: 2e5 },
+  { id: 'cat', n: '보도국 고양이', fl: 7, at: 2e6 },
+  { id: 'sofa', n: 'CG실 야근 소파', fl: 3, at: 2e7 },
+  { id: 'neon', n: '스튜디오 네온 간판', fl: 4, at: 2e8 },
+  { id: 'tank', n: '로비 수족관', fl: 6, at: 2e9 },
+  { id: 'trophy', n: '동시간대 1위 트로피', fl: 4, need: s => (s.bestWin || 0) >= 3, nt: '라이벌 3연승' },
+  { id: 'mic', n: '황금 마이크', fl: 0, need: s => s.bestRating >= 10, nt: '시청률 10% 돌파' },
 ];

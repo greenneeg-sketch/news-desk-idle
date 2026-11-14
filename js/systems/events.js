@@ -14,6 +14,7 @@ export const EventScheduler = store => ({
   update() {
     const s = store.getState(); if (s.chal === 'calm' || s.ev || s.clock < s.nextEv) return;
     const ev = pickEvent(s, Math.random(), Math.random()); lastEvent = ev.id;
+    ev.dil = Math.random() < .45; // 45%는 '단독이냐 확인이냐' 판단이 걸린 속보
     store.dispatch({ type: 'SPAWN', ev });
   },
 });

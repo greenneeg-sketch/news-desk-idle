@@ -1,4 +1,4 @@
-import { MILESTONES, CARDS, RARITY } from '../data/config.js';
+import { MILESTONES, CARDS, RARITY, DECOS } from '../data/config.js';
 // 16비트풍 픽셀 렌더러: 그라데이션 밴드, 베벨 셰이딩, 음영 있는 캐릭터, 단계별 외형 변화(tier 0~4)
 const COL = ['#41a6f6', '#38b764', '#ffcd75', '#b13e53', '#f4f4f4'];
 const IDS = ['crew', 'ing', 'edit', 'cg', 'out', 'live', 'qual'];
@@ -120,6 +120,19 @@ const DRAW = [
   },
 ];
 
+// 사무실 꾸미기 소품 (DECOS의 fl 층에 그린다)
+const DECO_DRAW = {
+  plant: c => { R(c, 9, GY - 20, 2, 8, '#38b764'); R(c, 5, GY - 18, 4, 3, '#38b764'); R(c, 11, GY - 22, 5, 3, '#a7f070'); R(c, 4, GY - 14, 4, 2, '#257179'); R(c, 12, GY - 15, 5, 2, '#38b764'); bx(c, 5, GY - 10, 11, 10, '#b86f50'); },
+  coffee: (c, t) => { bx(c, 40, GY - 18, 14, 18, '#566c86'); R(c, 42, GY - 16, 10, 4, '#1a1c2c'); R(c, 43, GY - 15, 2, 2, blink(t) ? '#38b764' : '#257179'); R(c, 44, GY - 9, 6, 6, '#f4f4f4'); R(c, 45, GY - 8, 4, 2, '#5a3a20'); R(c, 46, GY - 13 - (t * 5 | 0) % 3, 1, 2, '#94b0c2'); },
+  cat: (c, t) => { const x = 10 + Math.abs(((t * 14) % 260) - 130), d = ((t * 14) % 260) < 130 ? 1 : -1, y = GY - 7, f = (t * 6 | 0) % 2;
+    R(c, x, y, 10, 5, '#ef7d57'); R(c, x + (d > 0 ? 8 : -3), y - 3, 5, 5, '#ef7d57'); R(c, x + (d > 0 ? 8 : -3), y - 4, 1, 1, '#ef7d57'); R(c, x + (d > 0 ? 12 : 1), y - 4, 1, 1, '#ef7d57');
+    R(c, x + (d > 0 ? 10 : -2), y - 2, 1, 1, '#14141f'); R(c, x + (d > 0 ? -2 : 10), y - 3, 2, 4, '#ef7d57'); R(c, x + 1 + f, y + 5, 2, 2, '#ef7d57'); R(c, x + 7 - f, y + 5, 2, 2, '#ef7d57'); },
+  sofa: c => { bx(c, 4, GY - 14, 34, 8, '#5d275d'); bx(c, 4, GY - 8, 34, 8, '#b13e53'); bx(c, 2, GY - 11, 4, 11, '#5d275d'); bx(c, 36, GY - 11, 4, 11, '#5d275d'); R(c, 10, GY - 12, 9, 4, '#ffcd75'); },
+  neon: (c, t) => { const k = blink(t, 1.5) ? '#ff4ad6' : '#7a2a6a'; R(c, 6, 6, 52, 13, '#14141f'); text(c, '24H', 14, 16, 8, k); R(c, 6, 6, 52, 1, k); R(c, 6, 18, 52, 1, k); },
+  tank: (c, t) => { bx(c, 4, GY - 22, 36, 18, '#257179'); R(c, 6, GY - 20, 32, 14, '#41a6f6'); R(c, 6, GY - 8, 32, 2, '#ffcd75'); const fx = 8 + ((t * 8) % 24); R(c, fx, GY - 15, 4, 2, '#ef7d57'); R(c, fx - 1, GY - 16, 1, 4, '#ef7d57'); R(c, 34 - ((t * 5) % 22), GY - 12, 3, 2, '#ffcd75'); bx(c, 2, GY - 4, 40, 4, '#5a3a20'); },
+  trophy: (c, t) => { bx(c, 236, GY - 6, 12, 6, '#5a3a20'); R(c, 239, GY - 10, 6, 4, '#ffcd75'); R(c, 237, GY - 18, 10, 8, '#ffd24a'); R(c, 235, GY - 17, 2, 4, '#ffd24a'); R(c, 247, GY - 17, 2, 4, '#ffd24a'); R(c, 239, GY - 16, 2, 3, '#fff6c0'); if (blink(t, 1)) R(c, 248, GY - 21, 2, 2, '#ffffff'); },
+  mic: (c, t) => { R(c, 150, GY - 9, 2, 9, '#ffcd75'); bx(c, 148, GY - 15, 6, 7, '#ffd24a'); R(c, 149, GY - 14, 2, 2, '#fff6c0'); if (blink(t, 1)) { R(c, 156, GY - 18, 2, 2, '#ffffff'); R(c, 145, GY - 12, 1, 1, '#ffffff'); } },
+};
 const HAIR = ['#3b2a20', '#14141f', '#8b5e3c', '#d8a050'], DARK = { H: '#222633', h: '#222633', S: '#222633', s: '#222633', E: '#222633', B: '#222633', b: '#222633', L: '#222633', K: '#222633' };
 export function Scene(canvases, cardCv) {
   const ctx = canvases.map(cv => { const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; return c; }), act = [1, 0, 0, 0, 0, 1, 1, 1], cc = cardCv && cardCv.getContext('2d');
@@ -129,6 +142,7 @@ export function Scene(canvases, cardCv) {
         const k = i === 7 ? s.chief : MILESTONES.filter(m => s.lv[IDS[i]] >= m).length;
         act[i] += ((i === 0 || i >= 5 || s.q[i] > .02 ? 1 : 0) - act[i]) * .15; const a = act[i] > .4;
         DRAW[i](c, s, t, a, k);
+        if (s.deco) DECOS.forEach(d => { if (d.fl === i && s.deco[d.id]) DECO_DRAW[d.id](c, t); });
         if (i < 4) { R(c, 0, GY + 5, 320, 3, '#14141f'); if (a) R(c, (t * 40 + i * 37) % 340 - 10, GY + 5, 8, 3, COL[i]); }
         if (i > 0 && i < 4) for (let m = 0, n = Math.min(6, s.q[i] / 2 | 0); m < n; m++) bx(c, 262 + (m % 3) * 10, GY - 6 - (m / 3 | 0) * 6, 9, 5, COL[i]);
         if (i < 5 && s.mg[i]) { person(c, 296, GY - 28, PAL('#f4f4f4', '#14141f')); R(c, 304, GY - 14, 2, 7, '#b13e53'); bx(c, 288, GY - 16, 8, 11, '#8b5e3c'); R(c, 290, GY - 13, 4, 1, '#f4f4f4'); }

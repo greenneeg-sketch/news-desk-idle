@@ -1,6 +1,7 @@
-import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES } from '../data/config.js';
+import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES, SCOOP_P, DIL_SEC, RESEARCH, DECOS } from '../data/config.js';
+import { newMissions, progress } from '../systems/missions.js';
 import { tierOf } from '../systems/season.js';
-import { rates, scoreMul, bulk, prestigeGain, goldReward, perSec } from '../systems/economy.js';
+import { rates, scoreMul, bulk, prestigeGain, goldReward, perSec, rl, goldGap } from '../systems/economy.js';
 import { evaluateDay } from '../systems/ratings.js';
 import { rollCard, scoutCost } from '../systems/cards.js';
 export const initialState = () => ({
@@ -9,9 +10,11 @@ export const initialState = () => ({
   name: '', uid: '', total: 0, maxLv: 0, bestRating: 0, views: 0, day: 1, dayT: 0, dOut: 0, dEv: 0, hist: [], lastRating: 0, prevRating: 0, lastViews: 0, report: null,
   cards: {}, pulls: 0, pity: 0, tickets: 0, freeReady: 0, last: null, login: { last: '', streak: 0 }, week: { key: '', prog: {}, done: {} }, daily: null,
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
+  outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
+  rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -22,53 +25,73 @@ function flow(s, dt) {
   if (s.q[1] + s.q[2] + s.q[3] + s.q[4] < 80) s.q[1] += r[0] * dt;
   for (let i = 1; i < 5; i++) {
     const mv = Math.min(s.q[i], r[i] * dt); s.q[i] -= mv;
-    if (i < 4) s.q[i + 1] += mv; else { s.dOut += mv; const g = mv * 10 * m; s.score += g; s.run += g; s.total += g; }
+    if (i < 4) s.q[i + 1] += mv; else { s.dOut += mv; s.outT += mv; const g = mv * 10 * m; s.score += g; s.run += g; s.total += g; }
   }
+}
+// 속보 판단: risk = 바로 단독 송출(성공 시 점수 x2·시청률 +0.8, 오보 시 속보 종료·시청률 -1.2), safe = 확인 후 송출(점수 x1.2)
+function judge(s, pick, r) {
+  const ev = { ...s.ev, pick };
+  if (pick === 'safe') { ev.sc = Math.round(ev.sc * 1.2 * 10) / 10; s.judge = { res: 'safe', t: s.clock }; }
+  else if (r < SCOOP_P + .04 * rl(s, 'scoop')) { ev.sc *= 2; s.dAdj += .8; s.scoopT += 1; s.rp += 1; s.dW += 1; s.judge = { res: 'win', t: s.clock }; }
+  else { ev.end = s.clock; s.dAdj -= 1.2; s.dF += 1; s.judge = { res: 'fail', t: s.clock }; }
+  s.ev = ev; return s;
 }
 export function reducer(st, a) {
   switch (a.type) {
     case 'TICK': {
       const s = { ...st, q: [...st.q], clock: st.clock + a.dt };
       if (s.ev && s.clock >= s.ev.end) { s.ev = null; s.nextEv = s.clock + 25 + a.rnd * 20; }
-      if (s.gold && s.clock >= s.gold.end) { s.gold = null; s.nextGold = s.clock + 60 + a.rnd * 60; }
+      if (s.gold && s.clock >= s.gold.end) { s.gold = null; s.nextGold = s.clock + goldGap(s, a.rnd); }
       else if (!s.gold && s.chal !== 'calm' && s.clock >= s.nextGold) s.gold = { end: s.clock + 12, x: Math.round(8 + a.rnd * 70), y: Math.round(22 + a.r2 * 50) };
+      if (s.ev && s.ev.dil && !s.ev.pick && s.clock >= s.ev.dilEnd) judge(s, 'safe');
       flow(s, a.dt);
       s.dayT += a.dt;
       if (s.dayT >= DAY_SEC) { // 8시 뉴스 시청률 평가
-        const e = evaluateDay(s, a.rnd, a.r2);
+        const e = evaluateDay(s, a.rnd, a.r2, a.r3), rec = e.rating > s.bestRating && s.day > 1;
         s.prevRating = s.lastRating; s.lastRating = e.rating; s.bestRating = Math.max(s.bestRating, e.rating); s.views += e.views; s.lastViews = e.views;
         s.hist = [...s.hist, e.rating].slice(-7); s.score += e.bonus; s.run += e.bonus; s.total += e.bonus;
         if (e.rating >= 6) s.week = bump(s.week, 'rate');
-        s.report = { day: s.day, ...e }; s.day += 1; s.dayT -= DAY_SEC; s.dOut = 0; s.dEv = 0;
+        const rp = 1 + Math.floor(e.rating / 4) + (e.won ? 1 : 0);
+        s.win = e.win; s.bestWin = Math.max(s.bestWin, e.win); s.rp += rp;
+        s.report = { day: s.day, ...e, rp, rec, log: s.dLog, dW: s.dW, dF: s.dF, all: !!(s.mis && s.mis.all), out: Math.floor(s.dOut) };
+        s.day += 1; s.dayT -= DAY_SEC; s.dOut = 0; s.dEv = 0; s.dAdj = 0; s.dLog = []; s.dW = 0; s.dF = 0;
+      }
+      if (!s.mis || s.mis.day !== s.day) s.mis = newMissions(s, a.r2);
+      else if (s.mis.list.some(m => !m.done && progress(s, m) >= m.goal)) { // 미션 달성: 즉시 보상, 3개 모두 달성 시 티켓
+        const mis = { ...s.mis, list: s.mis.list.map(m => ({ ...m })) }, gain = Math.max(1000, Math.floor(perSec(s) * 300));
+        mis.list.forEach(m => { if (!m.done && progress(s, m) >= m.goal) { m.done = 1; s.rp += 1; s.score += gain; s.run += gain; s.total += gain; s.misHit = { k: m.k, gain, t: s.clock }; } });
+        if (!mis.all && mis.list.every(m => m.done)) { mis.all = 1; s.tickets += 1; s.misAll += 1; s.misHit = { ...s.misHit, all: 1 }; }
+        s.mis = mis;
       }
       const hit = ACHIEVEMENTS.filter(x => !s.ach.includes(x.id) && x.t(s)); if (hit.length) s.ach = [...s.ach, ...hit.map(x => x.id)];
       if (s.chal) { const c = CHALLENGES.find(x => x.id === s.chal); if (c && s.run >= c.goal) { s.chalDone = { ...s.chalDone, [c.id]: 1 }; s.chalWin = c.id + ':' + s.clock; s.chal = null; } }
       return s;
     }
     case 'NAME': return { ...st, name: a.name, uid: st.uid || a.uid };
-    case 'SPAWN': return { ...st, evCount: st.evCount + 1, dEv: st.dEv + 1, week: bump(st.week, 'ev'), ev: { ...a.ev, end: st.clock + a.ev.dur, boost: !!st.chief } };
+    case 'SPAWN': return { ...st, evCount: st.evCount + 1, dEv: st.dEv + 1, dLog: [...(st.dLog || []), a.ev.name].slice(-3), week: bump(st.week, 'ev'), ev: { ...a.ev, end: st.clock + a.ev.dur, boost: !!st.chief, dilEnd: st.clock + DIL_SEC, pick: null } };
+    case 'JUDGE': return st.ev && st.ev.dil && !st.ev.pick ? judge({ ...st }, a.pick, a.r) : st;
     case 'BOOST': return st.ev ? { ...st, ev: { ...st.ev, boost: true } } : st;
     case 'GOLD': {
       if (!st.gold) return st; const g = goldReward(st, a.r), n = g.cash || 0;
-      return { ...earn(st, n), gold: null, nextGold: st.clock + 60 + a.r * 60, goldCount: st.goldCount + 1, week: bump(st.week, 'gold'), gbEnd: g.frenzy ? st.clock + 20 : st.gbEnd };
+      return { ...earn(st, n), gold: null, nextGold: st.clock + goldGap(st, a.r), goldCount: st.goldCount + 1, week: bump(st.week, 'gold'), gbEnd: g.frenzy ? st.clock + 20 : st.gbEnd };
     }
     case 'SPD': return st.clock < st.spdReady ? st : { ...st, spdEnd: st.clock + 120, spdReady: st.clock + 300 };
     case 'BUY': {
       if (st.chal === 'noQual' && a.id === 'qual') return st;
       const u = UPGRADES.find(x => x.id === a.id), { k, total } = bulk(st, u, a.n || '1'), nl = st.lv[u.id] + k;
-      return st.score < total ? st : { ...st, score: st.score - total, maxLv: Math.max(st.maxLv, nl), week: bump(st.week, 'buy', k), lv: { ...st.lv, [u.id]: nl } };
+      return st.score < total ? st : { ...st, score: st.score - total, maxLv: Math.max(st.maxLv, nl), buyT: st.buyT + k, week: bump(st.week, 'buy', k), lv: { ...st.lv, [u.id]: nl } };
     }
     case 'HIRE': return st.chal === 'noMgr' || st.mg[a.i] || st.score < MANAGER[a.i] ? st : { ...st, score: st.score - MANAGER[a.i], mg: st.mg.map((v, j) => j === a.i ? 1 : v) };
     case 'CHIEF': return st.chal === 'noMgr' || st.chief || st.score < CHIEF ? st : { ...st, score: st.score - CHIEF, chief: 1 };
     case 'SCOUT': { // how: paid(점수) / ticket(티켓) / ad(광고 무료)
       let s = { ...st };
-      if (a.how === 'paid') { const c = scoutCost(st.pulls); if (st.score < c) return st; s.score -= c; }
+      if (a.how === 'paid') { const c = scoutCost(st); if (st.score < c) return st; s.score -= c; }
       else if (a.how === 'ticket') { if (st.tickets < 1) return st; s.tickets -= 1; }
       else { if (st.clock < st.freeReady) return st; s.freeReady = st.clock + 600; }
       const card = rollCard(a.r, a.r2, st.pity);
       s.pulls = st.pulls + 1; s.week = bump(st.week, 'pull');
       if (!card) { // 꽝: 점수로 뽑았다면 비용의 20%를 위로금으로 돌려준다
-        const back = a.how === 'paid' ? Math.floor(scoutCost(st.pulls) * .2) : 0;
+        const back = a.how === 'paid' ? Math.floor(scoutCost(st) * .2) : 0;
         s.pity = st.pity + 1; s.last = { id: null, miss: true, back }; return back ? earn(s, back) : s;
       }
       const had = st.cards[card.id] || 0;
@@ -86,6 +109,16 @@ export function reducer(st, a) {
       const streak = st.login.last && dn(a.day) - dn(st.login.last) === 1 ? st.login.streak + 1 : 1;
       const gain = Math.max(500, Math.floor(perSec(st) * 900)) * Math.min(streak, 7), tk = streak % 7 === 0 ? 1 : 0;
       return { ...earn(st, gain), tickets: st.tickets + tk, login: { last: a.day, streak }, daily: { streak, gain, tk } };
+    }
+    case 'RESEARCH': {
+      const r = RESEARCH.find(x => x.id === a.id), l = rl(st, a.id); if (!r || l >= r.max) return st;
+      const c = r.c * (l + 1); if (st.rp < c || (r.req && rl(st, r.req[0]) < r.req[1])) return st;
+      return { ...st, rp: st.rp - c, res: { ...st.res, [a.id]: l + 1 } };
+    }
+    case 'DECO': {
+      const d = DECOS.find(x => x.id === a.id); if (!d || st.deco[a.id]) return st;
+      if (d.need ? !d.need(st) : st.score < d.at) return st;
+      return { ...st, score: st.score - (d.at || 0), deco: { ...st.deco, [a.id]: 1 } };
     }
     case 'TUT': return { ...st, tut: a.step };
     case 'SETN': return { ...st, buyN: a.n };

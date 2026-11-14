@@ -22,14 +22,25 @@
     <div><b id="evt"></b><small id="evd"></small></div>
     <button class="btn warn" id="evb">우선 편집</button>
   </section>
+  <section class="panel dil" id="dilp" hidden>
+    <div class="fh"><b>데스크 판단</b><span class="cnt" id="dils"></span></div>
+    <p id="dilt"></p>
+    <div class="row"><button class="btn warn" id="dilR">바로 단독 송출</button><button class="btn" id="dilS">확인 후 송출</button></div>
+    <p class="note">단독: 성공 65% 점수 x2·오늘 시청률 +0.8 / 오보 시 속보 종료·시청률 -1.2 · 확인: 점수 x1.2</p>
+  </section>
 
   <div class="pane" data-tab="desk">
     <section class="panel" id="rate">
       <div class="fh"><b>8시 뉴스 시청률</b><span class="cnt" id="clock"></span></div>
       <div class="ms"><i id="dayb"></i></div>
       <div class="rt"><strong id="rnow">-</strong><small id="rdiff"></small></div>
+      <div class="vs" id="vs"></div>
       <div class="bars" id="hist"></div>
       <p class="note" id="rnote"></p>
+    </section>
+    <section class="panel" id="misp">
+      <div class="fh"><b>오늘의 미션</b><span class="cnt" id="misd"></span></div>
+      <div id="mlist"></div>
     </section>
     <button class="btn warn wide" id="spdb"></button>
     <div class="seg" id="seg"><span class="px">BUY</span><button data-n="1">x1</button><button data-n="10">x10</button><button data-n="max">MAX</button></div>
@@ -72,6 +83,16 @@
   </div>
 
   <div class="pane" data-tab="grow" hidden>
+    <section class="panel" id="resp">
+      <div class="fh"><b>방송 기술 연구소</b><span class="cnt" id="rpd"></span></div>
+      <div id="rlist"></div>
+      <p class="note">연구 포인트는 8시 뉴스 평가, 미션 달성, 단독 성공, 라이벌 승리로 얻어요. 개편해도 유지돼요.</p>
+    </section>
+    <section class="panel" id="decop">
+      <div class="fh"><b>사무실 꾸미기</b><span class="cnt" id="dcd"></span></div>
+      <div id="dlist"></div>
+      <p class="note">꾸민 물건은 보도국 장면에 나타나고 하나당 점수 +2%. 개편해도 유지돼요.</p>
+    </section>
     <section class="panel" id="presp">
       <div class="fh"><b>개편</b></div>
       <p class="note" id="presd"></p>
@@ -85,7 +106,7 @@
     <section class="panel"><div class="fh"><b>업적</b><span class="cnt" id="achd"></span></div><div class="ach" id="ach"></div><p class="note" id="achn"></p></section>
     <section class="panel">
       <div class="fh"><b>설정</b></div>
-      <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="renameb">이름 변경</button><button class="btn alt" id="resetb">RESET</button></div>
+      <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="renameb">이름 변경</button><button class="btn alt" id="titleb">타이틀</button><button class="btn alt" id="resetb">RESET</button></div>
     </section>
   </div>
 </main>
@@ -99,12 +120,34 @@
   <button data-t="desk" id="tab-desk">보도국</button>
   <button data-t="scout" id="tab-scout">스카우트<i class="dot" id="dot-scout" hidden></i></button>
   <button data-t="rank" id="tab-rank">순위</button>
-  <button data-t="grow" id="tab-grow">성장</button>
+  <button data-t="grow" id="tab-grow">성장<i class="dot" id="dot-grow" hidden></i></button>
 </nav>
 <div class="modal" id="start" hidden>
   <div class="panel"><h1>NEWS DESK</h1><p>방송국 이름을 정해 주세요.<br><small>다른 사용자와의 순위 보드에 표시돼요.</small></p>
   <input id="nameIn" maxlength="12" placeholder="예: 한강뉴스" autocomplete="off"><p class="note" id="nameErr"></p>
   <div class="row"><button class="btn" id="startb">방송 시작</button><button class="btn alt" id="cancelb" hidden>취소</button></div></div>
+</div>
+<div class="modal" id="paper" hidden>
+  <div class="panel paper">
+    <div class="mast"><b id="pmast"></b><small id="pno"></small></div>
+    <h2 id="phead"></h2>
+    <ul id="psubs"></ul>
+    <p class="pfoot" id="pfoot"></p>
+    <div class="row"><button class="btn" id="pok">확인</button><button class="btn warn" id="pad">광고 보고 수입 2배</button></div>
+  </div>
+</div>
+<div class="intro" id="intro">
+  <canvas id="introcv"></canvas>
+  <div class="ihead">
+    <h1 class="ititle">NEWS<br>DESK</h1>
+    <p class="iname" id="iname"></p>
+  </div>
+  <span class="iclock" id="iclock"></span>
+  <p class="ipress">PRESS START</p>
+  <div class="ifoot">
+    <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button></div>
+  </div>
+  <div class="iticker ifix"><span id="iticker"></span></div>
 </div>
 <button class="gold" id="gold" hidden>특종!</button>
 <script type="module" src="js/main.js"></script>

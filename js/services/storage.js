@@ -1,16 +1,16 @@
 import { SAVE_KEY } from '../data/config.js';
 import { initialState, reducer } from '../state/reducer.js';
 import { rates, scoreMul } from '../systems/economy.js';
-const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut'];
+const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco'];
 // Repository 패턴: 저장 매체(localStorage)를 이 모듈 안에 가둔다
 export const Repo = {
   save(s) { try { localStorage.setItem(SAVE_KEY, JSON.stringify({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() })); } catch (e) { } },
   load() {
     try {
       const o = JSON.parse(localStorage.getItem(SAVE_KEY)); if (!o || !o.lv) return null;
-      const sec = Math.min((Date.now() - o.t) / 1000, 28800), { t, ...s } = o;
+      const nt = (o.res && o.res.night) || 0, sec = Math.min((Date.now() - o.t) / 1000, 28800 + 3600 * nt), { t, ...s } = o;
       const st = reducer(initialState(), { type: 'LOAD', s });
-      const n = sec >= 60 && st.name ? Math.floor(Math.min(...rates(st)) * 10 * scoreMul(st) * sec * .5) : 0;
+      const n = sec >= 60 && st.name ? Math.floor(Math.min(...rates(st)) * 10 * scoreMul(st) * sec * (.5 + .1 * nt)) : 0;
       return { s, offline: n >= 10 ? { n, min: Math.floor(sec / 60) } : null };
     } catch (e) { return null; }
   },
