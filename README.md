@@ -29,22 +29,19 @@ js/ui/                scene(픽셀 렌더러), hud(DOM 뷰)
 - 순위 점수 = 30*log10(1+누적 점수) + 0.6*최대 레벨 + 4*최고 시청률 + 10*log10(1+유튜브 조회수) (`js/systems/ranking.js`)
 - 서버를 연결하지 않으면 샘플 방송국과 비교하는 오프라인 모드입니다. 플레이어끼리 순위를 보려면 Supabase(무료)를 연결합니다.
 
-### Supabase 연결 (한 번만)
-- 현재 연결: 프로젝트 `dailykit-game`(ndyiuefcvhnqnfdziacv)에 `nd_leaderboard` 테이블로 적용됨. 다른 게임 테이블과 겹치지 않게 이름에 `nd_`를 붙였습니다.
-1. supabase.com 가입 → New project 생성 (Region: Northeast Asia (Seoul), DB 비밀번호는 아무거나 저장).
-2. **Authentication → Sign In / Providers**에서 **Allow anonymous sign-ins**를 켭니다. (플레이어마다 자동으로 익명 계정이 생깁니다)
-3. **SQL Editor → New query**에 `supabase/setup.sql` 전체를 붙여넣고 **Run**.
-4. **Project Settings → API**(또는 Data API / API Keys)에서 **Project URL**과 **anon public key**를 복사해 `js/data/config.js`의 `LEADERBOARD = { url: '...', key: '...' }`에 넣고 `python3 build.py`.
-   - anon key는 공개용 키라 코드에 넣어도 됩니다. **service_role key는 절대 넣지 마세요.**
+### Supabase 연결
+- 현재 연결: 프로젝트 `dailykit-game`(ndyiuefcvhnqnfdziacv)에 `nd_leaderboard`·`nd_lb_keys` 테이블과 `nd_submit`·`nd_server_time` 함수로 적용됨. 다른 게임 테이블과 겹치지 않게 이름에 `nd_`를 붙였습니다.
+- 로그인 없이 동작합니다. Supabase 인증 설정을 바꾸지 않으므로 회원 로그인을 쓰는 다른 게임에 영향이 없습니다.
+- 새 프로젝트에 다시 설치하려면 **SQL Editor**에 `supabase/setup.sql`을 붙여넣고 Run, 그다음 Project URL과 anon(공개) 키를 `js/data/config.js`의 `LEADERBOARD`에 넣고 `python3 build.py`. **service_role 키는 절대 넣지 마세요.**
 
 ### 서버 쪽 보호 (`supabase/setup.sql`)
-- 플레이어별 익명 계정 + RLS: 자기 기록만 쓰고 고칠 수 있습니다.
-- 순위 점수와 기록 시각은 서버가 계산합니다(클라이언트가 보낸 순위 점수는 무시).
+- 기기 열쇠: 기기마다 무작위 id와 비밀 열쇠를 만들어 기기에만 보관하고(localStorage `newsDeskSb`), 서버에는 열쇠의 해시만 저장합니다. 열쇠가 맞아야만 그 방송국 기록을 고칠 수 있습니다.
+- 테이블에 직접 쓰기는 막혀 있고, 쓰기는 `nd_submit()` 함수로만 됩니다. 순위 점수는 서버가 계산합니다.
 - 이름 규칙(2~12자)과 비속어·운영자 사칭을 서버에서도 막습니다.
-- 순위 점수가 너무 빨리 오르면(1분당 +30, 기본 +60 초과) 거부하고, 첫 등록은 600점까지만 받습니다.
-- 출석·주간·시즌 날짜는 서버 시각(`server_time()`)으로 계산해 기기 시계 조작을 막습니다.
-- 부적절한 이름은 Supabase **Table Editor → leaderboard**에서 운영자가 직접 고치거나 지울 수 있습니다.
-- 한계: 게임 진행 자체는 기기에서 계산되므로 완벽한 부정행위 방지는 아닙니다. 상금이 걸린 대회라면 서버 계산이 필요합니다.
+- 순위 점수가 너무 빨리 오르면(1분당 +30, 기본 +60 초과) 거부, 첫 등록은 600점까지, 15초에 한 번만 반영합니다.
+- 출석·주간·시즌 날짜는 서버 시각(`nd_server_time()`)으로 계산해 기기 시계 조작을 막습니다.
+- 부적절한 이름은 Supabase **Table Editor → nd_leaderboard**에서 운영자가 직접 고치거나 지울 수 있습니다.
+- 한계: 게임 진행 자체는 기기에서 계산되므로 완벽한 부정행위 방지는 아닙니다. 브라우저 데이터를 지우면 열쇠도 사라져 새 방송국으로 등록됩니다.
 
 ## 홈 화면 앱 (PWA)
 - `manifest.webmanifest`, `icons/`, `sw.js`. 안드로이드 크롬은 타이틀 메뉴의 **앱 설치**, 아이폰 사파리는 **공유 → 홈 화면에 추가**.

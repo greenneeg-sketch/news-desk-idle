@@ -9,31 +9,23 @@ const DbAdapter = (db, id) => ({
   async submit(e) { await db.doc('leaderboard/' + id).set({ ...e, uid: id }); },
   async top(n) { const snap = await db.collection('leaderboard').orderBy('rankScore', 'desc').limit(n).get(); return snap.docs.map(d => clean(d.data())); },
 });
-// Supabase 어댑터: 익명 로그인으로 플레이어별 계정을 만들고, 자기 기록만 쓴다(서버 RLS·검증은 supabase/setup.sql)
+// Supabase 어댑터: 로그인 없이 '기기 열쇠'로 내 기록을 지킨다.
+// 기기마다 무작위 id와 비밀 열쇠를 만들어 이 기기에만 보관하고, 서버 함수 nd_submit이 열쇠를 확인한 뒤에만 기록을 고친다(supabase/setup.sql)
 const SB_KEY = 'newsDeskSb';
+const rand = n => { const a = new Uint8Array(n); crypto.getRandomValues(a); return [...a].map(b => b.toString(16).padStart(2, '0')).join(''); };
+const uuid = () => crypto.randomUUID ? crypto.randomUUID() : (h => `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-a${h.slice(17, 20)}-${h.slice(20, 32)}`)(rand(16));
 const SupabaseAdapter = ({ url, key }) => {
-  let ses = null; try { ses = JSON.parse(localStorage.getItem(SB_KEY)); } catch (e) { }
-  const save = () => { try { localStorage.setItem(SB_KEY, JSON.stringify(ses)); } catch (e) { } };
-  const H = t => ({ apikey: key, 'Content-Type': 'application/json', ...(t ? { Authorization: 'Bearer ' + t } : {}) }); // 로그인 전에는 apikey만(익명 읽기)
-  async function auth() {
-    if (ses && ses.exp > Date.now() / 1000 + 60) return ses;
-    let r = null;
-    if (ses && ses.refresh) r = await fetch(`${url}/auth/v1/token?grant_type=refresh_token`, { method: 'POST', headers: H(), body: JSON.stringify({ refresh_token: ses.refresh }) });
-    if (!r || !r.ok) r = await fetch(`${url}/auth/v1/signup`, { method: 'POST', headers: H(), body: JSON.stringify({ data: {} }) }); // 익명 로그인
-    const d = await r.json(); if (!d.access_token) throw new Error('auth failed');
-    ses = { token: d.access_token, refresh: d.refresh_token, exp: d.expires_at || Date.now() / 1000 + (d.expires_in || 3600), uid: d.user && d.user.id }; save(); return ses;
-  }
-  const row = x => clean({ uid: x.user_id, name: x.name, total: x.total, maxLv: x.max_lv, bestRating: x.best_rating, views: x.views, rankScore: x.rank_score, season: x.season, seasonPts: x.season_pts });
+  let dev = null; try { dev = JSON.parse(localStorage.getItem(SB_KEY)); } catch (e) { }
+  if (!dev || !dev.id || !dev.key) { dev = { id: uuid(), key: rand(32) }; try { localStorage.setItem(SB_KEY, JSON.stringify(dev)); } catch (e) { } }
+  const H = { apikey: key, 'Content-Type': 'application/json' };
+  const rpc = async (fn, body) => { const r = await fetch(`${url}/rest/v1/rpc/${fn}`, { method: 'POST', headers: H, body: JSON.stringify(body) }); if (!r.ok) throw new Error(fn + ' ' + r.status + ' ' + (await r.text()).slice(0, 120)); return r.json(); };
+  const COLS = 'id,name,total,max_lv,best_rating,views,rank_score,season,season_pts';
+  const row = x => clean({ uid: x.id, name: x.name, total: x.total, maxLv: x.max_lv, bestRating: x.best_rating, views: x.views, rankScore: x.rank_score, season: x.season, seasonPts: x.season_pts });
   return {
-    mode: 'server', get me() { return ses && ses.uid; },
-    async submit(e) {
-      const s = await auth();
-      const r = await fetch(`${url}/rest/v1/nd_leaderboard?on_conflict=user_id`, { method: 'POST', headers: { ...H(s.token), Prefer: 'resolution=merge-duplicates,return=minimal' },
-        body: JSON.stringify({ user_id: s.uid, name: e.name, total: e.total, max_lv: e.maxLv, best_rating: Math.min(30, e.bestRating), views: e.views, season: e.season, season_pts: e.seasonPts }) });
-      if (!r.ok) throw new Error('submit ' + r.status + ' ' + (await r.text()).slice(0, 120));
-    },
-    async top(n) { const r = await fetch(`${url}/rest/v1/nd_leaderboard?select=*&order=rank_score.desc&limit=${n}`, { headers: H() }); if (!r.ok) throw new Error('top ' + r.status); return (await r.json()).map(row); },
-    async now() { const r = await fetch(`${url}/rest/v1/rpc/nd_server_time`, { method: 'POST', headers: H(), body: '{}' }); if (!r.ok) throw new Error('time'); return Date.parse(await r.json()); },
+    mode: 'server', me: dev.id,
+    submit: e => rpc('nd_submit', { p_id: dev.id, p_key: dev.key, p_name: e.name, p_total: e.total, p_max_lv: e.maxLv, p_best: Math.min(30, e.bestRating), p_views: e.views, p_season: e.season, p_season_pts: e.seasonPts }),
+    async top(n) { const r = await fetch(`${url}/rest/v1/nd_leaderboard?select=${COLS}&order=rank_score.desc&limit=${n}`, { headers: H }); if (!r.ok) throw new Error('top ' + r.status); return (await r.json()).map(row); },
+    now: async () => Date.parse(await rpc('nd_server_time', {})),
   };
 };
 export async function createBoard(cfg) {
