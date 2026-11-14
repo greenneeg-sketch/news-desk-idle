@@ -49,7 +49,7 @@ export function Hud(bus) {
       li.append(n, d); ol.append(li);
     });
     if (!list.length) { const li = document.createElement('li'); li.textContent = '아직 이번 시즌 기록이 없어요.'; ol.append(li); }
-    $('lbn').textContent = { db: '공유 순위 (이 페이지를 연 사용자끼리)', rest: '온라인 순위', local: '오프라인 모드: 샘플 방송국과 비교 중이에요. 서버를 연결하면 사용자 간 순위가 돼요.' }[mode];
+    $('lbn').textContent = { db: '공유 순위 (이 페이지를 연 사용자끼리)', server: '온라인 순위 (모든 플레이어)', local: '오프라인 모드: 샘플 방송국과 비교 중이에요. 서버를 연결하면 사용자 간 순위가 돼요.' }[mode];
   }
   { const p = x => +(x * 100).toFixed(1) + '%'; $('odds').textContent = `확률 꽝 ${p(1 - ODDS.reduce((a, b) => a + b, 0))} · ${RARITY.map((r, i) => `${r.n} ${p(ODDS[i])}`).join(' · ')} · ${PITY}번째는 영웅 이상 보장`; }
   $('wlist').innerHTML = WEEKLY.map((g, i) => `<div class="wg"><div class="row2"><span>${g.n}</span><span id="wp${i}"></span><button class="btn mini" data-goal="${g.id}" id="wb${i}">받기</button></div><div class="ms"><i id="wm${i}"></i></div></div>`).join('');

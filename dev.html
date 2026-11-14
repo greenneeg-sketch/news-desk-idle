@@ -3,7 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NEWS DESK 8BIT</title>
+<title>NEWS DESK</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1a1c2c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NEWS DESK">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/main.css">
@@ -146,9 +154,15 @@
   <span class="iver">v__BUILD__</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
-    <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button></div>
+    <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
   </div>
   <div class="iticker ifix"><span id="iticker"></span></div>
+</div>
+<div class="modal" id="iosins" hidden>
+  <div class="panel"><h1>홈 화면에 추가</h1>
+  <p>1. 화면 아래(아이패드는 위)의 <b>공유 버튼</b>(네모에 위쪽 화살표)을 눌러요.<br>2. 목록에서 <b>홈 화면에 추가</b>를 눌러요.<br>3. 오른쪽 위 <b>추가</b>를 누르면 홈 화면에 NEWS DESK 아이콘이 생겨요.</p>
+  <p class="note">아이콘으로 열면 주소창 없이 전체 화면으로 실행되고, 인터넷이 없어도 열려요.</p>
+  <div class="row"><button class="btn" id="iosok">확인</button></div></div>
 </div>
 <button class="gold" id="gold" hidden>특종!</button>
 <script type="module" src="js/main.js"></script>

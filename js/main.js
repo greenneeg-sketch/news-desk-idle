@@ -27,8 +27,9 @@ const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toSt
 const saved = Repo.load();
 if (saved) { store.dispatch({ type: 'LOAD', s: saved.s }); if (saved.offline) { pending = saved.offline.n; ui.offline(saved.offline); } }
 const dstr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+let clockOff = 0; // 서버 시각 - 기기 시각 (ms)
 function checkDates() { // 일일 출석과 주간 목표 초기화(월요일 기준)
-  if (!store.getState().name) return; const d = new Date();
+  if (!store.getState().name) return; const d = new Date(Date.now() + clockOff);
   store.dispatch({ type: 'WEEK', key: dstr(new Date(d.getFullYear(), d.getMonth(), d.getDate() - (d.getDay() + 6) % 7)) }); store.dispatch({ type: 'SEASON', key: seasonKey(d) }); store.dispatch({ type: 'CHECKIN', day: dstr(d) });
 }
 if (store.getState().name) checkDates();
@@ -47,6 +48,19 @@ $i('isound').onclick = () => { bus.emit('mute'); $i('isound').textContent = $i('
 // 메인 화면으로: 바로 저장하고 타이틀로 나간다 (상단 ⌂ 버튼, 설정의 타이틀 버튼)
 const goHome = () => { Repo.save(store.getState()); showIntro(); ui.toast('저장했어요.'); };
 $i('titleb').onclick = goHome; $i('homeb').onclick = goHome;
+// 홈 화면 앱(PWA): GitHub Pages에서만 서비스 워커를 켠다. 안드로이드 크롬은 설치 창, 아이폰 사파리는 안내 창
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+if ('serviceWorker' in navigator && /github\.io$|^localhost$|^127\./.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => { });
+let installEv = null;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+if (!standalone && isIOS) $i('iinstall').hidden = false;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEv = e; if (!standalone) $i('iinstall').hidden = false; });
+addEventListener('appinstalled', () => { $i('iinstall').hidden = true; ui.toast('홈 화면에 설치했어요!'); });
+$i('iinstall').onclick = async () => {
+  if (installEv) { installEv.prompt(); const r = await installEv.userChoice.catch(() => null); installEv = null; if (r && r.outcome === 'accepted') $i('iinstall').hidden = true; }
+  else $i('iosins').hidden = false;
+};
+$i('iosok').onclick = () => { $i('iosins').hidden = true; };
 // 새로 시작: 모든 기록을 지우므로 두 번 눌러야 실행. 이름 변경: 기록은 그대로 두고 방송국 이름만 바꾼다
 let newT = 0;
 $i('inew').onclick = () => {
@@ -65,9 +79,13 @@ showIntro();
 // 순위 동기화: 내 기록을 올리고 상위 목록을 받아 그린다
 async function refresh() {
   if (!board) return; const s = store.getState();
-  try { if (s.name) await board.submit(toEntry(s)); ui.board(await board.top(50, toEntry(s)), board.me || s.uid, board.mode, s.season.key); } catch (e) { ui.toast('순위를 불러오지 못했어요.'); }
+  if (s.name) try { await board.submit(toEntry(s)); } catch (e) { console.warn('순위 기록 실패', e); } // 기록 실패(검증 거부 등)여도 목록은 불러온다
+  try { ui.board(await board.top(50, toEntry(s)), board.me || s.uid, board.mode, s.season.key); } catch (e) { ui.toast('순위를 불러오지 못했어요.'); }
 }
-createBoard(LEADERBOARD).then(b => { board = b; refresh(); });
+// 서버가 있으면 서버 시각으로 출석·주간·시즌을 계산한다(기기 시계 조작 방지)
+const syncClock = () => board && board.now().then(t => { if (t) { clockOff = t - Date.now(); checkDates(); } }).catch(() => { });
+createBoard(LEADERBOARD).then(b => { board = b; refresh(); syncClock(); });
+setInterval(syncClock, 600000);
 
 // Command 핸들러: 사용자 의도 -> 상태 변경 + 피드백
 bus.on('name', raw => {

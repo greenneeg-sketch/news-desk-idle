@@ -4,7 +4,15 @@
 <!-- 자동 생성 파일: 직접 고치지 말고 dev.html·js·css를 고친 뒤 python3 build.py -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NEWS DESK 8BIT</title>
+<title>NEWS DESK</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1a1c2c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NEWS DESK">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&display=swap" rel="stylesheet">
 <style>:root{--bg:#1a1c2c;--pn:#333c57;--ink:#0b0b14;--tx:#f4f4f4;--sub:#94b0c2;--y:#ffcd75;--g:#38b764;--r:#b13e53;--b:#41a6f6;
@@ -128,6 +136,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .ifoot{padding-bottom:calc(42px + env(safe-area-inset-bottom,0px))!important}
 .iver{position:absolute;left:8px;top:calc(8px + env(safe-area-inset-top,0px));font-size:10px;color:#ffffffa0;text-shadow:1px 1px 0 #14141f;pointer-events:none}
 .hbtns{display:flex;gap:6px;align-self:flex-end}.hbtns .help{align-self:auto}.help.home{font:18px/1 sans-serif;font-weight:700}
+#iosins{z-index:40}#iosins p{line-height:1.6}
 </style>
 </head>
 <body>
@@ -265,12 +274,18 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-0838</span>
+  <span class="iver">v2026.11.15-0850</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
-    <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button></div>
+    <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
   </div>
   <div class="iticker ifix"><span id="iticker"></span></div>
+</div>
+<div class="modal" id="iosins" hidden>
+  <div class="panel"><h1>홈 화면에 추가</h1>
+  <p>1. 화면 아래(아이패드는 위)의 <b>공유 버튼</b>(네모에 위쪽 화살표)을 눌러요.<br>2. 목록에서 <b>홈 화면에 추가</b>를 눌러요.<br>3. 오른쪽 위 <b>추가</b>를 누르면 홈 화면에 NEWS DESK 아이콘이 생겨요.</p>
+  <p class="note">아이콘으로 열면 주소창 없이 전체 화면으로 실행되고, 인터넷이 없어도 열려요.</p>
+  <div class="row"><button class="btn" id="iosok">확인</button></div></div>
 </div>
 <button class="gold" id="gold" hidden>특종!</button>
 <script>(()=>{const SAVE_KEY = 'newsDeskIdle.v2';
@@ -721,7 +736,7 @@ const Repo = {
 };
 
 
-// 순위 서비스: 어댑터 패턴으로 저장소를 바꿔 끼운다 (Claude db 공유 저장소 / REST 서버 / 오프라인 샘플)
+// 순위 서비스: 어댑터 패턴으로 저장소를 바꿔 끼운다 (Claude db 공유 저장소 / Supabase 서버 / 오프라인 샘플)
 const SAMPLE = [['한강TV', 2e7, 70, 18.4, 6e6], ['새벽뉴스', 3e6, 45, 12.1, 8e5], ['별빛방송', 4e5, 30, 8.7, 9e4], ['미래 미디어', 5e4, 18, 6.2, 1.5e4], ['동네 라디오', 5e3, 8, 3.9, 1200]]
   .map(([name, total, maxLv, bestRating, views], i) => ({ uid: 'sample' + i, name, total, maxLv, bestRating, views, sample: true, rankScore: rankScore({ total, maxLv, bestRating, views }) }));
 const clean = e => ({ uid: String(e.uid || '').slice(0, 64), name: String(e.name || '').slice(0, 12), total: +e.total || 0, maxLv: +e.maxLv || 0, bestRating: +e.bestRating || 0, views: +e.views || 0, rankScore: +e.rankScore || 0, season: String(e.season || '').slice(0, 7), seasonPts: +e.seasonPts || 0, sample: !!e.sample });
@@ -731,23 +746,43 @@ const DbAdapter = (db, id) => ({
   async submit(e) { await db.doc('leaderboard/' + id).set({ ...e, uid: id }); },
   async top(n) { const snap = await db.collection('leaderboard').orderBy('rankScore', 'desc').limit(n).get(); return snap.docs.map(d => clean(d.data())); },
 });
-const RestAdapter = ({ url, key }) => {
-  const h = { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' };
+// Supabase 어댑터: 익명 로그인으로 플레이어별 계정을 만들고, 자기 기록만 쓴다(서버 RLS·검증은 supabase/setup.sql)
+const SB_KEY = 'newsDeskSb';
+const SupabaseAdapter = ({ url, key }) => {
+  let ses = null; try { ses = JSON.parse(localStorage.getItem(SB_KEY)); } catch (e) { }
+  const save = () => { try { localStorage.setItem(SB_KEY, JSON.stringify(ses)); } catch (e) { } };
+  const H = t => ({ apikey: key, Authorization: 'Bearer ' + (t || key), 'Content-Type': 'application/json' });
+  async function auth() {
+    if (ses && ses.exp > Date.now() / 1000 + 60) return ses;
+    let r = null;
+    if (ses && ses.refresh) r = await fetch(`${url}/auth/v1/token?grant_type=refresh_token`, { method: 'POST', headers: H(), body: JSON.stringify({ refresh_token: ses.refresh }) });
+    if (!r || !r.ok) r = await fetch(`${url}/auth/v1/signup`, { method: 'POST', headers: H(), body: JSON.stringify({ data: {} }) }); // 익명 로그인
+    const d = await r.json(); if (!d.access_token) throw new Error('auth failed');
+    ses = { token: d.access_token, refresh: d.refresh_token, exp: d.expires_at || Date.now() / 1000 + (d.expires_in || 3600), uid: d.user && d.user.id }; save(); return ses;
+  }
+  const row = x => clean({ uid: x.user_id, name: x.name, total: x.total, maxLv: x.max_lv, bestRating: x.best_rating, views: x.views, rankScore: x.rank_score, season: x.season, seasonPts: x.season_pts });
   return {
-    mode: 'rest', me: null,
-    async submit(e) { await fetch(`${url}/rest/v1/leaderboard?on_conflict=uid`, { method: 'POST', headers: { ...h, Prefer: 'resolution=merge-duplicates' }, body: JSON.stringify([{ uid: e.uid, name: e.name, total: e.total, max_lv: e.maxLv, best_rating: e.bestRating, views: e.views, rank_score: e.rankScore, season: e.season, season_pts: e.seasonPts }]) }); },
-    async top(n) { const r = await fetch(`${url}/rest/v1/leaderboard?select=*&order=rank_score.desc&limit=${n}`, { headers: h }); return (await r.json()).map(x => clean({ uid: x.uid, name: x.name, total: x.total, maxLv: x.max_lv, bestRating: x.best_rating, views: x.views, rankScore: x.rank_score, season: x.season, seasonPts: x.season_pts })); },
+    mode: 'server', get me() { return ses && ses.uid; },
+    async submit(e) {
+      const s = await auth();
+      const r = await fetch(`${url}/rest/v1/leaderboard?on_conflict=user_id`, { method: 'POST', headers: { ...H(s.token), Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({ user_id: s.uid, name: e.name, total: e.total, max_lv: e.maxLv, best_rating: Math.min(30, e.bestRating), views: e.views, season: e.season, season_pts: e.seasonPts }) });
+      if (!r.ok) throw new Error('submit ' + r.status + ' ' + (await r.text()).slice(0, 120));
+    },
+    async top(n) { const r = await fetch(`${url}/rest/v1/leaderboard?select=*&order=rank_score.desc&limit=${n}`, { headers: H() }); if (!r.ok) throw new Error('top ' + r.status); return (await r.json()).map(row); },
+    async now() { const r = await fetch(`${url}/rest/v1/rpc/server_time`, { method: 'POST', headers: H(), body: '{}' }); if (!r.ok) throw new Error('time'); return Date.parse(await r.json()); },
   };
 };
 async function createBoard(cfg) {
   let ad = LocalAdapter();
   try { const c = window.claude; if (c && c.use) { const [db, user] = await Promise.all([c.use('db'), c.use('user')]); const id = db && user ? await user.id() : null; if (id) ad = DbAdapter(db, id); } } catch (e) { }
-  if (ad.mode === 'local' && cfg.url && cfg.key) ad = RestAdapter(cfg);
+  if (ad.mode === 'local' && cfg.url && cfg.key) ad = SupabaseAdapter(cfg);
   let last = '';
   return {
     get mode() { return ad.mode; }, get me() { return ad.me; },
     async submit(e) { const k = JSON.stringify([e.name, e.rankScore]); if (k === last) return; await ad.submit(ad.me ? { ...e, uid: ad.me } : e); last = k; },
     top: (n, own) => ad.top(n, own),
+    now: () => ad.now ? ad.now() : Promise.resolve(Date.now()),
   };
 }
 
@@ -1350,7 +1385,7 @@ function Hud(bus) {
       li.append(n, d); ol.append(li);
     });
     if (!list.length) { const li = document.createElement('li'); li.textContent = '아직 이번 시즌 기록이 없어요.'; ol.append(li); }
-    $('lbn').textContent = { db: '공유 순위 (이 페이지를 연 사용자끼리)', rest: '온라인 순위', local: '오프라인 모드: 샘플 방송국과 비교 중이에요. 서버를 연결하면 사용자 간 순위가 돼요.' }[mode];
+    $('lbn').textContent = { db: '공유 순위 (이 페이지를 연 사용자끼리)', server: '온라인 순위 (모든 플레이어)', local: '오프라인 모드: 샘플 방송국과 비교 중이에요. 서버를 연결하면 사용자 간 순위가 돼요.' }[mode];
   }
   { const p = x => +(x * 100).toFixed(1) + '%'; $('odds').textContent = `확률 꽝 ${p(1 - ODDS.reduce((a, b) => a + b, 0))} · ${RARITY.map((r, i) => `${r.n} ${p(ODDS[i])}`).join(' · ')} · ${PITY}번째는 영웅 이상 보장`; }
   $('wlist').innerHTML = WEEKLY.map((g, i) => `<div class="wg"><div class="row2"><span>${g.n}</span><span id="wp${i}"></span><button class="btn mini" data-goal="${g.id}" id="wb${i}">받기</button></div><div class="ms"><i id="wm${i}"></i></div></div>`).join('');
@@ -1519,8 +1554,9 @@ const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toSt
 const saved = Repo.load();
 if (saved) { store.dispatch({ type: 'LOAD', s: saved.s }); if (saved.offline) { pending = saved.offline.n; ui.offline(saved.offline); } }
 const dstr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+let clockOff = 0; // 서버 시각 - 기기 시각 (ms)
 function checkDates() { // 일일 출석과 주간 목표 초기화(월요일 기준)
-  if (!store.getState().name) return; const d = new Date();
+  if (!store.getState().name) return; const d = new Date(Date.now() + clockOff);
   store.dispatch({ type: 'WEEK', key: dstr(new Date(d.getFullYear(), d.getMonth(), d.getDate() - (d.getDay() + 6) % 7)) }); store.dispatch({ type: 'SEASON', key: seasonKey(d) }); store.dispatch({ type: 'CHECKIN', day: dstr(d) });
 }
 if (store.getState().name) checkDates();
@@ -1539,6 +1575,19 @@ $i('isound').onclick = () => { bus.emit('mute'); $i('isound').textContent = $i('
 // 메인 화면으로: 바로 저장하고 타이틀로 나간다 (상단 ⌂ 버튼, 설정의 타이틀 버튼)
 const goHome = () => { Repo.save(store.getState()); showIntro(); ui.toast('저장했어요.'); };
 $i('titleb').onclick = goHome; $i('homeb').onclick = goHome;
+// 홈 화면 앱(PWA): GitHub Pages에서만 서비스 워커를 켠다. 안드로이드 크롬은 설치 창, 아이폰 사파리는 안내 창
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+if ('serviceWorker' in navigator && /github\.io$|^localhost$|^127\./.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => { });
+let installEv = null;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+if (!standalone && isIOS) $i('iinstall').hidden = false;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEv = e; if (!standalone) $i('iinstall').hidden = false; });
+addEventListener('appinstalled', () => { $i('iinstall').hidden = true; ui.toast('홈 화면에 설치했어요!'); });
+$i('iinstall').onclick = async () => {
+  if (installEv) { installEv.prompt(); const r = await installEv.userChoice.catch(() => null); installEv = null; if (r && r.outcome === 'accepted') $i('iinstall').hidden = true; }
+  else $i('iosins').hidden = false;
+};
+$i('iosok').onclick = () => { $i('iosins').hidden = true; };
 // 새로 시작: 모든 기록을 지우므로 두 번 눌러야 실행. 이름 변경: 기록은 그대로 두고 방송국 이름만 바꾼다
 let newT = 0;
 $i('inew').onclick = () => {
@@ -1557,9 +1606,13 @@ showIntro();
 // 순위 동기화: 내 기록을 올리고 상위 목록을 받아 그린다
 async function refresh() {
   if (!board) return; const s = store.getState();
-  try { if (s.name) await board.submit(toEntry(s)); ui.board(await board.top(50, toEntry(s)), board.me || s.uid, board.mode, s.season.key); } catch (e) { ui.toast('순위를 불러오지 못했어요.'); }
+  if (s.name) try { await board.submit(toEntry(s)); } catch (e) { console.warn('순위 기록 실패', e); } // 기록 실패(검증 거부 등)여도 목록은 불러온다
+  try { ui.board(await board.top(50, toEntry(s)), board.me || s.uid, board.mode, s.season.key); } catch (e) { ui.toast('순위를 불러오지 못했어요.'); }
 }
-createBoard(LEADERBOARD).then(b => { board = b; refresh(); });
+// 서버가 있으면 서버 시각으로 출석·주간·시즌을 계산한다(기기 시계 조작 방지)
+const syncClock = () => board && board.now().then(t => { if (t) { clockOff = t - Date.now(); checkDates(); } }).catch(() => { });
+createBoard(LEADERBOARD).then(b => { board = b; refresh(); syncClock(); });
+setInterval(syncClock, 600000);
 
 // Command 핸들러: 사용자 의도 -> 상태 변경 + 피드백
 bus.on('name', raw => {

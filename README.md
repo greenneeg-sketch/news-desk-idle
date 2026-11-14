@@ -27,15 +27,27 @@ js/ui/                scene(픽셀 렌더러), hud(DOM 뷰)
 
 ## 순위 보드 (사용자 간 순위)
 - 순위 점수 = 30*log10(1+누적 점수) + 0.6*최대 레벨 + 4*최고 시청률 + 10*log10(1+유튜브 조회수) (`js/systems/ranking.js`)
-- 정적 호스팅(GitHub Pages)만으로는 사용자 간 공유가 안 되므로 서버가 필요합니다. `js/data/config.js`의 `LEADERBOARD`에 Supabase URL과 anon key를 넣으면 켜집니다. 비워두면 샘플 방송국과 비교하는 오프라인 모드입니다.
-```sql
-create table leaderboard(uid text primary key, name text, total double precision, max_lv int, best_rating double precision, views double precision, rank_score double precision, updated_at timestamptz default now());
-alter table leaderboard enable row level security;
-create policy "read" on leaderboard for select using (true);
-create policy "write" on leaderboard for insert with check (true);
-create policy "update" on leaderboard for update using (true);
-```
-- 주의: 이 구성은 클라이언트가 점수를 직접 올리므로 조작이 가능합니다. 정식 출시 전에는 서버 검증이나 로그인이 필요합니다.
+- 서버를 연결하지 않으면 샘플 방송국과 비교하는 오프라인 모드입니다. 플레이어끼리 순위를 보려면 Supabase(무료)를 연결합니다.
+
+### Supabase 연결 (한 번만)
+1. supabase.com 가입 → New project 생성 (Region: Northeast Asia (Seoul), DB 비밀번호는 아무거나 저장).
+2. **Authentication → Sign In / Providers**에서 **Allow anonymous sign-ins**를 켭니다. (플레이어마다 자동으로 익명 계정이 생깁니다)
+3. **SQL Editor → New query**에 `supabase/setup.sql` 전체를 붙여넣고 **Run**.
+4. **Project Settings → API**(또는 Data API / API Keys)에서 **Project URL**과 **anon public key**를 복사해 `js/data/config.js`의 `LEADERBOARD = { url: '...', key: '...' }`에 넣고 `python3 build.py`.
+   - anon key는 공개용 키라 코드에 넣어도 됩니다. **service_role key는 절대 넣지 마세요.**
+
+### 서버 쪽 보호 (`supabase/setup.sql`)
+- 플레이어별 익명 계정 + RLS: 자기 기록만 쓰고 고칠 수 있습니다.
+- 순위 점수와 기록 시각은 서버가 계산합니다(클라이언트가 보낸 순위 점수는 무시).
+- 이름 규칙(2~12자)과 비속어·운영자 사칭을 서버에서도 막습니다.
+- 순위 점수가 너무 빨리 오르면(1분당 +30, 기본 +60 초과) 거부하고, 첫 등록은 600점까지만 받습니다.
+- 출석·주간·시즌 날짜는 서버 시각(`server_time()`)으로 계산해 기기 시계 조작을 막습니다.
+- 부적절한 이름은 Supabase **Table Editor → leaderboard**에서 운영자가 직접 고치거나 지울 수 있습니다.
+- 한계: 게임 진행 자체는 기기에서 계산되므로 완벽한 부정행위 방지는 아닙니다. 상금이 걸린 대회라면 서버 계산이 필요합니다.
+
+## 홈 화면 앱 (PWA)
+- `manifest.webmanifest`, `icons/`, `sw.js`. 안드로이드 크롬은 타이틀 메뉴의 **앱 설치**, 아이폰 사파리는 **공유 → 홈 화면에 추가**.
+- 서비스 워커는 같은 사이트 파일을 '네트워크 우선'으로 받아 항상 최신 버전을 확인하고, 인터넷이 없을 때만 저장본으로 실행합니다. `build.py`가 빌드마다 캐시 이름을 바꿔 옛 캐시를 지웁니다.
 
 ## 방송국 이름
 - 한글·영문·숫자 2~12자, 비속어와 운영자 사칭 단어는 `js/systems/nameFilter.js`에서 차단하고, 순위 보드에 표시할 때도 다시 거릅니다. 이름 변경은 하단 버튼에서 합니다. 서버를 연결하면 서버에서도 같은 검사를 해야 합니다.

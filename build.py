@@ -16,4 +16,7 @@ h = h.replace('<link rel="stylesheet" href="css/main.css">', '<style>' + css + '
 h = h.replace('<script type="module" src="js/main.js"></script>', '<script>(()=>{' + js + '})();</script>')
 h = h.replace('<head>', '<head>\n<!-- 자동 생성 파일: 직접 고치지 말고 dev.html·js·css를 고친 뒤 python3 build.py -->', 1)
 (r / 'index.html').write_text(h, encoding='utf-8')
+sw = (r / 'sw.js').read_text(encoding='utf-8')
+sw = re.sub(r"const V = 'nd-[^']*';", f"const V = 'nd-{ver}';", sw)
+(r / 'sw.js').write_text(sw, encoding='utf-8')
 print('built index.html', ver)

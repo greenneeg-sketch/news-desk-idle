@@ -119,3 +119,4 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .ifoot{padding-bottom:calc(42px + env(safe-area-inset-bottom,0px))!important}
 .iver{position:absolute;left:8px;top:calc(8px + env(safe-area-inset-top,0px));font-size:10px;color:#ffffffa0;text-shadow:1px 1px 0 #14141f;pointer-events:none}
 .hbtns{display:flex;gap:6px;align-self:flex-end}.hbtns .help{align-self:auto}.help.home{font:18px/1 sans-serif;font-weight:700}
+#iosins{z-index:40}#iosins p{line-height:1.6}
