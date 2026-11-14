@@ -117,3 +117,4 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 /* 속보 자막은 처음부터 항상 화면 맨 아래에, 메뉴는 그 위로 올라온다 */
 .iticker.ifix{position:absolute;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-width:456px;margin:0 auto}
 .ifoot{padding-bottom:calc(42px + env(safe-area-inset-bottom,0px))!important}
+.iver{position:absolute;left:8px;top:calc(8px + env(safe-area-inset-top,0px));font-size:10px;color:#ffffffa0;text-shadow:1px 1px 0 #14141f;pointer-events:none}

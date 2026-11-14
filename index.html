@@ -1,12 +1,133 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<!-- 자동 생성 파일: 직접 고치지 말고 dev.html·js·css를 고친 뒤 python3 build.py -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>NEWS DESK 8BIT</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/main.css">
+<style>:root{--bg:#1a1c2c;--pn:#333c57;--ink:#0b0b14;--tx:#f4f4f4;--sub:#94b0c2;--y:#ffcd75;--g:#38b764;--r:#b13e53;--b:#41a6f6;
+color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 "DotGothic16","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",monospace}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(#0000 0 2px,#0000002e 2px 3px)}
+.app{max-width:480px;margin:0 auto;padding:14px 12px 40px}
+.px{font-family:"Press Start 2P",monospace;font-size:10px;color:var(--y)}
+h2.px{margin:18px 4px 10px}
+.panel{background:var(--pn);margin:10px 4px 14px;padding:10px;box-shadow:0 -4px 0 var(--ink),0 4px 0 var(--ink),-4px 0 0 var(--ink),4px 0 0 var(--ink)}
+.hud{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+.hud strong{display:block;font:22px "Press Start 2P",monospace;color:var(--tx);margin:6px 0 4px}
+.hud small{color:var(--sub)}
+.chips{display:flex;flex-direction:column;gap:4px;text-align:right;font-size:13px;color:var(--g)}
+canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
+.stations{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px;text-align:center}
+.st{background:var(--ink);padding:4px 0;font-size:12px}.st b{display:block;font:11px "Press Start 2P",monospace;margin-top:2px}
+.st.bn{outline:3px solid var(--y)}
+.note{margin:8px 0 0;font-size:13px;color:var(--sub);min-height:20px}
+.alert{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#5a2d3a;animation:bl 1s steps(2) infinite}
+.alert b{display:block;color:var(--y)}.alert small{color:var(--sub)}
+@keyframes bl{50%{background:#7a3345}}
+.btn{font:10px "Press Start 2P","DotGothic16",monospace;line-height:1.6;color:var(--ink);background:var(--b);border:0;padding:10px 8px;cursor:pointer;min-height:40px;box-shadow:0 -3px 0 var(--ink),0 3px 0 var(--ink),-3px 0 0 var(--ink),3px 0 0 var(--ink),inset 0 -4px #3b5dc9}
+.btn.alt{background:#94b0c2;box-shadow:0 -3px 0 var(--ink),0 3px 0 var(--ink),-3px 0 0 var(--ink),3px 0 0 var(--ink),inset 0 -4px #566c86}
+.btn.warn{background:var(--y);box-shadow:0 -3px 0 var(--ink),0 3px 0 var(--ink),-3px 0 0 var(--ink),3px 0 0 var(--ink),inset 0 -4px #ef7d57}
+.btn:active{transform:translateY(3px)}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row .btn{flex:1}
+.shop{display:grid;grid-template-columns:1fr 1fr;gap:14px 10px;padding:0 4px}
+.card{font:inherit;text-align:left;color:var(--tx);background:var(--pn);border:0;padding:10px;cursor:pointer;box-shadow:0 -4px 0 var(--ink),0 4px 0 var(--ink),-4px 0 0 var(--ink),4px 0 0 var(--ink)}
+.card b{display:block;font-size:14px}.card small{display:block;color:var(--sub);margin:2px 0 6px}
+.card .co{font:9px "Press Start 2P",monospace;color:var(--sub)}
+.card.can .co{color:var(--g)}.card.can{box-shadow:0 -4px 0 var(--g),0 4px 0 var(--g),-4px 0 0 var(--g),4px 0 0 var(--g)}
+.toast{position:sticky;bottom:12px;text-align:center;color:var(--y);font-size:13px;min-height:22px}
+.offline p{margin:0 0 8px}
+[hidden]{display:none!important}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.floor{padding:8px}
+.fh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.fh b{color:var(--y)}.fh small{color:var(--sub);font-size:12px}.cnt{font-size:12px;color:var(--tx)}
+.btn.mini{font-size:9px;padding:6px 8px;min-height:32px;white-space:nowrap;background:#94b0c2}
+.btn.mini.can{background:var(--g)}
+.ms{height:4px;background:var(--ink);margin:0 0 6px}.ms i{display:block;height:100%;background:var(--y);width:0}
+.floor.bn{box-shadow:0 -4px 0 var(--y),0 4px 0 var(--y),-4px 0 0 var(--y),4px 0 0 var(--y)}
+.seg{display:flex;gap:8px;align-items:center;margin:4px 4px 0}
+.seg button{font:10px "Press Start 2P",monospace;color:var(--tx);background:var(--pn);border:0;padding:8px 10px;cursor:pointer;box-shadow:0 -3px 0 var(--ink),0 3px 0 var(--ink),-3px 0 0 var(--ink),3px 0 0 var(--ink)}
+.seg button.on{background:var(--y);color:var(--ink)}
+.bs{display:flex;flex-direction:column;gap:6px}
+.btn.mini:disabled{opacity:.55}
+.gold{position:fixed;z-index:6;font:10px "Press Start 2P",monospace;color:var(--ink);background:var(--y);border:0;padding:12px 10px;cursor:pointer;box-shadow:0 -4px 0 var(--ink),0 4px 0 var(--ink),-4px 0 0 var(--ink),4px 0 0 var(--ink),inset 0 -4px #ef7d57;animation:gb .6s steps(2) infinite}
+@keyframes gb{50%{transform:translateY(-6px)}}
+.btn.wide{display:block;width:calc(100% - 8px);margin:8px 4px 0}
+.ach{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:8px 0}
+.ach i{display:block;aspect-ratio:1;background:var(--ink);box-shadow:inset 0 0 0 2px #566c86}
+.ach i.on{background:var(--y);box-shadow:inset 0 0 0 2px #ef7d57}
+.hud .ms{margin:6px 0 0;width:150px}
+.sname{font-size:13px;color:var(--y);min-height:18px}
+.modal{position:fixed;inset:0;z-index:20;background:#0b0b14ee;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .panel{width:100%;max-width:380px}
+.modal h1{font:14px "Press Start 2P",monospace;color:var(--y);margin:0 0 10px}
+.modal input{width:100%;font:inherit;font-size:16px;padding:10px;background:var(--ink);color:var(--tx);border:0;box-shadow:inset 0 0 0 2px #566c86;margin:8px 0}
+.rt{display:flex;align-items:baseline;gap:8px}.rt strong{font:18px "Press Start 2P",monospace}.rt small{color:var(--sub)}
+.bars{display:flex;align-items:flex-end;gap:4px;height:36px;margin:6px 0}.bars i{flex:1;background:var(--b);min-height:2px;height:0}
+.lb{list-style:none;margin:8px 0;padding:0}.lb li{padding:6px 4px;border-bottom:1px solid var(--ink)}.lb li.me{background:#41507a}.lb b{display:block}.lb small{color:var(--sub);font-size:12px}
+#cards{cursor:pointer}
+.wg{margin:10px 0}.row2{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}.row2 span:first-child{flex:1}
+.app{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:480px;margin:0 auto;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--ink)}
+.tabs button{position:relative;font:inherit;font-size:14px;color:var(--sub);background:var(--pn);border:0;min-height:44px;cursor:pointer}
+.tabs button.on{background:var(--y);color:var(--ink)}
+.tabs .dot{position:absolute;top:5px;right:6px;width:8px;height:8px;background:#e0475a}
+.toast{position:fixed;left:12px;right:12px;top:calc(8px + env(safe-area-inset-top,0px));bottom:auto;z-index:15;max-width:456px;margin:0 auto;padding:8px 10px;background:var(--ink);box-shadow:0 0 0 3px var(--y);pointer-events:none}
+.toast:empty{display:none}
+.tut{position:fixed;left:12px;right:12px;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:11;max-width:456px;margin:0 auto!important;background:#41507a}
+.tut p{margin:6px 0 10px}
+.tut-hi{outline:3px solid var(--y);outline-offset:3px;animation:hi 1s steps(2) infinite}
+@keyframes hi{50%{outline-color:#ef7d57}}
+.help{align-self:flex-end;font:10px "Press Start 2P",monospace;width:32px;height:32px;color:var(--ink);background:var(--y);border:0;cursor:pointer}
+.fh>b,.fh>div>b{white-space:nowrap;flex-shrink:0}.fh .cnt{text-align:right}
+.seg button{min-height:40px;min-width:48px}
+.tut-hi{scroll-margin-top:96px}
+.fh div.cnt{text-align:left}
+/* 말풍선 */
+.cv{position:relative}
+.bub{position:absolute;top:2px;max-width:62%;padding:3px 7px;background:#fff;color:#14141f;font:12px/1.25 'DotGothic16',sans-serif;border:2px solid #14141f;box-shadow:2px 2px 0 rgba(0,0,0,.45);pointer-events:none;z-index:2;animation:bubIn .18s ease-out;white-space:normal}
+.bub:after{content:'';position:absolute;left:12px;bottom:-8px;border:4px solid transparent;border-top:5px solid #14141f}
+.bub.ur{background:#ffd24a}
+@keyframes bubIn{from{transform:translateY(4px) scale(.9);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.bub{animation:none}}
+.vs{margin:4px 0;font-size:12px;color:var(--sub)}.vs .w{color:#a7f070}.vs .l{color:#ff7a7a}
+.dil{position:fixed;left:12px;right:12px;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:12;max-width:456px;margin:0 auto!important;background:#3a2d5a;box-shadow:0 0 0 3px var(--y),0 6px 0 rgba(0,0,0,.5)}.dil p{margin:6px 0}
+.paper{background:#efe6cc!important;color:#1d1a14;box-shadow:0 0 0 3px #1d1a14,6px 6px 0 rgba(0,0,0,.5)!important}
+.paper .mast{display:flex;justify-content:space-between;align-items:baseline;border-bottom:4px double #1d1a14;padding-bottom:6px}
+.paper .mast b{font:13px "Press Start 2P",monospace}.paper .mast small{font-size:11px;color:#5a5040}
+.paper h2{font-size:21px;line-height:1.3;margin:10px 0;letter-spacing:-.5px;color:#111}
+.paper ul{margin:0 0 8px;padding:8px 0 0 0;list-style:none;border-top:1px solid #1d1a14;font-size:13px;line-height:1.5}
+.paper ul li{padding:2px 0;border-bottom:1px dotted #8a7f66}
+.pfoot{font-size:11px;color:#5a5040;margin:6px 0 10px}
+/* 인트로 타이틀 */
+.intro{position:fixed;inset:0;z-index:30;background:#070a1f;overflow:hidden}
+.intro canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;background:#070a1f}
+.ihead{position:absolute;left:0;right:0;top:calc(18px + env(safe-area-inset-top,0px));text-align:center;pointer-events:none;transform:translateY(-180%);transition:transform .7s cubic-bezier(.2,1.4,.4,1)}
+.intro.open .ihead{transform:none}
+.ititle{margin:0;font:34px/1.15 "Press Start 2P",monospace;color:#ffd24a;text-shadow:3px 3px 0 #b13e53,6px 6px 0 #14141f;letter-spacing:2px}
+.isub{margin:10px 0 0;font-size:14px;color:#fff;text-shadow:2px 2px 0 #14141f}
+.iname{margin:4px 0 0;font-size:13px;color:#a7f070;text-shadow:2px 2px 0 #14141f}
+.iclock{position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));font-size:11px;color:#fff;background:#14141fa0;padding:2px 6px;opacity:0;transition:opacity .4s}.intro.open .iclock{opacity:1}
+.ifoot{position:absolute;left:0;right:0;bottom:0;padding:0 12px calc(10px + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;transform:translateY(130%);transition:transform .6s cubic-bezier(.2,1.3,.4,1)}
+.intro.open .ifoot{transform:none}
+.ipress{position:absolute;left:0;right:0;bottom:calc(14% + env(safe-area-inset-bottom,0px));text-align:center;font:14px "Press Start 2P",monospace;color:#fff;text-shadow:2px 2px 0 #b13e53,4px 4px 0 #14141f;margin:0;pointer-events:none;animation:ipb 1.1s steps(2) infinite;transition:opacity .3s}
+.intro.open .ipress{opacity:0;animation:none}
+@keyframes ipb{50%{opacity:0}}
+.imenu{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.imenu .btn[hidden]{display:none!important}.imenu .btn{min-height:42px;font-size:13px;padding:4px}.imenu #istart{grid-column:1/-1;font-size:16px;min-height:46px}
+.iticker{margin-top:8px;background:#b13e53;color:#fff;font-size:12px;height:22px;line-height:22px;overflow:hidden;white-space:nowrap;box-shadow:0 0 0 2px #14141f}
+.iticker span{display:inline-block;padding-left:100%;animation:tick 7s linear infinite}
+@keyframes tick{to{transform:translateX(-100%)}}
+@media (prefers-reduced-motion:reduce){.iticker span{animation:none;padding-left:8px}}
+/* 속보 자막은 처음부터 항상 화면 맨 아래에, 메뉴는 그 위로 올라온다 */
+.iticker.ifix{position:absolute;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-width:456px;margin:0 auto}
+.ifoot{padding-bottom:calc(42px + env(safe-area-inset-bottom,0px))!important}
+.iver{position:absolute;left:8px;top:calc(8px + env(safe-area-inset-top,0px));font-size:10px;color:#ffffffa0;text-shadow:1px 1px 0 #14141f;pointer-events:none}
+</style>
 </head>
 <body>
 <main class="app">
@@ -143,6 +264,7 @@
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
+  <span class="iver">v2026.11.15-0827</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button></div>
@@ -150,6 +272,1385 @@
   <div class="iticker ifix"><span id="iticker"></span></div>
 </div>
 <button class="gold" id="gold" hidden>특종!</button>
-<script type="module" src="js/main.js"></script>
+<script>(()=>{const SAVE_KEY = 'newsDeskIdle.v2';
+const STAGES = ['취재', '인제스트', '편집', 'CG', '송출'];
+const BASE = [2, 1.6, 1, 1.4, 1.8];
+const RANKS = [{ n: '지역 뉴스', at: 0 }, { n: '저녁 종합', at: 5e3 }, { n: '8시 메인', at: 2e5 }, { n: '24시 채널', at: 1e7 }];
+const MILESTONES = [10, 25, 50, 100];
+const UPGRADES = [
+  { id: 'ing', n: '인제스트 서버', d: '등록 속도 +12%', base: 50, g: 1.12, st: 1, pct: .12 },
+  { id: 'edit', n: '편집기자 충원', d: '편집 속도 +15%', base: 200, g: 1.15, st: 2, pct: .15 },
+  { id: 'cg', n: 'CG 템플릿', d: 'CG 처리 +12%', base: 800, g: 1.15, st: 3, pct: .12 },
+  { id: 'out', n: '송출 자동화', d: '송출 처리 +10%', base: 3000, g: 1.17, st: 4, pct: .10 },
+  { id: 'live', n: '중계 장비', d: '속보 보상 +10%', base: 4000, g: 1.18, st: -1, pct: .10 },
+  { id: 'crew', n: '취재팀 확장', d: '취재 유입 +15%', base: 15000, g: 1.2, st: 0, pct: .15 },
+  { id: 'qual', n: '방송 품질', d: '점수 +20%', base: 300, g: 1.4, st: -1, pct: .2, nm: true },
+];
+const EVENTS = [
+  { id: 'crime', k: '사건사고', names: ['도심 건물 화재', '강력 사건 발생'], dur: 30, inf: 3, sc: 2, min: 0 },
+  { id: 'weather', k: '날씨', names: ['한파와 폭설, 교통 마비', '집중 호우, 도심 침수'], dur: 120, inf: .5, sc: 1.5, min: 0 },
+  { id: 'politics', k: '정치', names: ['대선 개표 중계 (가상)'], dur: 180, inf: 2, sc: 3, min: 5e3 },
+  { id: 'world', k: '국제', names: ['인접국 미사일 발사'], dur: 45, inf: 2.5, sc: 2.5, min: 2e5 },
+  { id: 'sports', k: '스포츠', names: ['세계 종합 스포츠 대회 금메달'], dur: 120, inf: 4, sc: 4, min: 2e5 },
+];
+const MANAGER = [2000, 8000, 30000, 120000, 500000];
+const CHIEF = 40000;
+const ACHIEVEMENTS = [
+  { id: 'a1', n: '첫 송출', d: '누적 10점', t: s => s.run >= 10 },
+  { id: 'a2', n: '지역 방송 기자', d: '누적 1만 점', t: s => s.run >= 1e4 },
+  { id: 'a3', n: '메인 뉴스 입성', d: '누적 100만 점', t: s => s.run >= 1e6 },
+  { id: 'a4', n: '시청률 왕', d: '누적 1억 점', t: s => s.run >= 1e8 },
+  { id: 'a5', n: '속보 초보', d: '속보 5회 대응', t: s => s.evCount >= 5 },
+  { id: 'a6', n: '속보 베테랑', d: '속보 25회 대응', t: s => s.evCount >= 25 },
+  { id: 'a7', n: '첫 매니저', d: '매니저 1명 고용', t: s => s.mg.some(Boolean) },
+  { id: 'a8', n: '전 층 매니저', d: '모든 층 매니저 고용', t: s => s.mg.every(Boolean) },
+  { id: 'a9', n: '시설 강화', d: '업그레이드 Lv.25 달성', t: s => Object.values(s.lv).some(l => l >= 25) },
+  { id: 'a10', n: '시설 만렙급', d: '업그레이드 Lv.100 달성', t: s => Object.values(s.lv).some(l => l >= 100) },
+  { id: 'a11', n: '팀장 영입', d: '영상편집팀장 고용', t: s => !!s.chief },
+  { id: 'a12', n: '특종 사냥꾼', d: '특종 5회 획득', t: s => s.goldCount >= 5 },
+  { id: 'a13', n: '시청률 두 자릿수', d: '시청률 10% 돌파', t: s => s.bestRating >= 10 },
+  { id: 'a14', n: '유튜브 100만 뷰', d: '유튜브 누적 조회수 100만', t: s => s.views >= 1e6 },
+  { id: 'a15', n: '스카우트 단장', d: '직원 카드 6종 수집', t: s => Object.keys(s.cards).length >= 6 },
+  { id: 'a16', n: '한계 돌파', d: '챌린지 1개 완료', t: s => Object.keys(s.chalDone).length >= 1 },
+  { id: 'a17', n: '동시간대 1위', d: '라이벌에게 3일 연속 승리', t: s => (s.bestWin || 0) >= 3 },
+  { id: 'a18', n: '단독의 신', d: '단독 보도 10회 성공', t: s => (s.scoopT || 0) >= 10 },
+  { id: 'a19', n: '성실한 보도국', d: '오늘의 미션 올클리어 5회', t: s => (s.misAll || 0) >= 5 },
+];
+const DAY_SEC = 300; // 게임 속 하루(오전 6시 → 8시 뉴스)의 실제 시간(초): 5분
+// 사용자 간 순위 서버 (Supabase REST). 비워두면 오프라인 모드(샘플 방송국과 비교)로 동작한다. README 참고
+const LEADERBOARD = { url: '', key: '' };
+// 직원 카드 도감 (AFK Arena식 수집): 가진 카드는 해당 층 속도를 영구로 올리고, 중복으로 뽑으면 별(최대 3)이 올라 효과가 커진다
+const RARITY = [{ n: '일반', b: .05, c: '#94b0c2' }, { n: '희귀', b: .10, c: '#41a6f6' }, { n: '영웅', b: .20, c: '#b45bff' }, { n: '전설', b: .25, c: '#ffd24a' }];
+const CARDS = [
+  { id: 'c1', n: '신입 카메라기자', st: 0, rar: 0 }, { id: 'c2', n: '수습 인제스트 요원', st: 1, rar: 0 }, { id: 'c3', n: '막내 영상편집기자', st: 2, rar: 0 },
+  { id: 'c4', n: '인턴 그래픽 디자이너', st: 3, rar: 0 }, { id: 'c5', n: '신입 아나운서', st: 4, rar: 0 }, { id: 'c6', n: '베테랑 영상기자', st: 0, rar: 1 },
+  { id: 'c7', n: '야근 영상편집기자', st: 2, rar: 1 }, { id: 'c8', n: '모션 그래픽 전문가', st: 3, rar: 1 }, { id: 'c9', n: '탐사 취재기자', st: 0, rar: 2 },
+  { id: 'c10', n: '편집 달인', st: 2, rar: 2 }, { id: 'c11', n: '메인 앵커', st: 4, rar: 2 }, { id: 'c12', n: '전설의 보도국장', st: -1, rar: 3 },
+];
+// 주간 목표 (Egg Inc의 계약식): 매주 월요일에 초기화
+const WEEKLY = [
+  { id: 'w1', n: '속보 20회 대응', k: 'ev', goal: 20 }, { id: 'w2', n: '시청률 6% 이상 3일', k: 'rate', goal: 3 }, { id: 'w3', n: '특종 5회 획득', k: 'gold', goal: 5 },
+  { id: 'w4', n: '업그레이드 50레벨 구매', k: 'buy', goal: 50 }, { id: 'w5', n: '스카우트 3회', k: 'pull', goal: 3 },
+];
+// 스카우트 확률(등급 순서: 일반, 희귀, 영웅, 전설). 합계의 나머지가 꽝이다. PITY번째 스카우트는 영웅 이상 보장
+const ODDS = [.30, .17, .065, .015];
+const PITY = 30;
+// 시즌(매월 1일 시작): 시즌 점수로 등급을 매기고, 시즌이 끝나면 등급에 따라 스카우트 티켓 1~5장 지급
+const TIERS = [{ n: '브론즈', at: 0 }, { n: '실버', at: 1e5 }, { n: '골드', at: 1e6 }, { n: '플래티넘', at: 1e7 }, { n: '다이아', at: 1e8 }];
+// 시즌 테마: 해당 속보가 3배 자주 발생 (name: 같은 카테고리 안에서 쓸 속보 이름 번호)
+const SEASON_THEMES = [
+  { months: [12, 1, 2], n: '한파 시즌', ev: 'weather', name: 0, d: '한파·폭설 속보가 3배 자주 터져요.' },
+  { months: [3, 4, 5], n: '선거 시즌', ev: 'politics', d: '개표 중계 속보가 3배 자주 터져요. (누적 5천 점부터)' },
+  { months: [6, 7, 8], n: '장마 시즌', ev: 'weather', name: 1, d: '집중 호우 속보가 3배 자주 터져요.' },
+  { months: [9, 10, 11], n: '스포츠 대회 시즌', ev: 'sports', d: '금메달 속보가 3배 자주 터져요. (누적 20만 점부터)' },
+];
+// 챌린지: 시작하면 이번 회차가 초기화되고, 제약 속에서 목표(이번 회차 누적 점수)를 달성하면 영구 점수 +10%
+const CHALLENGES = [
+  { id: 'noMgr', n: '매니저 없이 운영', d: '매니저·영상편집팀장 고용 불가 · 누적 20만 점', goal: 2e5 },
+  { id: 'calm', n: '평온한 보도국', d: '속보와 특종이 오지 않음 · 누적 5만 점', goal: 5e4 },
+  { id: 'noQual', n: '저예산 방송', d: '방송 품질 업그레이드 불가 · 누적 20만 점', goal: 2e5 },
+];
+// 라이벌 방송국: 매일 8시 뉴스에서 시청률 대결 (가상 이름)
+const RIVAL = '한누리방송';
+// 오늘의 미션: 게임 속 하루마다 3개. {g}는 목표치. out 목표는 현재 처리 속도로 정한다
+const MISSIONS = [
+  { k: 'out', n: '뉴스 {g}건 송출' },
+  { k: 'ev', n: '속보 {g}건 대응', g: 2 },
+  { k: 'gold', n: '특종 {g}번 잡기', g: 1 },
+  { k: 'buy', n: '업그레이드 {g}레벨 올리기', g: 10 },
+  { k: 'pull', n: '스카우트 {g}회', g: 1 },
+  { k: 'scoop', n: '단독 보도 {g}회 성공', g: 1 },
+];
+// 속보 판단: 바로 단독으로 내보낼지, 확인 후 내보낼지 고르는 순간 (category id → 상황)
+const DILEMMAS = {
+  crime: '출처 미확인 현장 영상 제보가 들어왔어요.',
+  weather: 'SNS에 침수 영상이 퍼지는 중. 원본 확인 전이에요.',
+  politics: '출구조사 결과라는 문서가 들어왔어요.',
+  world: '외신 단독 보도가 떴어요. 국내 확인 전이에요.',
+  sports: '선수 독점 인터뷰 영상, 사용 허락 확인 중이에요.',
+};
+const SCOOP_P = .65, DIL_SEC = 15;
+// 방송 기술 연구소: 연구 포인트(RP)로 영구 강화 (개편해도 유지). req = [선행 연구, 필요 레벨]
+// RP 획득: 8시 뉴스 평가(1 + 시청률/4), 미션 달성 1, 단독 성공 1, 라이벌 승리 1
+const RESEARCH = [
+  { id: 'speed', n: '장비 고도화', d: '모든 층 처리 속도 +10%', max: 10, c: 2 },
+  { id: 'rating', n: '앵커 트레이닝', d: '8시 뉴스 시청률 +0.3', max: 5, c: 3 },
+  { id: 'event', n: '속보 대응 매뉴얼', d: '속보 점수 +15%', max: 5, c: 3, req: ['speed', 2] },
+  { id: 'cost', n: '예산 협상', d: '업그레이드 비용 -3%', max: 5, c: 4, req: ['speed', 3] },
+  { id: 'scoop', n: '취재원 관리', d: '단독 성공률 +4%p', max: 5, c: 4, req: ['rating', 2] },
+  { id: 'gold', n: '특종 감각', d: '특종 등장 간격 -8%', max: 5, c: 4, req: ['rating', 2] },
+  { id: 'night', n: '야간 근무조', d: '오프라인 수익 +10%p · 최대 +1시간', max: 5, c: 5, req: ['event', 2] },
+];
+// 사무실 꾸미기: 하나당 점수 +2% (개편해도 유지). at = 점수 가격, need = 해금 조건
+const DECOS = [
+  { id: 'plant', n: '편집실 화분', fl: 2, at: 2e4 },
+  { id: 'coffee', n: '인제스트실 커피 머신', fl: 1, at: 2e5 },
+  { id: 'cat', n: '보도국 고양이', fl: 7, at: 2e6 },
+  { id: 'sofa', n: 'CG실 야근 소파', fl: 3, at: 2e7 },
+  { id: 'neon', n: '스튜디오 네온 간판', fl: 4, at: 2e8 },
+  { id: 'tank', n: '로비 수족관', fl: 6, at: 2e9 },
+  { id: 'trophy', n: '동시간대 1위 트로피', fl: 4, need: s => (s.bestWin || 0) >= 3, nt: '라이벌 3연승' },
+  { id: 'mic', n: '황금 마이크', fl: 0, need: s => s.bestRating >= 10, nt: '시청률 10% 돌파' },
+];
+
+// 층별 말풍선 대사 (데이터). 인덱스: 0취재 1인제스트 2편집 3CG 4송출 5중계 6방송품질 7영상편집팀장
+const QUOTES = [
+  ['특종, 이 맛 아닙니까!', '지금 현장 들어갑니다', '배터리 몇 퍼 남았어?', '기사 마감 10분 전!', '삼각대 어디 갔어?', '밥은 먹고 하는 거지...', '데스크가 또 전화 왔다', '단독 떴다!', '비 오는데 생방이래', '이 각도 괜찮아?'],
+  ['특파원 그림 들어갑니다', '파일명이 왜 이래?', '용량 실화냐', '백업부터 해놓자', '전송 속도 왜 이래', '입고 확인 부탁해요', '타임코드 안 맞는데?', '또 4K로 보냈어...', '네트워크 터졌다', '소스 어디 폴더야?'],
+  ['곧 올립니다!', '신의 손놀림!', '수정해서 다시 올릴게요~', '큐시트 잠깐 내려주세요.', '부장이 고쳐달라고?', '오디오 왜 이래?', '붙일 게 없네...', '1프레임의 마법사', '렌더링 몇 퍼센트야?', '자막 오타 발견!', '컷 길이가 모자라요', '인터뷰 싱크 밀렸다'],
+  ['수정 들어갑니다', '폰트 바꿔 달래요', '자막 색이 왜 이래?', '그래프 숫자 다시 확인!', '지도 이미지 한 번만 더', '또 수정이야?', '로고 1픽셀만 올려주세요', '템플릿이 날아갔다', '시간이 없어요!', '이게 최종본입니다 (진짜)'],
+  ['돼요 안돼요?', '큐 들어갑니다 5초 전', '앵커 멘트 줄여주세요', '프롬프터 멈췄어요', '1분 남았습니다', '마이크 살아있어요!', '아이템 순서 바뀝니다', '지금 나가도 돼요?', '방송사고만 안 나게...', '타이틀 먼저 올려요'],
+  ['여기 중계 연결됐나요?', '리포터 소리 들려요?', '지금 신호 약한데...', '안테나 각도 조절!', '딜레이 2초 있어요', '케이블 누가 밟았어', '바람 때문에 안 들려요', '현장 연결합니다', '발전기 연료 확인해줘', '위성 잡혔습니다'],
+  ['화질 좋다...', '시청률 올라라!', '오늘은 느낌이 좋아', '유튜브 조회수 보자', '댓글 반응 어때?', '정시 송출 완료', '자막 오타 없죠?', '이대로 쭉 가자'],
+  ['다들 마감 알지?', '속보 먼저 보자', '모니터 하나 놓쳤다', '이거 누가 편집했어?', '커피 한 잔만...', '퇴근은 언제 하나', '오늘도 무사히...', '그 컷 다시 확인!', '다들 수고 많아', '시청률 확인했어?'],
+];
+// 속보 발생 중 우선 사용되는 긴박한 대사
+const URGENT = ['속보입니다!', '지금 바로 올려요!', '일단 나갑시다!', '확인 확인!', '시간 없어요!', '큐 빨리요!'];
+
+
+const seasonKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+const themeOf = key => { const m = +String(key).slice(5); return SEASON_THEMES.find(t => t.months.includes(m)); };
+// 시즌 점수 = 시즌 시작 이후 번 누적 점수
+const seasonPts = s => Math.max(0, s.total - s.season.base);
+const tierOf = p => TIERS.filter(t => p >= t.at).length - 1;
+
+
+// 순수 함수 모음: 상태를 받아 계산만 한다 (부작용 없음)
+const U = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
+const rl = (s, id) => (s.res && s.res[id]) || 0; // 연구 레벨
+const cm = s => 1 - .03 * rl(s, 'cost');
+const mult = (s, u) => { const l = s.lv[u.id], b = 1 + u.pct * l; return u.nm ? b : b * 2 ** MILESTONES.filter(m => l >= m).length; };
+const cost = (s, u) => Math.ceil(u.base * u.g ** s.lv[u.id] * cm(s));
+// 구매 수량(x1/x10/MAX)에 따른 레벨 수와 총 비용
+function bulk(s, u, n) {
+  const l = s.lv[u.id], lim = n === 'max' ? 1000 : +n; let k = 0, tot = 0;
+  while (k < lim) { const c = Math.ceil(u.base * u.g ** (l + k) * cm(s)); if (n === 'max' && s.score < tot + c) break; tot += c; k++; }
+  if (!k) { k = 1; tot = Math.ceil(u.base * u.g ** l * cm(s)); }
+  return { k, total: tot };
+}
+const rank = s => RANKS.filter(r => s.run >= r.at).length - 1;
+const prestigeBonus = s => 1 + .05 * s.pts;
+const prestigeGain = s => Math.floor(Math.sqrt(s.run / 5000));
+function rates(s) {
+  const r = BASE.slice();
+  UPGRADES.forEach(u => { if (u.st >= 0) r[u.st] *= mult(s, u); });
+  s.mg.forEach((m, i) => { if (m) r[i] *= 2; });
+  for (let i = 0; i < 5; i++) r[i] *= (1 + cardBonus(s, i)) * (1 + .1 * rl(s, 'speed'));
+  if (s.ev) r[0] *= s.ev.inf;
+  if (s.clock < s.spdEnd) r.forEach((v, i) => { r[i] = v * 2; });
+  return r;
+}
+function scoreMul(s) {
+  let m = prestigeBonus(s) * mult(s, U.live) * mult(s, U.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (s.clock < s.gbEnd ? 7 : 1);
+  if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; m *= e * (1 + .15 * rl(s, 'event')); }
+  return m;
+}
+const goldGap = (s, r) => (60 + r * 60) * (1 - .08 * rl(s, 'gold'));
+const perSec = s => Math.min(...rates(s)) * 10 * scoreMul(s);
+// 특종(Cookie Clicker의 황금 쿠키): 10분치 점수 또는 20초간 점수 x7
+const goldReward = (s, r) => r < .5 ? { cash: Math.max(100, Math.floor(perSec(s) * 600)) } : { frenzy: true };
+// 도감 보너스: 층(i)에 해당하는 카드(또는 전 층 카드)의 등급 보너스 x 별 배율의 합
+const cardBonus = (s, i) => CARDS.reduce((a, c) => a + ((c.st === i || c.st < 0) && s.cards[c.id] ? RARITY[c.rar].b * (1 + .5 * (s.cards[c.id] - 1)) : 0), 0);
+
+
+
+// 스카우트 가격: 횟수마다 15%씩 계속 오르고(상한 없음), 최소한 평소 수입 10분치는 되게 한다(속보·특종 배율 제외)
+const scoutCost = s => Math.floor(Math.max(5000 * 1.15 ** s.pulls, perSec({ ...s, ev: null, gbEnd: 0, spdEnd: 0 }) * 600));
+// r: 등급 추첨, r2: 같은 등급 안의 카드 추첨. 확률 합계를 넘으면 꽝(null). pity가 차면 영웅 이상 보장
+function rollCard(r, r2, pity) {
+  let rar = null, acc = 0;
+  for (let i = ODDS.length - 1; i >= 0; i--) { acc += ODDS[i]; if (r < acc) { rar = i; break; } }
+  if (pity >= PITY - 1 && (rar === null || rar < 2)) rar = 2;
+  if (rar === null) return null;
+  const pool = CARDS.filter(c => c.rar === rar); return pool[Math.floor(r2 * pool.length) % pool.length];
+}
+
+
+// 순위 점수: 누적 점수 + 최대 레벨 + 최고 시청률 + 유튜브 조회수를 종합 (점수와 조회수는 로그 스케일)
+const rankScore = p => Math.round(30 * Math.log10(1 + p.total) + .6 * p.maxLv + 4 * p.bestRating + 10 * Math.log10(1 + p.views));
+const toEntry = s => ({ uid: s.uid, name: s.name, total: Math.floor(s.total), maxLv: s.maxLv, bestRating: s.bestRating, views: Math.floor(s.views), rankScore: rankScore(s), season: s.season.key, seasonPts: Math.floor(seasonPts(s)) });
+
+// 방송국 이름 검증: 허용 문자(한글·영문·숫자·공백·점·&·하이픈) 2~12자 + 비속어/운영자 사칭 차단
+// 주의: 클라이언트 검사는 우회할 수 있으므로 서버에도 같은 검사가 필요하다. 표시할 때도 다시 걸러낸다.
+const BAD = ['씨발', '시발', '씨팔', '시팔', '씹', '병신', '지랄', '좆', '개새', '새끼', '미친놈', '미친년', '썅', '염병', '섹스', '창녀', '한남충', '김치녀',
+  'fuck', 'shit', 'bitch', 'asshole', 'nigger', 'nigga', 'cunt', 'porn', '운영자', '관리자', 'admin'];
+const squash = s => s.toLowerCase().replace(/[^가-힣a-z]/g, ''); // 공백·숫자·기호를 끼워 넣는 우회(시.발, f u c k, 시1발)를 막는다
+const isBlocked = name => { const n = squash(String(name)); return BAD.some(w => n.includes(w)); };
+function checkName(raw) {
+  const v = String(raw).trim().replace(/\s+/g, ' ');
+  if (!/^[0-9A-Za-z가-힣 ·&-]{2,12}$/.test(v)) return { err: '이름은 한글·영문·숫자 2~12자로 입력해 주세요.' };
+  if (isBlocked(v)) return { err: '사용할 수 없는 이름이에요.' };
+  return { name: v };
+}
+
+
+
+const QUAL = UPGRADES.find(u => u.id === 'qual');
+// 8시 뉴스 일일 평가: 오늘의 송출량, 속보 대응, 방송 품질, 승급 단계로 시청률을 정하고, 매일 +-20% 변동을 준다.
+// 시청률로 유튜브 조회수가 정해지고(12% 확률로 대박 x5), 광고 수입이 점수로 지급된다.
+// 라이벌 방송국도 같은 기준선에서 시청률을 받는다. 이기면 광고 수입 x1.5(+연승마다 10%, 최대 +100%)
+function evaluateDay(s, r, r2, r3 = .5) {
+  const base = 2 + 1.1 * Math.log10(1 + s.dOut) + .6 * Math.min(s.dEv, 5) + 1.2 * Math.sqrt(mult(s, QUAL) - 1) + .4 * rank(s);
+  const rating = Math.max(.5, Math.min(30, Math.round((base * (.8 + .4 * r) + (s.dAdj || 0) + .3 * rl(s, 'rating')) * 10) / 10)), viral = r2 < .12;
+  const rival = Math.round(base * (.85 + .35 * r3) * 10) / 10, won = rating > rival, win = won ? (s.win || 0) + 1 : 0, wm = won ? 1.4 + .1 * Math.min(win, 10) : 1;
+  const views = Math.floor((s.dOut * 8 + s.dEv * 400) * (1 + rating / 10) * (viral ? 5 : 1));
+  return { rating, views, viral, rival, won, win, bonus: Math.floor((perSec(s) * rating * 10 + views * .05) * wm) };
+}
+
+
+
+// 오늘의 미션: 누적 카운터의 '하루 시작 시점 값'을 기준으로 진행도를 잰다 (별도 일일 카운터 불필요)
+const CNT = { out: s => s.outT || 0, ev: s => s.evCount, gold: s => s.goldCount, buy: s => s.buyT || 0, pull: s => s.pulls, scoop: s => s.scoopT || 0 };
+function newMissions(s, r) {
+  const pool = MISSIONS.filter(m => !(s.chal === 'calm' && (m.k === 'ev' || m.k === 'gold' || m.k === 'scoop')));
+  let x = Math.floor(r * 1e9) || 7; const rnd = () => (x = (x * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const pick = [...pool].sort(() => rnd() - .5).slice(0, 3);
+  return { day: s.day, all: 0, list: pick.map(m => ({ k: m.k, goal: m.k === 'out' ? Math.max(20, Math.round(Math.min(...rates(s)) * DAY_SEC * .4)) : m.g, base: CNT[m.k](s), done: 0 })) };
+}
+const progress = (s, m) => Math.max(0, Math.min(m.goal, Math.floor(CNT[m.k](s) - m.base)));
+const missionText = (m, f = String) => MISSIONS.find(x => x.k === m.k).n.replace('{g}', f(m.goal));
+
+// Observer 패턴: UI 의도(buy, boost...)와 처리 로직을 분리한다
+class EventBus {
+  #h = new Map();
+  on(t, f) { (this.#h.get(t) || this.#h.set(t, []).get(t)).push(f); }
+  emit(t, p) { (this.#h.get(t) || []).forEach(f => f(p)); }
+}
+
+// 단일 상태 저장소 (Redux 스타일): 상태는 reducer로만 바뀐다
+function createStore(reducer, init) {
+  let state = init; const subs = new Set();
+  return {
+    getState: () => state,
+    dispatch(a) { const n = reducer(state, a); if (n !== state) { const p = state; state = n; subs.forEach(f => f(state, p)); } return state; },
+    subscribe: f => { subs.add(f); return () => subs.delete(f); },
+  };
+}
+
+// 고정 타임스텝 게임 루프: 로직은 일정 간격, 렌더는 프레임마다
+function GameLoop({ step, render, dt = .05 }) {
+  let acc = 0, last = 0;
+  const frame = t => {
+    requestAnimationFrame(frame);
+    acc += Math.min((t - last) / 1000, .5); last = t;
+    while (acc >= dt) { step(dt); acc -= dt; }
+    render(t / 1000);
+  };
+  return { start() { last = performance.now(); requestAnimationFrame(frame); } };
+}
+
+
+
+
+
+
+
+const initialState = () => ({
+  score: 0, run: 0, pts: 0, clock: 0, nextEv: 15, ev: null, q: [0, 0, 0, 0, 0], buyN: '1', mg: [0, 0, 0, 0, 0], chief: 0,
+  ach: [], evCount: 0, goldCount: 0, gold: null, nextGold: 60, gbEnd: 0, spdEnd: 0, spdReady: 0,
+  name: '', uid: '', total: 0, maxLv: 0, bestRating: 0, views: 0, day: 1, dayT: 0, dOut: 0, dEv: 0, hist: [], lastRating: 0, prevRating: 0, lastViews: 0, report: null,
+  cards: {}, pulls: 0, pity: 0, tickets: 0, freeReady: 0, last: null, login: { last: '', streak: 0 }, week: { key: '', prog: {}, done: {} }, daily: null,
+  chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
+  outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
+  rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
+  lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
+});
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco'];
+const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
+const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
+const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
+const earn = (st, n) => ({ ...st, score: st.score + n, run: st.run + n, total: st.total + n });
+// 파이프라인 시스템: 대기열을 단계별로 흘려보낸다
+function flow(s, dt) {
+  const r = rates(s), m = scoreMul(s);
+  if (s.q[1] + s.q[2] + s.q[3] + s.q[4] < 80) s.q[1] += r[0] * dt;
+  for (let i = 1; i < 5; i++) {
+    const mv = Math.min(s.q[i], r[i] * dt); s.q[i] -= mv;
+    if (i < 4) s.q[i + 1] += mv; else { s.dOut += mv; s.outT += mv; const g = mv * 10 * m; s.score += g; s.run += g; s.total += g; }
+  }
+}
+// 속보 판단: risk = 바로 단독 송출(성공 시 점수 x2·시청률 +0.8, 오보 시 속보 종료·시청률 -1.2), safe = 확인 후 송출(점수 x1.2)
+function judge(s, pick, r) {
+  const ev = { ...s.ev, pick };
+  if (pick === 'safe') { ev.sc = Math.round(ev.sc * 1.2 * 10) / 10; s.judge = { res: 'safe', t: s.clock }; }
+  else if (r < SCOOP_P + .04 * rl(s, 'scoop')) { ev.sc *= 2; s.dAdj += .8; s.scoopT += 1; s.rp += 1; s.dW += 1; s.judge = { res: 'win', t: s.clock }; }
+  else { ev.end = s.clock; s.dAdj -= 1.2; s.dF += 1; s.judge = { res: 'fail', t: s.clock }; }
+  s.ev = ev; return s;
+}
+function reducer(st, a) {
+  switch (a.type) {
+    case 'TICK': {
+      const s = { ...st, q: [...st.q], clock: st.clock + a.dt };
+      if (s.ev && s.clock >= s.ev.end) { s.ev = null; s.nextEv = s.clock + 25 + a.rnd * 20; }
+      if (s.gold && s.clock >= s.gold.end) { s.gold = null; s.nextGold = s.clock + goldGap(s, a.rnd); }
+      else if (!s.gold && s.chal !== 'calm' && s.clock >= s.nextGold) s.gold = { end: s.clock + 12, x: Math.round(8 + a.rnd * 70), y: Math.round(22 + a.r2 * 50) };
+      if (s.ev && s.ev.dil && !s.ev.pick && s.clock >= s.ev.dilEnd) judge(s, 'safe');
+      flow(s, a.dt);
+      s.dayT += a.dt;
+      if (s.dayT >= DAY_SEC) { // 8시 뉴스 시청률 평가
+        const e = evaluateDay(s, a.rnd, a.r2, a.r3), rec = e.rating > s.bestRating && s.day > 1;
+        s.prevRating = s.lastRating; s.lastRating = e.rating; s.bestRating = Math.max(s.bestRating, e.rating); s.views += e.views; s.lastViews = e.views;
+        s.hist = [...s.hist, e.rating].slice(-7); s.score += e.bonus; s.run += e.bonus; s.total += e.bonus;
+        if (e.rating >= 6) s.week = bump(s.week, 'rate');
+        const rp = 1 + Math.floor(e.rating / 4) + (e.won ? 1 : 0);
+        s.win = e.win; s.bestWin = Math.max(s.bestWin, e.win); s.rp += rp;
+        s.report = { day: s.day, ...e, rp, rec, log: s.dLog, dW: s.dW, dF: s.dF, all: !!(s.mis && s.mis.all), out: Math.floor(s.dOut) };
+        s.day += 1; s.dayT -= DAY_SEC; s.dOut = 0; s.dEv = 0; s.dAdj = 0; s.dLog = []; s.dW = 0; s.dF = 0;
+      }
+      if (!s.mis || s.mis.day !== s.day) s.mis = newMissions(s, a.r2);
+      else if (s.mis.list.some(m => !m.done && progress(s, m) >= m.goal)) { // 미션 달성: 즉시 보상, 3개 모두 달성 시 티켓
+        const mis = { ...s.mis, list: s.mis.list.map(m => ({ ...m })) }, gain = Math.max(1000, Math.floor(perSec(s) * 300));
+        mis.list.forEach(m => { if (!m.done && progress(s, m) >= m.goal) { m.done = 1; s.rp += 1; s.score += gain; s.run += gain; s.total += gain; s.misHit = { k: m.k, gain, t: s.clock }; } });
+        if (!mis.all && mis.list.every(m => m.done)) { mis.all = 1; s.tickets += 1; s.misAll += 1; s.misHit = { ...s.misHit, all: 1 }; }
+        s.mis = mis;
+      }
+      const hit = ACHIEVEMENTS.filter(x => !s.ach.includes(x.id) && x.t(s)); if (hit.length) s.ach = [...s.ach, ...hit.map(x => x.id)];
+      if (s.chal) { const c = CHALLENGES.find(x => x.id === s.chal); if (c && s.run >= c.goal) { s.chalDone = { ...s.chalDone, [c.id]: 1 }; s.chalWin = c.id + ':' + s.clock; s.chal = null; } }
+      return s;
+    }
+    case 'NAME': return { ...st, name: a.name, uid: st.uid || a.uid };
+    case 'SPAWN': return { ...st, evCount: st.evCount + 1, dEv: st.dEv + 1, dLog: [...(st.dLog || []), a.ev.name].slice(-3), week: bump(st.week, 'ev'), ev: { ...a.ev, end: st.clock + a.ev.dur, boost: !!st.chief, dilEnd: st.clock + DIL_SEC, pick: null } };
+    case 'JUDGE': return st.ev && st.ev.dil && !st.ev.pick ? judge({ ...st }, a.pick, a.r) : st;
+    case 'BOOST': return st.ev ? { ...st, ev: { ...st.ev, boost: true } } : st;
+    case 'GOLD': {
+      if (!st.gold) return st; const g = goldReward(st, a.r), n = g.cash || 0;
+      return { ...earn(st, n), gold: null, nextGold: st.clock + goldGap(st, a.r), goldCount: st.goldCount + 1, week: bump(st.week, 'gold'), gbEnd: g.frenzy ? st.clock + 20 : st.gbEnd };
+    }
+    case 'SPD': return st.clock < st.spdReady ? st : { ...st, spdEnd: st.clock + 120, spdReady: st.clock + 300 };
+    case 'BUY': {
+      if (st.chal === 'noQual' && a.id === 'qual') return st;
+      const u = UPGRADES.find(x => x.id === a.id), { k, total } = bulk(st, u, a.n || '1'), nl = st.lv[u.id] + k;
+      return st.score < total ? st : { ...st, score: st.score - total, maxLv: Math.max(st.maxLv, nl), buyT: st.buyT + k, week: bump(st.week, 'buy', k), lv: { ...st.lv, [u.id]: nl } };
+    }
+    case 'HIRE': return st.chal === 'noMgr' || st.mg[a.i] || st.score < MANAGER[a.i] ? st : { ...st, score: st.score - MANAGER[a.i], mg: st.mg.map((v, j) => j === a.i ? 1 : v) };
+    case 'CHIEF': return st.chal === 'noMgr' || st.chief || st.score < CHIEF ? st : { ...st, score: st.score - CHIEF, chief: 1 };
+    case 'SCOUT': { // how: paid(점수) / ticket(티켓) / ad(광고 무료)
+      let s = { ...st };
+      if (a.how === 'paid') { const c = scoutCost(st); if (st.score < c) return st; s.score -= c; }
+      else if (a.how === 'ticket') { if (st.tickets < 1) return st; s.tickets -= 1; }
+      else { if (st.clock < st.freeReady) return st; s.freeReady = st.clock + 600; }
+      const card = rollCard(a.r, a.r2, st.pity);
+      s.pulls = st.pulls + 1; s.week = bump(st.week, 'pull');
+      if (!card) { // 꽝: 점수로 뽑았다면 비용의 20%를 위로금으로 돌려준다
+        const back = a.how === 'paid' ? Math.floor(scoutCost(st) * .2) : 0;
+        s.pity = st.pity + 1; s.last = { id: null, miss: true, back }; return back ? earn(s, back) : s;
+      }
+      const had = st.cards[card.id] || 0;
+      s.cards = { ...st.cards, [card.id]: Math.min(3, had + 1) }; s.pity = card.rar >= 2 ? 0 : st.pity + 1;
+      s.last = { id: card.id, isNew: !had, maxed: had >= 3 };
+      return had >= 3 ? earn(s, 500) : s;
+    }
+    case 'CLAIM': { // 주간 목표 보상
+      const g = WEEKLY.find(x => x.id === a.id); if (!g || st.week.done[g.id] || (st.week.prog[g.k] || 0) < g.goal) return st;
+      return { ...earn(st, Math.max(2000, Math.floor(perSec(st) * 1800))), tickets: st.tickets + 1, week: { ...st.week, done: { ...st.week.done, [g.id]: 1 } } };
+    }
+    case 'WEEK': return st.week.key === a.key ? st : { ...st, week: { key: a.key, prog: {}, done: {} } };
+    case 'CHECKIN': { // 일일 출석: 연속일수 x 보너스, 7일마다 티켓
+      if (st.login.last === a.day) return st;
+      const streak = st.login.last && dn(a.day) - dn(st.login.last) === 1 ? st.login.streak + 1 : 1;
+      const gain = Math.max(500, Math.floor(perSec(st) * 900)) * Math.min(streak, 7), tk = streak % 7 === 0 ? 1 : 0;
+      return { ...earn(st, gain), tickets: st.tickets + tk, login: { last: a.day, streak }, daily: { streak, gain, tk } };
+    }
+    case 'RESEARCH': {
+      const r = RESEARCH.find(x => x.id === a.id), l = rl(st, a.id); if (!r || l >= r.max) return st;
+      const c = r.c * (l + 1); if (st.rp < c || (r.req && rl(st, r.req[0]) < r.req[1])) return st;
+      return { ...st, rp: st.rp - c, res: { ...st.res, [a.id]: l + 1 } };
+    }
+    case 'DECO': {
+      const d = DECOS.find(x => x.id === a.id); if (!d || st.deco[a.id]) return st;
+      if (d.need ? !d.need(st) : st.score < d.at) return st;
+      return { ...st, score: st.score - (d.at || 0), deco: { ...st.deco, [a.id]: 1 } };
+    }
+    case 'TUT': return { ...st, tut: a.step };
+    case 'SETN': return { ...st, buyN: a.n };
+    case 'GAIN': return earn(st, a.n);
+    case 'PRESTIGE': return { ...keep(st), pts: st.pts + prestigeGain(st) };
+    case 'CHAL': return st.chalDone[a.id] || !CHALLENGES.some(c => c.id === a.id) ? st : { ...keep(st), pts: st.pts, chal: a.id };
+    case 'CHAL_QUIT': return st.chal ? { ...keep(st), pts: st.pts } : st;
+    case 'SEASON': { // 새 달이 되면 지난 시즌 등급만큼 티켓 지급 후 새 시즌 시작
+      if (st.season.key === a.key) return st;
+      if (!st.season.key) return { ...st, season: { key: a.key, base: st.total } };
+      const p = Math.max(0, st.total - st.season.base), t = tierOf(p);
+      return { ...st, tickets: st.tickets + t + 1, lastSeason: { key: st.season.key, pts: p, tier: t, tk: t + 1 }, season: { key: a.key, base: st.total } };
+    }
+    case 'LOAD': return { ...initialState(), ...a.s, lv: { ...initialState().lv, ...a.s.lv } };
+    case 'RESET': return initialState();
+    default: return st;
+  }
+}
+
+
+
+// 속보 스케줄러: 해금된 카테고리 중 직전과 다른 것을 고르고, 시즌 테마 속보는 3배 가중치
+let lastEvent = '';
+function pickEvent(s, r, r2) {
+  let pool = EVENTS.filter(e => s.run >= e.min && e.id !== lastEvent);
+  if (!pool.length) pool = EVENTS.filter(e => s.run >= e.min);
+  const th = themeOf(s.season.key), w = pool.map(e => th && e.id === th.ev ? 3 : 1);
+  let x = r * w.reduce((a, b) => a + b, 0), i = 0; while (i < pool.length - 1 && x >= w[i]) { x -= w[i]; i++; }
+  const d = pool[i], themed = th && d.id === th.ev && th.name != null;
+  return { ...d, name: themed ? d.names[th.name] : d.names[Math.floor(r2 * d.names.length) % d.names.length] };
+}
+const EventScheduler = store => ({
+  update() {
+    const s = store.getState(); if (s.chal === 'calm' || s.ev || s.clock < s.nextEv) return;
+    const ev = pickEvent(s, Math.random(), Math.random()); lastEvent = ev.id;
+    ev.dil = Math.random() < .45; // 45%는 '단독이냐 확인이냐' 판단이 걸린 속보
+    store.dispatch({ type: 'SPAWN', ev });
+  },
+});
+
+
+
+
+const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco'];
+// Repository 패턴: 저장 매체(localStorage)를 이 모듈 안에 가둔다
+const Repo = {
+  save(s) { try { localStorage.setItem(SAVE_KEY, JSON.stringify({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() })); } catch (e) { } },
+  load() {
+    try {
+      const o = JSON.parse(localStorage.getItem(SAVE_KEY)); if (!o || !o.lv) return null;
+      const nt = (o.res && o.res.night) || 0, sec = Math.min((Date.now() - o.t) / 1000, 28800 + 3600 * nt), { t, ...s } = o;
+      const st = reducer(initialState(), { type: 'LOAD', s });
+      const n = sec >= 60 && st.name ? Math.floor(Math.min(...rates(st)) * 10 * scoreMul(st) * sec * (.5 + .1 * nt)) : 0;
+      return { s, offline: n >= 10 ? { n, min: Math.floor(sec / 60) } : null };
+    } catch (e) { return null; }
+  },
+  clear() { try { localStorage.removeItem(SAVE_KEY); } catch (e) { } },
+};
+
+
+// 순위 서비스: 어댑터 패턴으로 저장소를 바꿔 끼운다 (Claude db 공유 저장소 / REST 서버 / 오프라인 샘플)
+const SAMPLE = [['한강TV', 2e7, 70, 18.4, 6e6], ['새벽뉴스', 3e6, 45, 12.1, 8e5], ['별빛방송', 4e5, 30, 8.7, 9e4], ['미래 미디어', 5e4, 18, 6.2, 1.5e4], ['동네 라디오', 5e3, 8, 3.9, 1200]]
+  .map(([name, total, maxLv, bestRating, views], i) => ({ uid: 'sample' + i, name, total, maxLv, bestRating, views, sample: true, rankScore: rankScore({ total, maxLv, bestRating, views }) }));
+const clean = e => ({ uid: String(e.uid || '').slice(0, 64), name: String(e.name || '').slice(0, 12), total: +e.total || 0, maxLv: +e.maxLv || 0, bestRating: +e.bestRating || 0, views: +e.views || 0, rankScore: +e.rankScore || 0, season: String(e.season || '').slice(0, 7), seasonPts: +e.seasonPts || 0, sample: !!e.sample });
+const LocalAdapter = () => ({ mode: 'local', me: null, async submit() { }, async top(n, own) { return [...SAMPLE.map(x => ({ ...x, season: own.season, seasonPts: Math.floor(x.total * .3) })), clean(own)].sort((a, b) => b.rankScore - a.rankScore).slice(0, n); } });
+const DbAdapter = (db, id) => ({
+  mode: 'db', me: id,
+  async submit(e) { await db.doc('leaderboard/' + id).set({ ...e, uid: id }); },
+  async top(n) { const snap = await db.collection('leaderboard').orderBy('rankScore', 'desc').limit(n).get(); return snap.docs.map(d => clean(d.data())); },
+});
+const RestAdapter = ({ url, key }) => {
+  const h = { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' };
+  return {
+    mode: 'rest', me: null,
+    async submit(e) { await fetch(`${url}/rest/v1/leaderboard?on_conflict=uid`, { method: 'POST', headers: { ...h, Prefer: 'resolution=merge-duplicates' }, body: JSON.stringify([{ uid: e.uid, name: e.name, total: e.total, max_lv: e.maxLv, best_rating: e.bestRating, views: e.views, rank_score: e.rankScore, season: e.season, season_pts: e.seasonPts }]) }); },
+    async top(n) { const r = await fetch(`${url}/rest/v1/leaderboard?select=*&order=rank_score.desc&limit=${n}`, { headers: h }); return (await r.json()).map(x => clean({ uid: x.uid, name: x.name, total: x.total, maxLv: x.max_lv, bestRating: x.best_rating, views: x.views, rankScore: x.rank_score, season: x.season, seasonPts: x.season_pts })); },
+  };
+};
+async function createBoard(cfg) {
+  let ad = LocalAdapter();
+  try { const c = window.claude; if (c && c.use) { const [db, user] = await Promise.all([c.use('db'), c.use('user')]); const id = db && user ? await user.id() : null; if (id) ad = DbAdapter(db, id); } } catch (e) { }
+  if (ad.mode === 'local' && cfg.url && cfg.key) ad = RestAdapter(cfg);
+  let last = '';
+  return {
+    get mode() { return ad.mode; }, get me() { return ad.me; },
+    async submit(e) { const k = JSON.stringify([e.name, e.rankScore]); if (k === last) return; await ad.submit(ad.me ? { ...e, uid: ad.me } : e); last = k; },
+    top: (n, own) => ad.top(n, own),
+  };
+}
+
+// 8비트 효과음: 사각파 비프 시퀀스
+const SEQ = { buy: [[660, .06], [880, .08]], alert: [[440, .1], [330, .1], [440, .1]], rank: [[523, .1], [659, .1], [784, .2]], fail: [[160, .15]] };
+let ac, on = true;
+const Sfx = {
+  toggle() { on = !on; return on; },
+  play(name) {
+    if (!on) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      let t = ac.currentTime;
+      (SEQ[name] || []).forEach(([f, d]) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'square'; o.frequency.value = f; g.gain.value = .04;
+        o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d); t += d;
+      });
+    } catch (e) { }
+  },
+};
+
+
+// 16비트풍 픽셀 렌더러: 그라데이션 밴드, 베벨 셰이딩, 음영 있는 캐릭터, 단계별 외형 변화(tier 0~4)
+const COL = ['#41a6f6', '#38b764', '#ffcd75', '#b13e53', '#f4f4f4'];
+const IDS = ['crew', 'ing', 'edit', 'cg', 'out', 'live', 'qual'];
+const GY = 54, memo = {};
+const rgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+const hex = a => '#' + a.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+const lerp = (a, b, t) => { const k = a + b + t; return memo[k] || (memo[k] = hex(rgb(a).map((v, i) => v + (rgb(b)[i] - v) * t))); };
+const mix = (k, a) => a > 0 ? lerp(k, '#ffffff', a) : lerp(k, '#000000', -a);
+const R = (c, x, y, w, h, k) => { c.fillStyle = k; c.fillRect(x, y, w, h); };
+const bx = (c, x, y, w, h, k) => { R(c, x, y, w, h, k); R(c, x, y, w, 1, mix(k, .35)); R(c, x, y, 1, h, mix(k, .2)); R(c, x, y + h - 1, w, 1, mix(k, -.35)); R(c, x + w - 1, y, 1, h, mix(k, -.25)); };
+const sky = (c, a, b) => { for (let i = 0; i < 9; i++) R(c, 0, i * 6, 320, 7, lerp(a, b, i / 8)); };
+const FLOORC = ['#2b3050', '#2b4a60', '#3a4a8a', '#5a3a7a', '#8a6a1a'];
+const ground = (c, k) => { const f = FLOORC[k]; R(c, 0, GY, 320, 10, f); R(c, 0, GY, 320, 1, mix(f, .4)); R(c, 0, GY + 4, 320, 1, mix(f, -.25)); };
+const SPR = ['...HHHH...', '..HhHHHH..', '..HSSSSH..', '..SESSES..', '..SSSSSs..', '...SSSs...', '..BBBBBB..', '.BBBBBBbB.', '.SBBBBbBS.', '.SBBBBbBS.', '..BBBBbb..', '..LLLLLL..', '..LL..LL..', '..KK..KK..'];
+const PAL = (B, H = '#3b2a20') => ({ H, h: mix(H, .35), S: '#f2c9a0', s: '#d49a74', E: '#0b0b14', B, b: mix(B, -.3), L: '#3a4466', K: '#14141f' });
+const person = (c, x, y, p) => SPR.forEach((row, j) => { for (let i = 0; i < 10; i++) { const ch = row[i]; if (ch !== '.') R(c, x + i * 2, y + j * 2, 2, 2, p[ch]); } });
+const bob = (a, t, n = 6) => a ? (t * n | 0) % 2 : 0;
+const screen = (c, x, y, w, h, k) => { bx(c, x, y, w, h, '#14141f'); R(c, x + 2, y + 2, w - 4, h - 4, k); for (let j = y + 3; j < y + h - 2; j += 2) R(c, x + 2, j, w - 4, 1, mix(k, -.12)); R(c, x + 3, y + 3, 3, 2, mix(k, .5)); };
+const blink = (t, n = 2) => (t * n | 0) % 2;
+const text = (c, s, x, y, px, k = '#ffffff') => { c.fillStyle = k; c.font = px + 'px "Press Start 2P",monospace'; c.fillText(s, x, y); };
+
+function van(c, x, col, a, t, k) {
+  bx(c, x, GY - 24, 58, 22, col); bx(c, x + 44, GY - 18, 16, 16, mix(col, -.1)); R(c, x + 48, GY - 16, 10, 7, '#7fc8ff');
+  R(c, x, GY - 12, 58, 3, '#e0475a'); R(c, x + 8, GY - 4, 10, 8, '#14141f'); R(c, x + 38, GY - 4, 10, 8, '#14141f');
+  R(c, x + 22, GY - 38, 2, 14, '#8a93a6'); c.fillStyle = '#d0d8e4'; c.beginPath(); c.arc(x + 23, GY - 40, 9, Math.PI, 0); c.fill();
+  if (k >= 1) { R(c, x + 8, GY - 32, 2, 8, '#8a93a6'); c.beginPath(); c.arc(x + 9, GY - 33, 5, Math.PI, 0); c.fill(); }
+  if (a) { c.strokeStyle = '#ffffff'; c.beginPath(); c.arc(x + 23, GY - 40, 12 + (t * 10) % 8, Math.PI * 1.2, Math.PI * 1.8); c.stroke(); }
+}
+
+const DRAW = [
+  // 0 취재: 카메라 든 영상기자 + 원고 쓰는 취재기자
+  (c, s, t, a, k) => {
+    sky(c, '#1b2a5c', '#5a68b0'); if (k >= 3) R(c, 276, 6, 10, 10, '#fff3c4');
+    if (k >= 2) [[20, 22, 20], [52, 14, 16], [240, 20, 18], [268, 12, 14], [296, 24, 20]].forEach(([x, y, w]) => R(c, x, y, w, GY - y, '#2a3a78'));
+    [[6, 26, 22], [34, 16, 26], [64, 30, 16], [250, 22, 24], [280, 12, 30], [306, 28, 14]].forEach(([x, y, w]) => { bx(c, x, y, w, GY - y, '#171b3a'); for (let j = 0; j < 3; j++) for (let m = 0; m < (w / 6 | 0); m++) R(c, x + 3 + m * 6, y + 4 + j * 7, 3, 3, (t * 1.5 + x + m + j | 0) % 3 ? '#ffd878' : '#171b3a'); });
+    ground(c, k);
+    person(c, 84, GY - 28 + bob(a, t, 3), PAL('#3f7fe0')); bx(c, 100, GY - 26 + bob(a, t, 3), 17, 10, '#14141f'); bx(c, 115, GY - 24 + bob(a, t, 3), 6, 6, '#566c86'); R(c, 103, GY - 24, 2, 2, a && blink(t) ? '#ff5c5c' : '#5c1f2a');
+    person(c, 188, GY - 28 + bob(a, t), PAL('#e8b04a', '#6b4a2b')); bx(c, 206, GY - 16, 13, 15, '#f4f4f4'); [0, 3, 6].forEach(j => R(c, 208, GY - 13 + j, j < 6 ? 9 : 6, 1, '#8a93a6')); if (a) R(c, 208 + (t * 8 | 0) % 7, GY - 5, 2, 2, '#14141f');
+    if (k >= 1) { const x = (t * 22) % 360 - 20; R(c, x, 10, 10, 3, '#14141f'); R(c, x - 3, 8, 16, 1, blink(t, 20) ? '#94b0c2' : '#566c86'); R(c, x + 4, 13, 2, 2, '#ff5c5c'); }
+    if (k >= 2) { person(c, 138, GY - 28 + bob(a, t, 4), PAL('#8f5fd6')); R(c, 150, GY - 34, 22, 2, '#8a93a6'); bx(c, 170, GY - 38, 7, 7, '#14141f'); }
+  },
+  // 1 인제스트: 서버 랙 + 모니터 벽, 파일 입고
+  (c, s, t, a, k) => {
+    sky(c, '#1c2a4a', '#2c3e6c'); ground(c, k);
+    for (let r = 0; r < Math.min(2, 1 + k); r++) { const x = 8 + r * 30; bx(c, x, 6, 26, GY - 6, '#3a4466'); for (let j = 0; j < 5; j++) { bx(c, x + 2, 9 + j * 9, 22, 6, '#1c2038'); R(c, x + 18, 11 + j * 9, 3, 3, (t * 3 + j + r | 0) % 2 ? '#4cff9a' : '#1d5a38'); } }
+    const cols = k >= 3 ? 4 : 3, w = k >= 3 ? 27 : 34;
+    for (let m = 0; m < cols * 2; m++) { const x = 112 + (m % cols) * (w + 4), y = 6 + (m / cols | 0) * 21; screen(c, x, y, w, 18, ['#41a6f6', '#38b764', '#ffcd75', '#b13e53', '#73eff7', '#94b0c2', '#e86aff', '#ff9f5a'][m]); if (a) R(c, x + 3, y + 13, (t * 20 + m * 7) % (w - 6), 2, '#ffffff'); }
+    person(c, 76, GY - 28 + bob(a, t, 4), PAL('#38b764')); bx(c, 66, GY - 10, 40, 6, '#7a5230');
+    if (a) for (let m = 0; m < 2; m++) bx(c, 40 + (t * 50 + m * 38) % 70, 22 + m * 9, 7, 6, '#ffcd75');
+  },
+  // 2 편집: 모니터 두 대(+ 3번째 오디오) 워크스테이션
+  (c, s, t, a, k) => {
+    sky(c, '#161826', '#232845'); if (k >= 3) { R(c, 0, 3, 320, 1, '#37f0ff'); R(c, 0, GY - 2, 320, 1, '#37f0ff'); }
+    ground(c, k);
+    if (k >= 1) { bx(c, 44, 16, 12, 18, '#2a2f4a'); bx(c, 244, 16, 12, 18, '#2a2f4a'); R(c, 48, 22, 4, 4, '#14141f'); R(c, 248, 22, 4, 4, '#14141f'); }
+    screen(c, 70, 2, 56, 28, '#2d3e5c'); R(c, 80, 18, 20, 10, '#1c2a44'); R(c, 108, 8, 9, 9, '#f5d27a');
+    screen(c, 132, 2, 56, 28, '#181b2c'); [[0, 8, 18, '#41a6f6'], [20, 8, 14, '#38b764'], [36, 8, 12, '#41a6f6'], [0, 18, 26, '#ffcd75'], [28, 18, 20, '#ffcd75']].forEach(([x, y, w, kk]) => bx(c, 135 + x, 2 + y, w, 7, kk)); R(c, 135 + (a ? (t * 16) % 48 : 24), 4, 2, 24, '#ff5c5c');
+    if (k >= 2) { screen(c, 194, 2, 40, 28, '#16222c'); for (let m = 0; m < 10; m++) { const h = a ? 4 + ((Math.sin(t * 5 + m) + 1) * 6 | 0) : 4; R(c, 198 + m * 3, 26 - h, 2, h, '#4cff9a'); } }
+    person(c, 140, GY - 28 + bob(a, t, 5), PAL('#ffcd75')); R(c, 143, GY - 27, 14, 2, '#b13e53'); R(c, 142, GY - 23, 3, 5, '#b13e53'); R(c, 155, GY - 23, 3, 5, '#b13e53');
+    bx(c, 60, 42, 170, 6, '#7a5230'); R(c, 66, 48, 4, 6, '#5a3a20'); R(c, 216, 48, 4, 6, '#5a3a20'); bx(c, 128, 40, 28, 3, '#94b0c2'); bx(c, 208, 35, 6, 7, '#f4f4f4'); if (a) R(c, 210, 30 - (t * 6 | 0) % 3, 1, 3, '#94b0c2');
+  },
+  // 3 CG: 로어서드·도형 작업, 팔레트, 타블렛
+  (c, s, t, a, k) => {
+    sky(c, '#2a1a3d', '#43285c'); ground(c, k);
+    screen(c, 64, 2, 100, 30, '#2d3e5c'); bx(c, 92, 8, 10, 10, '#ffcd75'); bx(c, 114, 9, 11, 11, '#41a6f6'); c.strokeStyle = '#ffffff'; c.strokeRect(113.5, 8.5, 12, 12);
+    const w = a ? 20 + (t * 30) % 76 | 0 : 76; bx(c, 70, 23, w, 5, '#b13e53'); R(c, 70, 19, Math.min(w, 44), 2, '#f4f4f4'); if (a) R(c, 94 + (t * 20) % 50, 12, 3, 4, '#ffffff');
+    bx(c, 174, 4, 20, 42, '#333c57'); ['#b13e53', '#ffcd75', '#38b764', '#41a6f6'].forEach((kk, i) => bx(c, 178, 8 + i * 9, 12, 7, kk));
+    if (k >= 1) { screen(c, 204, 4, 34, 28, '#10283a'); const r = a ? t * 2 : 0; c.strokeStyle = '#4cff9a'; c.strokeRect(212.5, 14.5, 13, 13); c.strokeRect(217.5 + Math.sin(r) * 2, 10.5, 13, 13); }
+    person(c, 104, GY - 28 + bob(a, t, 4), PAL('#b13e53', '#14141f')); bx(c, 84, GY - 12, 70, 6, '#7a5230'); bx(c, 124, GY - 15, 18, 3, '#566c86'); if (a) R(c, 128 + (t * 10) % 8, GY - 14, 2, 1, '#ffffff');
+    if (k >= 2) { person(c, 250, GY - 28 + bob(a, t, 5), PAL('#2fb8a0', '#e8e0d0')); bx(c, 236, GY - 12, 44, 6, '#7a5230'); }
+  },
+  // 4 송출: 뉴스 스튜디오, 앵커, 카메라, ON AIR
+  (c, s, t, a, k) => {
+    sky(c, '#12205a', '#24409a'); bx(c, 64, 4, 192, 40, k >= 2 ? '#2346b0' : '#1f3a8a');
+    [[70, 12, 24, 10], [100, 22, 16, 9], [214, 18, 22, 14], [240, 10, 10, 8]].forEach(([x, y, w, h]) => bx(c, x, y, w, h, '#38b764'));
+    bx(c, 126, 8, 68, 12, '#b13e53'); text(c, 'NEWS', 140, 18, 8); if (k >= 2) { R(c, 66, 38, 188, 4, '#14141f'); R(c, 66 + (t * 40) % 170, 38, 18, 4, '#ffcd75'); }
+    ground(c, k);
+    person(c, k >= 1 ? 128 : 142, GY - 28 + bob(a, t, 3), PAL('#2b2f4a', '#14141f')); if (k >= 1) person(c, 160, GY - 28 + bob(a, t, 3), PAL('#7a2b5a', '#d8a050'));
+    bx(c, 96, GY - 14, 128, 8, '#5a6a8a'); bx(c, 140, GY - 11, 40, 4, '#b13e53');
+    R(c, k >= 1 ? 137 : 151, GY - 20, 2, 6, '#b13e53');
+    bx(c, 24, GY - 28, 26, 16, '#14141f'); bx(c, 48, GY - 24, 8, 8, '#566c86'); R(c, 34, GY - 12, 3, 12, '#566c86'); R(c, 27, GY - 26, 3, 3, a ? '#ff5c5c' : '#5c1f2a');
+    bx(c, 266, 6, 48, 16, a && blink(t) ? '#ff4a4a' : '#5c1f2a'); text(c, 'ON AIR', 270, 18, 7);
+    if (k >= 3) { c.globalAlpha = .13; c.fillStyle = '#fff6c0'; [[80, 60, 110], [240, 215, 270]].forEach(([x, a1, a2]) => { c.beginPath(); c.moveTo(x, 0); c.lineTo(a1, GY); c.lineTo(a2, GY); c.fill(); }); c.globalAlpha = 1; }
+  },
+  // 5 중계 장비: 중계 차량 + 리포터
+  (c, s, t, a, k) => {
+    sky(c, '#2a6fb0', '#bfe6ff'); R(c, 30, 10, 26, 6, '#ffffff'); R(c, 38, 6, 14, 6, '#ffffff'); R(c, 220, 14, 32, 6, '#ffffff');
+    if (k >= 3) { const x = (t * 30) % 380 - 30; R(c, x, 12, 16, 7, '#e8e8ea'); R(c, x + 14, 14, 10, 2, '#e8e8ea'); R(c, x - 2, 9, 20, 1, blink(t, 20) ? '#14141f' : '#566c86'); R(c, x + 3, 19, 8, 1, '#14141f'); }
+    ground(c, 1); R(c, 0, GY + 5, 320, 5, '#3a3f4f'); for (let x = 0; x < 320; x += 32) R(c, x, GY + 7, 16, 1, '#e8e8ea');
+    van(c, 20, k >= 4 ? '#ffd24a' : '#f4f4f4', a, t, k); if (k >= 2) van(c, 232, '#f4f4f4', a, t, k);
+    person(c, 120, GY - 28 + bob(a, t, 3), PAL('#e0475a')); bx(c, 138, GY - 20, 3, 8, '#14141f'); R(c, 137, GY - 22, 5, 3, '#ffcd75');
+    person(c, 160, GY - 28 + bob(a, t, 4), PAL('#3f7fe0')); bx(c, 176, GY - 26, 15, 9, '#14141f'); R(c, 188, GY - 24, 5, 5, '#566c86');
+    bx(c, 94, 4, 40, 14, a && blink(t) ? '#e83a3a' : '#6a2020'); text(c, 'LIVE', 100, 15, 8);
+  },
+  // 6 방송 품질: 화질 배지(SD→8K), 별점, 시청률 그래프, 트로피
+  (c, s, t, a, k) => {
+    sky(c, '#241a3a', '#3a2a5a'); ground(c, k);
+    bx(c, 92, 4, 136, 46, '#14141f'); ['#ffffff', '#ffee55', '#33d6e6', '#38c060', '#d84ae0', '#e03a3a', '#3a4ae0'].forEach((kk, i) => R(c, 96 + i * 18, 8, 18, 26, mix(kk, k < 1 ? -.35 : 0)));
+    R(c, 96, 34, 128, 12, '#222633'); bx(c, 144, 18, 40, 15, '#14141f'); text(c, ['SD', 'HD', 'FHD', '4K', '8K'][k], 150, 30, 9);
+    for (let i = 0; i <= k; i++) { R(c, 104 + i * 9, 36, 2, 6, '#ffd24a'); R(c, 102 + i * 9, 38, 6, 2, '#ffd24a'); }
+    for (let i = 0; i < 5; i++) { const h = 6 + i * 4 + k * 4 + (a ? (Math.sin(t * 3 + i) + 1) * 2 | 0 : 0); bx(c, 246 + i * 11, GY - h, 9, h, i <= k ? '#38b764' : '#3a4466'); }
+    if (k >= 2) { bx(c, 36, GY - 26, 20, 14, '#ffd24a'); R(c, 43, GY - 12, 6, 8, '#ffd24a'); bx(c, 36, GY - 4, 20, 4, '#8a6a1a'); }
+  },
+  // 7 영상편집팀장: 14대 모니터로 실시간 편집을 감시 (고용 전에는 모니터가 꺼져 있음)
+  (c, s, t, a, k) => {
+    sky(c, '#0f1220', '#1a1f38'); ground(c, 0);
+    const on = k > 0, cl = ['#41a6f6', '#38b764', '#ffcd75', '#b13e53', '#73eff7', '#e86aff'];
+    for (let m = 0; m < 14; m++) {
+      const x = 4 + (m % 7) * 45, y = 2 + (m / 7 | 0) * 17;
+      screen(c, x, y, 41, 15, on ? '#181b2c' : '#0c0e16');
+      if (on) { [[3, 12, 0], [16, 9, 1], [27, 9, 2]].forEach(([dx, w, j]) => R(c, x + dx, y + 6, w, 3, cl[(m + j) % 6])); R(c, x + 3 + (t * 10 + m * 5) % 34, y + 3, 1, 9, '#ff5c5c'); }
+    }
+    if (on) {
+      const m = (t | 0) % 14, x = 4 + (m % 7) * 45, y = 2 + (m / 7 | 0) * 17; c.strokeStyle = blink(t, 4) ? '#ffd24a' : '#ffffff'; c.strokeRect(x - .5, y - .5, 42, 16);
+      person(c, 150, GY - 28 + bob(a, t, 2), PAL('#2b2f4a', '#14141f')); R(c, 153, GY - 27, 14, 2, '#566c86'); R(c, 152, GY - 23, 3, 5, '#566c86'); R(c, 165, GY - 23, 3, 5, '#566c86'); R(c, 152, GY - 18, 6, 1, '#566c86'); R(c, 159, GY - 17, 2, 6, '#b13e53');
+    } else bx(c, 148, GY - 22, 22, 18, '#3a4466');
+    bx(c, 96, GY - 12, 128, 6, '#5a3a20'); bx(c, 134, GY - 14, 28, 3, '#94b0c2'); bx(c, 190, GY - 19, 6, 7, '#f4f4f4'); if (on) R(c, 192, GY - 24 - (t * 6 | 0) % 3, 1, 3, '#94b0c2');
+    bx(c, 282, 37, 34, 12, on && blink(t) ? '#ff4a4a' : '#5c1f2a'); text(c, 'ON AIR', 285, 46, 6);
+  },
+];
+
+// 사무실 꾸미기 소품 (DECOS의 fl 층에 그린다)
+const DECO_DRAW = {
+  plant: c => { R(c, 9, GY - 20, 2, 8, '#38b764'); R(c, 5, GY - 18, 4, 3, '#38b764'); R(c, 11, GY - 22, 5, 3, '#a7f070'); R(c, 4, GY - 14, 4, 2, '#257179'); R(c, 12, GY - 15, 5, 2, '#38b764'); bx(c, 5, GY - 10, 11, 10, '#b86f50'); },
+  coffee: (c, t) => { bx(c, 40, GY - 18, 14, 18, '#566c86'); R(c, 42, GY - 16, 10, 4, '#1a1c2c'); R(c, 43, GY - 15, 2, 2, blink(t) ? '#38b764' : '#257179'); R(c, 44, GY - 9, 6, 6, '#f4f4f4'); R(c, 45, GY - 8, 4, 2, '#5a3a20'); R(c, 46, GY - 13 - (t * 5 | 0) % 3, 1, 2, '#94b0c2'); },
+  cat: (c, t) => { const x = 10 + Math.abs(((t * 14) % 260) - 130), d = ((t * 14) % 260) < 130 ? 1 : -1, y = GY - 7, f = (t * 6 | 0) % 2;
+    R(c, x, y, 10, 5, '#ef7d57'); R(c, x + (d > 0 ? 8 : -3), y - 3, 5, 5, '#ef7d57'); R(c, x + (d > 0 ? 8 : -3), y - 4, 1, 1, '#ef7d57'); R(c, x + (d > 0 ? 12 : 1), y - 4, 1, 1, '#ef7d57');
+    R(c, x + (d > 0 ? 10 : -2), y - 2, 1, 1, '#14141f'); R(c, x + (d > 0 ? -2 : 10), y - 3, 2, 4, '#ef7d57'); R(c, x + 1 + f, y + 5, 2, 2, '#ef7d57'); R(c, x + 7 - f, y + 5, 2, 2, '#ef7d57'); },
+  sofa: c => { bx(c, 4, GY - 14, 34, 8, '#5d275d'); bx(c, 4, GY - 8, 34, 8, '#b13e53'); bx(c, 2, GY - 11, 4, 11, '#5d275d'); bx(c, 36, GY - 11, 4, 11, '#5d275d'); R(c, 10, GY - 12, 9, 4, '#ffcd75'); },
+  neon: (c, t) => { const k = blink(t, 1.5) ? '#ff4ad6' : '#7a2a6a'; R(c, 6, 6, 52, 13, '#14141f'); text(c, '24H', 14, 16, 8, k); R(c, 6, 6, 52, 1, k); R(c, 6, 18, 52, 1, k); },
+  tank: (c, t) => { bx(c, 4, GY - 22, 36, 18, '#257179'); R(c, 6, GY - 20, 32, 14, '#41a6f6'); R(c, 6, GY - 8, 32, 2, '#ffcd75'); const fx = 8 + ((t * 8) % 24); R(c, fx, GY - 15, 4, 2, '#ef7d57'); R(c, fx - 1, GY - 16, 1, 4, '#ef7d57'); R(c, 34 - ((t * 5) % 22), GY - 12, 3, 2, '#ffcd75'); bx(c, 2, GY - 4, 40, 4, '#5a3a20'); },
+  trophy: (c, t) => { bx(c, 236, GY - 6, 12, 6, '#5a3a20'); R(c, 239, GY - 10, 6, 4, '#ffcd75'); R(c, 237, GY - 18, 10, 8, '#ffd24a'); R(c, 235, GY - 17, 2, 4, '#ffd24a'); R(c, 247, GY - 17, 2, 4, '#ffd24a'); R(c, 239, GY - 16, 2, 3, '#fff6c0'); if (blink(t, 1)) R(c, 248, GY - 21, 2, 2, '#ffffff'); },
+  mic: (c, t) => { R(c, 150, GY - 9, 2, 9, '#ffcd75'); bx(c, 148, GY - 15, 6, 7, '#ffd24a'); R(c, 149, GY - 14, 2, 2, '#fff6c0'); if (blink(t, 1)) { R(c, 156, GY - 18, 2, 2, '#ffffff'); R(c, 145, GY - 12, 1, 1, '#ffffff'); } },
+};
+const HAIR = ['#3b2a20', '#14141f', '#8b5e3c', '#d8a050'], DARK = { H: '#222633', h: '#222633', S: '#222633', s: '#222633', E: '#222633', B: '#222633', b: '#222633', L: '#222633', K: '#222633' };
+function Scene(canvases, cardCv) {
+  const ctx = canvases.map(cv => { const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; return c; }), act = [1, 0, 0, 0, 0, 1, 1, 1], cc = cardCv && cardCv.getContext('2d');
+  return {
+    draw(s, t, sel) {
+      ctx.forEach((c, i) => {
+        const k = i === 7 ? s.chief : MILESTONES.filter(m => s.lv[IDS[i]] >= m).length;
+        act[i] += ((i === 0 || i >= 5 || s.q[i] > .02 ? 1 : 0) - act[i]) * .15; const a = act[i] > .4;
+        DRAW[i](c, s, t, a, k);
+        if (s.deco) DECOS.forEach(d => { if (d.fl === i && s.deco[d.id]) DECO_DRAW[d.id](c, t); });
+        if (i < 4) { R(c, 0, GY + 5, 320, 3, '#14141f'); if (a) R(c, (t * 40 + i * 37) % 340 - 10, GY + 5, 8, 3, COL[i]); }
+        if (i > 0 && i < 4) for (let m = 0, n = Math.min(6, s.q[i] / 2 | 0); m < n; m++) bx(c, 262 + (m % 3) * 10, GY - 6 - (m / 3 | 0) * 6, 9, 5, COL[i]);
+        if (i < 5 && s.mg[i]) { person(c, 296, GY - 28, PAL('#f4f4f4', '#14141f')); R(c, 304, GY - 14, 2, 7, '#b13e53'); bx(c, 288, GY - 16, 8, 11, '#8b5e3c'); R(c, 290, GY - 13, 4, 1, '#f4f4f4'); }
+        if (k >= 4) { R(c, 0, 0, 320, 2, '#ffd24a'); R(c, 0, 62, 320, 2, '#ffd24a'); }
+      });
+      if (cc) { // 직원 카드 도감: 6열 x 2행, 미획득은 실루엣
+        cc.imageSmoothingEnabled = false; R(cc, 0, 0, 240, 88, '#1a1c2c');
+        CARDS.forEach((cd, i) => {
+          const x = i % 6 * 40, y = (i / 6 | 0) * 44, n = s.cards[cd.id] || 0, col = RARITY[cd.rar].c;
+          bx(cc, x + 2, y + 2, 36, 40, n ? '#3a4466' : '#14161f'); if (n) { R(cc, x + 2, y + 2, 36, 2, col); for (let m = 0; m < n; m++) R(cc, x + 8 + m * 8, y + 36, 6, 3, col); }
+          person(cc, x + 10, y + 6, n ? PAL(cd.st < 0 ? '#ffd24a' : COL[cd.st], HAIR[i % 4]) : DARK);
+          if (i === sel) { cc.strokeStyle = '#ffffff'; cc.strokeRect(x + 1.5, y + 1.5, 37, 41); }
+        });
+      }
+    },
+  };
+}
+
+
+// 말풍선: 장면 캔버스 위에 DOM으로 겹쳐 그린다(한글 폰트 선명). 상태는 읽기만 한다.
+function Bubbles(canvases) {
+  const items = canvases.map((cv, i) => {
+    const w = document.createElement('div'); w.className = 'cv'; cv.parentNode.insertBefore(w, cv); w.appendChild(cv);
+    const b = document.createElement('div'); b.className = 'bub'; b.hidden = true; w.appendChild(b);
+    return { b, next: 1.5 + i * 0.9 + Math.random() * 2, hide: 0, last: -1 };
+  });
+  const slots = [14, 38, 60]; let now = 0;
+  return {
+    update(dt, s, visible) {
+      now += dt; if (!visible) return;
+      items.forEach((it, i) => {
+        if (!it.b.hidden && now > it.hide) it.b.hidden = true;
+        if (now < it.next) return;
+        const urgent = s.ev && !s.ev.boost && Math.random() < .5, active = i === 0 || i >= 5 || (s.q && s.q[i] > .02);
+        it.next = now + (urgent ? 3 : 5) + Math.random() * 5;
+        if (!active) return;
+        const pool = urgent && i < 5 ? URGENT : QUOTES[i]; let k; do k = Math.random() * pool.length | 0; while (k === it.last && pool.length > 1);
+        it.last = k; it.b.textContent = pool[k]; it.b.className = 'bub' + (urgent && i < 5 ? ' ur' : '');
+        it.b.style.left = slots[Math.random() * 3 | 0] + '%'; it.b.hidden = false; it.hide = now + 3.2;
+      });
+    },
+  };
+}
+
+
+
+
+// 오늘의 헤드라인: 하루 결과(report)를 신문 1면 문구로 바꾼다 (순수 함수)
+function paper(name, r) {
+  const diff = Math.abs(r.rating - r.rival).toFixed(1), rt = r.rating.toFixed(1) + '%';
+  const head = r.rec ? `${name}, 역대 최고 시청률 ${rt} 경신`
+    : r.won ? (r.win >= 3 ? `${name}, ${r.win}일 연속 동시간대 1위` : `${name} 8시 뉴스 ${rt}… ${RIVAL} 제쳤다`)
+    : `${RIVAL}에 ${diff}%p 차 석패… "내일은 다르다"`;
+  const subs = [];
+  if (r.log && r.log.length) subs.push(`[속보] ${r.log.join(' · ')}`);
+  if (r.dW) subs.push(`[단독] 보도국 단독 보도 ${r.dW}건 적중`);
+  if (r.dF) subs.push(`[정정] 오보 ${r.dF}건… "깊이 사과드립니다"`);
+  subs.push(r.viral ? `[화제] 유튜브 하루 ${fmt(r.views)}회 '대박'` : `[디지털] 유튜브 조회수 +${fmt(r.views)}`);
+  if (r.all) subs.push('[사내] 오늘의 미션 올클리어');
+  const q = QUOTES[2], who = ['영상편집기자', '그래픽 디자이너', '영상편집팀장'], k = r.day % 3, pool = [q, QUOTES[3], QUOTES[7]][k];
+  subs.push(`[인터뷰] ${who[k]} "${pool[(r.day * 7) % pool.length]}"`);
+  return { mast: `${name} 일보`, no: `D+${r.day} · 제${r.day}호`, head, subs: subs.slice(0, 5),
+    foot: `시청률 ${rt} vs ${RIVAL} ${r.rival.toFixed(1)}% · 광고 수입 +${fmt(r.bonus)}점 · 연구 포인트 +${r.rp}` };
+}
+
+// 인트로 타이틀: 픽셀 방송국 건물 타임랩스(4계절·밤낮·노을·날씨)
+// + 중계 헬기, UFO vs 전투기, 오리지널 히어로 '뉴스 디펜더즈', 거대 로봇 습격, 건물 파괴와 복구
+const IHEROES = {
+  cap: '캡틴 큐시트', ninja: '프레임 닌자', mecha: '메카 앵커', night: '나이트 에디터',
+};
+const ISEASONS = ['봄', '여름', '가을', '겨울'];
+const ISKY = [[0, '#070a1f', '#141a3d'], [.2, '#0b1030', '#26244f'], [.26, '#3a3f7a', '#f2a65a'], [.32, '#5fa8e8', '#bfe3ff'], [.68, '#4f9be0', '#b5dcff'], [.74, '#4b3a85', '#ff8a4c'], [.8, '#241c4a', '#8a3f6a'], [.88, '#0b1030', '#1c1f45'], [1, '#070a1f', '#141a3d']];
+const irgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+const imixc = (a, b, t) => { const x = irgb(a), y = irgb(b); return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
+const irnd = (a, b) => a + Math.random() * (b - a);
+const ipick = a => a[Math.random() * a.length | 0];
+const IDAY = 20, ISEASON_DAYS = 2; // 하루 20초, 계절마다 2일 (1년 = 160초)
+
+function Intro(cv, tickerEl, clockEl) {
+  const mc = cv.getContext('2d'), lay = document.createElement('canvas'), lc = lay.getContext('2d'); let c = mc;
+  let W = 180, H = 360, G = 320, B0 = 56, B1 = 114, BT = 140, T = +(new URLSearchParams(location.search).get('it')) || 4.5, raf = 0, last = 0, on = false, nameTxt = 'NEWS';
+  let parts = [], acts = [], holes = [], wins = [], apts = [], city = [], clouds = [], disk = { gone: 0, t: 0 }, flash = 0, next = 1, bigs = [], incidents = [], vans = [], cars = [], nextCar = 1, lastSeason = -1, rainy = false;
+  const R = (x, y, w, h, k) => { c.fillStyle = k; c.fillRect(Math.round(x), Math.round(y), w, h); };
+  const circ = (cx, cy, r, k) => { for (let dy = -r; dy <= r; dy++) { const w = Math.floor(Math.sqrt(r * r - dy * dy)); R(cx - w, cy + dy, 2 * w + 1, 1, k); } };
+  // 뉴스 자막: 대기열에 쌓았다가 7초마다 하나씩 흘려보낸다
+  let tq = [], tickT = 0;
+  const show = m => { if (!tickerEl) return; tickerEl.textContent = m; tickerEl.style.animation = 'none'; void tickerEl.offsetWidth; tickerEl.style.animation = ''; };
+  const say = m => { if (!tq.includes(m)) tq.push(m); if (tq.length > 3) tq.shift(); };
+
+  function resize() {
+    const r = innerHeight / Math.max(1, innerWidth);
+    W = 180; H = Math.round(Math.max(300, Math.min(400, 180 * r))); cv.width = W; cv.height = H; lay.width = W; lay.height = H; mc.imageSmoothingEnabled = false; lc.imageSmoothingEnabled = false;
+    G = H - 92; B0 = 60; B1 = 118; BT = G - Math.max(100, Math.min(190, G - 118));
+    wins = []; for (let y = BT + 16; y < G - 6; y += 5) for (let x = B0 + 5; x < B1 - 5; x += 6) wins.push({ x, y, on: Math.random() < .45 });
+    apts = []; [[W - 54, 62], [W - 28, 84]].forEach(([x, h]) => { for (let y = G - h + 6; y < G - 4; y += 6) for (let i = 0; i < 4; i++) apts.push({ x: x + 3 + i * 6, y, on: Math.random() < .5 }); });
+    city = []; for (let x = 0; x < W; x += 8) city.push({ x, h: irnd(18, 55) });
+    clouds = []; for (let i = 0; i < 6; i++) clouds.push({ x: irnd(0, W), y: irnd(15, BT - 10), w: irnd(14, 34), s: irnd(10, 22) });
+  }
+
+  // ---------- 시간·계절 ----------
+  const dayF = () => (T % IDAY) / IDAY;
+  const season = () => Math.floor(T / (IDAY * ISEASON_DAYS)) % 4;
+  const nightF = f => f < .2 || f > .86 ? 1 : f < .3 ? 1 - (f - .2) / .1 : f > .72 ? (f - .72) / .14 : 0;
+  const sunsetF = f => Math.max(0, 1 - Math.abs(f - .74) / .06, 1 - Math.abs(f - .26) / .05);
+  function skyAt(f) { let i = 0; while (ISKY[i + 1][0] < f) i++; const a = ISKY[i], b = ISKY[i + 1], t = (f - a[0]) / (b[0] - a[0]); return [imixc(a[1], b[1], t), imixc(a[2], b[2], t)]; }
+
+  // ---------- 효과 ----------
+  const boom = (x, y, n = 14, big2 = 1) => { for (let i = 0; i < n; i++) parts.push({ x, y, vx: irnd(-30, 30) * big2, vy: irnd(-34, 14) * big2, life: irnd(.4, .9), col: ipick(['#ffd24a', '#ff7a2a', '#ffffff', '#ef7d57']), s: ipick([1, 2, 2, 3]), g: 30, glow: 1 }); flash = Math.max(flash, .25 * big2); };
+  const debris = (x, y, n = 8) => { for (let i = 0; i < n; i++) parts.push({ x, y, vx: irnd(-20, 20), vy: irnd(-25, 0), life: 2.5, col: ipick(['#4fa3b8', '#2f6f82', '#e8eef2', '#94b0c2']), s: ipick([1, 2]), g: 80, ground: 1 }); };
+  function hit(x, y, r = 3) { // 건물 피격: 구멍 + 불 + 파편
+    x = Math.max(B0 - 6, Math.min(B1 - 3, x)); y = Math.max(BT + 4, Math.min(G - 8, y));
+    holes.push({ x, y, r, age: 0, life: irnd(10, 16) }); incidents.push({ x, t: 0 }); boom(x, y, 10); debris(x, y, 10);
+    if (holes.length > 14) holes.shift();
+  }
+  function knockDisk() { if (disk.gone) return; disk.gone = 1; disk.t = 14; boom(B0 - 2, BT - 2, 22, 1.4); for (let i = 0; i < 20; i++) parts.push({ x: B0 - 2 + irnd(-10, 10), y: BT - 2 + irnd(-8, 8), vx: irnd(-25, 10), vy: irnd(-20, 5), life: 3, col: ipick(['#e8eef2', '#c2c3c7', '#2f6f82']), s: 2, g: 90, ground: 1 }); say('[속보] 보도국 옥상 원형 구조물 붕괴… "방송은 계속됩니다"'); }
+
+  // ---------- 캐릭터 그리기 (오리지널 디자인) ----------
+  const HERO_DRAW = {
+    cap(x, y, d, t) { // 노란 슈트 + 초록 망토 + 고글, 수평 비행
+      const w = Math.sin(t * 22) > 0 ? 1 : 0;
+      R(x - d * 6, y - 1 + w, 5, 2, '#38b764'); R(x - d * 9, y + w * -1, 3, 2, '#257179');
+      R(x - (d > 0 ? 3 : 4), y, 7, 3, '#ffcd75'); R(x - (d > 0 ? 6 : -3), y + 1, 3, 2, '#2a2a3a');
+      R(x + (d > 0 ? 4 : -6), y - 1, 3, 3, '#f0c090'); R(x + (d > 0 ? 5 : -5), y - 1, 2, 1, '#14141f');
+      R(x + (d > 0 ? 7 : -9), y, 3, 1, '#ffcd75');
+    },
+    ninja(x, y, d, t) { // 청록·검정 닌자 + 흰 스카프
+      for (let i = 1; i < 5; i++) R(x - d * (i * 2 + 1), y - 4 + Math.round(Math.sin(t * 15 + i) * 1), 2, 1, '#f4f4f4');
+      R(x - 1, y - 6, 3, 3, '#14141f'); R(x - 1, y - 5, 3, 1, '#73eff7');
+      R(x - 1, y - 3, 3, 4, '#257179'); R(x - 2, y + 1, 1, 3, '#14141f'); R(x + 2, y + 1, 1, 3, '#14141f');
+    },
+    mecha(x, y, d, t) { // 은색 각진 슈트 + 보라 바이저 + 파란 제트
+      R(x - 2, y - 7, 4, 3, '#c2c3c7'); R(x - 1 + (d > 0 ? 1 : -1), y - 6, 3, 1, '#b45bff');
+      R(x - 3, y - 4, 6, 5, '#94b0c2'); R(x - 1, y - 3, 2, 2, '#a7f070');
+      R(x - 3, y + 1, 2, 3, '#566c86'); R(x + 1, y + 1, 2, 3, '#566c86');
+      R(x - 3, y + 4, 2, 2 + (t * 20 | 0) % 2, '#73eff7'); R(x + 1, y + 4, 2, 2 + (t * 20 | 0) % 2, '#73eff7');
+    },
+    night(x, y, d, t) { // 주황 후드 + 보라 호버보드
+      R(x - 2, y - 7, 4, 4, '#ef7d57'); R(x - 1 + (d > 0 ? 1 : 0), y - 5, 2, 2, '#14141f');
+      R(x - 2, y - 3, 4, 4, '#333c57'); R(x - 2, y + 1, 1, 2, '#333c57'); R(x + 1, y + 1, 1, 2, '#333c57');
+      R(x - 5, y + 3, 10, 1, '#b45bff'); R(x - 4, y + 4, 8, 1, (t * 10 | 0) % 2 ? '#ff4ad6' : '#5d275d');
+    },
+  };
+  const drawJet = (x, y, d) => { R(x - 5, y, 10, 2, '#9aa5b1'); R(x + (d > 0 ? 5 : -7), y, 2, 1, '#c2c3c7'); R(x - 1, y + 1, 3, 2, '#566c86'); R(x - d * 4 - 1, y - 2, 2, 2, '#566c86'); R(x - d * 6 - (d > 0 ? 2 : 0), y, 2, 2, (T * 30 | 0) % 2 ? '#ffd24a' : '#ff7a2a'); };
+  const drawUfo = (x, y) => { R(x - 4, y - 3, 8, 3, '#73eff7'); R(x - 1, y - 2, 2, 1, '#38b764'); R(x - 9, y, 18, 2, '#94b0c2'); R(x - 11, y + 2, 22, 2, '#566c86'); R(x - 7, y + 4, 14, 1, '#333c57'); for (let i = 0; i < 4; i++) R(x - 8 + i * 5, y + 2, 2, 1, ((T * 6 | 0) + i) % 2 ? '#ff4ad6' : '#ffd24a'); };
+  const drawHeli = (x, y, d) => {
+    R(x - 5, y, 10, 5, '#f4f4f4'); R(x + (d > 0 ? 2 : -5), y + 1, 3, 2, '#41a6f6'); R(x - 5, y + 3, 10, 1, '#b13e53');
+    R(x - d * 5 - (d > 0 ? 7 : 0), y + 1, 7, 1, '#c2c3c7'); R(x - d * 12, y - 1, 1, 3, '#c2c3c7');
+    const rw = (T * 30 | 0) % 2 ? 15 : 9; R(x - rw / 2, y - 2, rw, 1, '#333c57'); R(x, y - 1, 1, 1, '#333c57'); R(x - 5, y + 6, 10, 1, '#566c86');
+    if ((T * 3 | 0) % 2) R(x - 1, y + 1, 1, 1, '#ff004d');
+  };
+  function drawRobot(x, y, t, punch, hp) { // 오리지널 '글리치 로봇'
+    const k = hp > 3 ? '#8b9bb4' : '#6b7894', g = (t * 8 | 0) % 2;
+    R(x - 6, y - 40, 12, 9, k); R(x - 4, y - 37, 8, 2, (t * 4 | 0) % 2 ? '#ff004d' : '#ff77a8'); R(x - 1, y - 44, 2, 4, '#566c86'); R(x - 2, y - 46, 4, 2, '#ff004d');
+    R(x - 11, y - 31, 22, 18, k); R(x - 6, y - 27, 12, 6, '#333c57'); R(x - 4, y - 25, 3, 2, '#a7f070'); R(x + 1, y - 25, 3, 2, '#ffd24a');
+    R(x - 17 - punch * 10, y - 30, 7, 5, k); R(x - 19 - punch * 10, y - 31, 3, 7, '#566c86'); R(x + 11, y - 30, 5, 14, k);
+    R(x - 9, y - 13, 7, 13, '#566c86'); R(x + 2, y - 13, 7, 13, '#566c86'); R(x - 10, y - 2 + g, 9, 2, '#333c57'); R(x + 1, y - 2 + (1 - g), 9, 2, '#333c57');
+  }
+
+  // 히어로: 작은 캔버스에 1배로 그린 뒤 1.5배로 붙인다(픽셀이 번지지 않게)
+  const hc = document.createElement('canvas'); hc.width = hc.height = 32; const hx = hc.getContext('2d'), HS = 1.5;
+  const hero = (id, x, y, d) => { const keep = c; c = hx; hx.clearRect(0, 0, 32, 32); HERO_DRAW[id](16, 16, d, T); c = keep; c.imageSmoothingEnabled = false; c.drawImage(hc, Math.round(x - 16 * HS), Math.round(y - 16 * HS), 32 * HS, 32 * HS); };
+
+  const heroOn = () => acts.some(a => a.hero) || bigs.some(b => b.kind === 'robot');
+
+  // ---------- 이벤트 ----------
+  function heli() { const d = Math.random() < .5 ? 1 : -1; let x = d > 0 ? -20 : W + 20; const y = irnd(BT - 30, BT + 40); say(ipick(['[현장] 중계 헬기, 보도국 상공 비행 중', '[LIVE] 하늘에서 본 도심… 중계 헬기 연결', '[교통] 중계 헬기가 전하는 퇴근길 상황']));
+    acts.push({ heli: 1, up(dt) { x += d * 22 * dt; return x > -30 && x < W + 30; }, draw() { drawHeli(x, y + Math.sin(T * 3) * 2, d); }, glow() { if (nightF(dayF()) > .4) { c.fillStyle = 'rgba(255,250,200,.12)'; c.beginPath(); c.moveTo(x, y + 6); c.lineTo(x - 12, G); c.lineTo(x + 12, G); c.fill(); } } });
+  }
+  function flyby(id) {
+    id = id || ipick(Object.keys(IHEROES)); const d = Math.random() < .5 ? 1 : -1; let x = d > 0 ? -12 : W + 12, y = irnd(30, G - 60), t0 = T, sp = id === 'ninja' ? 50 : 60;
+    say(`[화제] 뉴스 디펜더즈 '${IHEROES[id]}', 방송국 상공 포착`);
+    acts.push({ hero: 1, up(dt) {
+        x += d * sp * dt;
+        if (id === 'ninja') y = G - 70 - Math.abs(Math.sin((T - t0) * 3)) * 60; else if (id === 'mecha') y -= 12 * dt; else y += Math.sin(T * 2) * .3;
+        if (Math.random() < dt * 25) parts.push({ x: x - d * 4, y, vx: -d * 5, vy: 0, life: .35, col: { cap: '#ffd24a', ninja: '#f4f4f4', mecha: '#73eff7', night: '#ff4ad6' }[id], s: 1, g: 0, glow: 1 });
+        return x > -20 && x < W + 20; },
+      draw() { hero(id, x, y, d); } });
+  }
+  function battle() {
+    say('[속보] 방송국 상공에 정체불명 UFO 출현… 공군 전투기 긴급 출격');
+    const u = { x: W + 20, y: BT - 40, hp: 6, dead: 0, vy: 0, rot: 0 }; let t = 0, nextJet = .8, nextLaser = 1.6, joined = 0;
+    const jets = [], missiles = [], beams = [];
+    bigs.push({ kind: 'battle', up(dt) {
+        t += dt;
+        if (!u.dead) { const tx = W * .55 + Math.sin(t * .9) * 30, ty = BT - 35 + Math.sin(t * 1.7) * 12; u.x += (tx - u.x) * dt * 1.5; u.y += (ty - u.y) * dt * 1.5; }
+        else { u.vy += 60 * dt; u.y += u.vy * dt; u.x += u.dx * dt; if (Math.random() < dt * 30) parts.push({ x: u.x, y: u.y, vx: irnd(-5, 5), vy: -8, life: 1.2, col: '#555566', s: 2, g: -5 });
+          if (u.y >= G - 6 || (u.x > B0 - 6 && u.x < B1 && u.y > BT)) { boom(u.x, u.y, 30, 1.6); if (u.x > B0 - 6 && u.x < B1) { hit(u.x, u.y, 5); if (u.y < BT + 40) knockDisk(); } u.gone = 1; say('[속보] UFO 격추… 보도국 "피해 복구 중, 방송 이상 없음"'); } }
+        if ((nextJet -= dt) < 0 && t < 11 && !u.dead) { const d = Math.random() < .5 ? 1 : -1; jets.push({ x: d > 0 ? -12 : W + 12, y: irnd(BT - 70, BT + 30), d, fired: 0 }); nextJet = irnd(1.2, 2.2); }
+        jets.forEach(j => { j.x += j.d * 75 * dt; if (!j.fired && !u.dead && Math.abs(j.x - u.x) < 70 && (u.x - j.x) * j.d > 0) { j.fired = 1; missiles.push({ x: j.x, y: j.y, tx: u.x, ty: u.y }); } });
+        missiles.forEach(m => { const dx = u.x - m.x, dy = u.y - m.y, L = Math.hypot(dx, dy) || 1; m.x += dx / L * 90 * dt; m.y += dy / L * 90 * dt; parts.push({ x: m.x, y: m.y, vx: 0, vy: 0, life: .5, col: '#c2c3c7', s: 1, g: -3 });
+          if (L < 5 && !u.dead) { m.done = 1; boom(u.x, u.y, 10); if (--u.hp <= 0) { u.dead = 1; u.dx = (B0 + 20 - u.x) * .4; } } else if (u.dead) m.done = 1; });
+        if ((nextLaser -= dt) < 0 && !u.dead) { nextLaser = irnd(.7, 1.3); const tj = jets.find(j => Math.abs(j.x - u.x) < 80); const miss = !tj || Math.random() < .55;
+          const tx = miss ? irnd(B0, B1) : tj.x, ty = miss ? irnd(BT + 4, BT + 90) : tj.y; beams.push({ x: tx, y: ty, l: .18 }); if (miss) hit(tx, ty); else { boom(tx, ty, 8); jets.splice(jets.indexOf(tj), 1); } }
+        beams.forEach(b => b.l -= dt);
+        if (!joined && t > 4 && !heroOn() && Math.random() < .6) { joined = 1; const id = ipick(Object.keys(IHEROES)); let hx = -10, hy = u.y; say(`[화제] '${IHEROES[id]}' 참전! UFO와 공중전`);
+          acts.push({ hero: 1, up(dt2) { if (u.dead || u.gone) { hx += 70 * dt2; hy -= 20 * dt2; return hx < W + 20; } hx += (u.x - hx) * dt2 * 2.5; hy += (u.y - hy) * dt2 * 2.5; if (Math.hypot(u.x - hx, u.y - hy) < 6 && Math.random() < dt2 * 3) { boom(u.x, u.y, 8); if (--u.hp <= 0) { u.dead = 1; u.dx = (B0 + 20 - u.x) * .4; } } return true; }, draw() { hero(id, hx, hy, 1); } }); }
+        for (let i = jets.length - 1; i >= 0; i--) if (jets[i].x < -20 || jets[i].x > W + 20) jets.splice(i, 1);
+        for (let i = missiles.length - 1; i >= 0; i--) if (missiles[i].done) missiles.splice(i, 1);
+        for (let i = beams.length - 1; i >= 0; i--) if (beams[i].l <= 0) beams.splice(i, 1);
+        if (t > 14 && !u.dead) { u.x += 80 * dt; u.y -= 40 * dt; if (u.y < -20) { say('[속보] UFO 퇴각… 군 "추가 출현 대비"'); return false; } }
+        return !u.gone; },
+      draw() { if (!u.gone) drawUfo(u.x, u.y); jets.forEach(j => drawJet(j.x, j.y, j.d)); missiles.forEach(m => R(m.x, m.y, 2, 1, '#f4f4f4')); },
+      glow() { c.strokeStyle = '#a7f070'; c.lineWidth = 1; beams.forEach(b => { c.beginPath(); c.moveTo(u.x, u.y + 4); c.lineTo(b.x, b.y); c.stroke(); }); } });
+  }
+  function robot() {
+    say('[속보] 거대 로봇, 보도국 습격! 뉴스 디펜더즈 출동');
+    const r = { x: W + 30, hp: 8, t: 0, punch: 0, fall: 0 }; const ids = Object.keys(IHEROES).sort(() => Math.random() - .5).slice(0, 1); let nextPunch = 1.5, nextHit = 2.5;
+    bigs.push({ kind: 'robot', up(dt) {
+        r.t += dt; const tx = B1 + 22;
+        if (r.hp > 0) { if (r.x > tx) r.x -= 18 * dt; else { if (!r.arr) { r.arr = 1; incidents.push({ x: r.x - 14, t: 0 }); } if ((nextPunch -= dt) < 0) { nextPunch = irnd(1.2, 2); r.punch = .3; hit(B1 - 3, irnd(G - 130, G - 30), 4); } if (r.t > 4 && (nextHit -= dt) < 0) { nextHit = irnd(.5, .9); boom(r.x + irnd(-8, 8), G - irnd(15, 40), 6); r.hp--; } } }
+        else { r.fall += dt; if (r.fall < .1) { boom(r.x, G - 25, 34, 1.8); say(`[속보] '${IHEROES[ids[0]]}', 거대 로봇 제압!`); } r.x += 25 * dt; }
+        r.punch = Math.max(0, r.punch - dt);
+        return r.fall < 2.5; },
+      draw() {
+        if (r.fall < 2.5) { c.globalAlpha = Math.max(0, 1 - r.fall / 2.5); drawRobot(r.x, G + r.fall * 12, r.t, r.punch > 0 ? 1 : 0, r.hp); c.globalAlpha = 1; }
+        if (r.t > 2.5 && r.hp > 0) ids.forEach((id, i) => { const a = r.t * 2.4 + i * Math.PI; hero(id, r.x + Math.cos(a) * 22, G - 30 + Math.sin(a) * 18, Math.cos(a + Math.PI / 2) > 0 ? 1 : -1); });
+      } });
+  }
+
+  // ---------- 도로: 중계차와 취재진 ----------
+  const FEET = () => G + 12;
+  function person(x, kind, d, run) { // kind: rep(취재기자, 마이크) / cam(영상기자, 어깨 카메라)
+    const y = FEET(), leg = run ? (T * 12 | 0) % 2 : 0;
+    R(x - 1, y - 10, 3, 3, '#f0c090'); R(x - 1, y - 11, 3, 1, kind === 'rep' ? '#3b2a20' : '#14141f');
+    R(x - 1, y - 7, 3, 5, kind === 'rep' ? '#b13e53' : '#333c57');
+    R(x - 1 - leg, y - 2, 1, 2, '#2a2a3a'); R(x + 1 + leg, y - 2, 1, 2, '#2a2a3a');
+    if (kind === 'rep') { R(x + d * 2, y - 7, 1, 2, '#14141f'); R(x + d * 2, y - 8, 1, 1, '#c2c3c7'); }
+    else { R(x - (d > 0 ? 0 : 3), y - 11, 4, 3, '#14141f'); R(x + (d > 0 ? 4 : -4), y - 10, 1, 1, '#94b0c2'); if (!run && (T * 2 | 0) % 2) R(x - (d > 0 ? 0 : 3), y - 12, 1, 1, '#ff004d'); }
+  }
+  function drawVan(v) {
+    const x = v.x, y = G + 11, d = v.d;
+    R(x - 12, y - 11, 24, 8, '#f4f4f4'); R(x + (d > 0 ? 6 : -12), y - 11, 6, 4, '#41a6f6'); R(x - 12, y - 6, 24, 2, '#2a6fdb'); R(x - 9, y - 10, 5, 2, '#b13e53');
+    R(x - 9, y - 3, 4, 3, '#14141f'); R(x + 5, y - 3, 4, 3, '#14141f');
+    R(x - 4, y - 11 - v.mast, 1, v.mast, '#94b0c2'); R(x - 7, y - 13 - v.mast, 7, 2, '#e8eef2'); if (v.mast > 4) R(x - 5, y - 15 - v.mast, 3, 2, '#e8eef2');
+    if ((T * 3 | 0) % 2) R(x + (d > 0 ? -12 : 11), y - 12, 1, 1, '#ff004d');
+  }
+  const REPORTERS = ['김민준', '이서연', '박지호', '최유나', '정우진', '한소희'];
+  function dispatch(inc) {
+    const d = inc.x > W / 2 ? 1 : -1, tx = Math.max(16, Math.min(W - 16, inc.x));
+    vans.push({ x: d > 0 ? -16 : W + 16, d, tx, st: 'drive', mast: 0, t: 0, spot: Math.max(6, Math.min(W - 6, inc.x)), crew: [] });
+    say(ipick(['[현장] 중계차 긴급 출동… 사고 현장으로 이동 중', '[현장] 취재진 현장 급파… 잠시 후 연결합니다', '[속보] 중계차 현장 도착 예정… 영상기자 동행']));
+  }
+  function road(dt) {
+    incidents.forEach(i => i.t += dt); incidents = incidents.filter(i => i.t < 12);
+    const inc = incidents.find(i => !vans.some(v => Math.abs(v.spot - i.x) < 30));
+    if (inc && vans.length < 2) { dispatch(inc); incidents = incidents.filter(i => Math.abs(i.x - inc.x) >= 30); }
+    else if (!vans.length && Math.random() < dt * .08) dispatch({ x: irnd(20, W - 20) });
+    vans.forEach(v => {
+      if (v.st === 'drive') { v.x += v.d * 50 * dt; if ((v.tx - v.x) * v.d <= 0) { v.x = v.tx; v.st = 'park'; v.crew = [{ k: 'rep', x: v.x, tx: v.spot, d: v.d }, { k: 'cam', x: v.x, tx: Math.max(4, Math.min(W - 4, v.spot - v.d * 12)), d: v.d }]; } }
+      else if (v.st === 'park' || v.st === 'back') {
+        v.mast = Math.max(0, Math.min(14, v.mast + (v.st === 'park' ? 20 : -20) * dt)); let all = true;
+        v.crew.forEach(p => { const dx = (v.st === 'park' ? p.tx : v.x) - p.x; if (Math.abs(dx) > .8) { all = false; p.d = Math.sign(dx); p.x += p.d * 30 * dt; p.run = 1; } else p.run = 0; });
+        if (all && v.st === 'park') { v.st = 'film'; v.t = irnd(5, 8); v.crew[0].d = -v.d; v.crew[1].d = v.d; say(`[LIVE] 현장 연결합니다. ${ipick(REPORTERS)} 기자!`); }
+        if (all && v.st === 'back' && v.mast <= 0) { v.st = 'leave'; v.crew = []; }
+      }
+      else if (v.st === 'film') { if ((v.t -= dt) <= 0) v.st = 'back'; }
+      else v.x += v.d * 50 * dt;
+    });
+    vans = vans.filter(v => v.x > -30 && v.x < W + 30);
+    if ((nextCar -= dt) <= 0) { nextCar = irnd(1.5, 4); const d = Math.random() < .5 ? 1 : -1; cars.push({ x: d > 0 ? -10 : W + 10, d, k: ipick(['#e43b44', '#feae34', '#2ce8f5', '#c2c3c7', '#3e8948']), sp: irnd(40, 65) }); }
+    cars.forEach(k => k.x += k.d * k.sp * dt); cars = cars.filter(k => k.x > -20 && k.x < W + 20);
+  }
+  function drawRoad() {
+    cars.forEach(k => { R(k.x - 7, G + 2, 14, 3, k.k); R(k.x - 4, G, 8, 2, k.k); R(k.x - 3, G, 6, 1, '#94b0c2'); R(k.x - 5, G + 5, 2, 1, '#14141f'); R(k.x + 3, G + 5, 2, 1, '#14141f'); });
+    vans.forEach(v => { drawVan(v); v.crew.forEach(p => person(p.x, p.k, p.d, p.run)); });
+  }
+
+  // ---------- 그리기 ----------
+  function drawSky(f, s) {
+    let [top, bot] = skyAt(f); if (s === 3) { top = imixc(top, '#c9d3e3', .25 * (1 - nightF(f))); bot = imixc(bot, '#e6ecf5', .25 * (1 - nightF(f))); } if (rainy) { top = imixc(top, '#4a5266', .55); bot = imixc(bot, '#6b7385', .55); }
+    for (let y = 0; y < G; y += 4) R(0, y, W, 4, imixc(top, bot, y / G));
+    const nf = nightF(f);
+    if (nf > 0) for (let i = 0; i < 40; i++) { const x = (i * 53) % W, y = (i * 29) % (BT); if ((i + (T * 2 | 0)) % 9) { c.globalAlpha = nf * .8; R(x, y, 1, 1, '#ffffff'); c.globalAlpha = 1; } }
+    const arc = (g, k, r) => { if (g < 0 || g > 1) return; const x = 10 + g * (W - 20), y = G - 30 - Math.sin(Math.PI * g) * (G - 70); circ(x, y, r, k); };
+    if (!rainy) { arc((f - .24) / .52, f < .32 || f > .68 ? '#ffb05a' : '#fff2b0', 5); arc(((f + .5) % 1 - .24) / .52, '#e8eef5', 4); }
+    clouds.forEach(cl => { const k = rainy ? '#7b8396' : '#ffffff'; c.globalAlpha = rainy ? .9 : .75; R(cl.x, cl.y, cl.w, 4, k); R(cl.x + 4, cl.y - 3, cl.w - 10, 3, k); c.globalAlpha = 1; });
+    city.forEach(b => R(b.x, G - b.h, 7, b.h, '#5b6e8c'));
+  }
+  function drawBuilding(s) {
+    const H2 = G - BT, snow = s === 3;
+    // 왼쪽 저층 빌딩, 오른쪽 아파트
+    R(4, G - 70, 34, 70, '#6f8fa6'); for (let y = G - 66; y < G; y += 5) R(6, y, 30, 1, '#557590');
+    [[W - 54, 62], [W - 28, 84]].forEach(([x, h]) => { R(x, G - h, 26, h, '#e9e4dc'); R(x + 24, G - h, 2, h, '#c9c1b5'); R(x + 4, G - h - 6, 8, 6, '#d6d0c6'); R(x + 14, G - h - 4, 6, 4, '#d6d0c6'); for (let y = G - h + 6; y < G - 4; y += 6) for (let i = 0; i < 4; i++) R(x + 3 + i * 6, y, 4, 3, '#a9b8c4'); if (snow) R(x, G - h - 1, 26, 2, '#ffffff'); });
+    // 본관: 왼쪽 측면 + 정면 유리 + 흰 프레임
+    R(B0 - 8, BT + 6, 8, H2 - 6, '#2d4a5a'); for (let y = BT + 8; y < G; y += 5) R(B0 - 8, y, 8, 1, '#22394a');
+    for (let y = BT + 10; y < G; y++) R(B0, y, B1 - B0, 1, imixc('#7cc4d4', '#3f8ea3', (y - BT) / H2));
+    for (let y = BT + 12; y < G; y += 5) R(B0 + 3, y, B1 - B0 - 6, 1, '#2f6f82');
+    for (let x = B0 + 4; x < B1 - 4; x += 6) R(x, BT + 10, 1, H2 - 10, '#9fd8e2');
+    R(B0, BT + 6, 3, H2 - 6, '#e8eef2'); R(B1 - 3, BT + 6, 3, H2 - 6, '#e8eef2'); R(B1, BT + 10, 5, H2 - 10, '#c9d1d8');
+    for (let y = BT + 12; y < G; y += 5) R(B1, y, 5, 1, '#e8eef2');
+    const mid = BT + Math.round(H2 * .52); R(B0 - 2, mid, B1 - B0 + 6, 3, '#e8eef2'); R(B0 + 16, mid + 3, 22, 2, '#c9d1d8');
+    // 옥상 크라운 + 방송국 엠블럼
+    R(B0 - 1, BT, B1 - B0 + 2, 10, '#b7c7d3'); for (let x = B0 + 1; x < B1; x += 3) R(x, BT + 1, 1, 8, '#8ea4b4'); R(B0 - 1, BT - 1, B1 - B0 + 2, 1, '#e8eef2');
+    circ(B0 + 17, BT + 5, 3, '#f4f4f4'); circ(B0 + 17, BT + 5, 2, '#2a6fdb');
+    c.fillStyle = '#ffffff'; c.font = '6px "Press Start 2P",monospace'; c.fillText(nameTxt.slice(0, 4), B0 + 22, BT + 8);
+    // 첨탑
+    const sx = B1 - 14; [[6, 8], [4, 10], [3, 10], [2, 8], [1, 8]].reduce((y, [w, h], i) => { R(sx - w / 2, y - h, w, h, i % 2 ? '#c2c3c7' : '#e8eef2'); return y - h; }, BT);
+    // 원형 구조물(왼쪽 위)
+    if (!disk.gone) { circ(B0 - 1, BT + 1, 11, '#e8eef2'); circ(B0 - 1, BT + 1, 9, '#5f8fa3'); for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + T * .2; R(B0 - 1 + Math.cos(a) * 6, BT + 1 + Math.sin(a) * 6, 1, 1, '#c9d1d8'); } circ(B0 - 1, BT + 1, 2, '#e8eef2'); }
+    else if (disk.t < 3) { c.strokeStyle = '#ffd24a'; c.strokeRect(B0 - 12.5, BT - 10.5, 22, 22); for (let i = -10; i < 12; i += 4) R(B0 - 12 + i + 10, BT - 10, 1, 22, '#94b0c2'); }
+    if (snow) { R(B0 - 2, BT - 2, B1 - B0 + 4, 2, '#ffffff'); R(B0 - 9, BT + 5, 9, 1, '#ffffff'); R(B0 - 2, mid - 1, B1 - B0 + 6, 1, '#ffffff'); }
+    // 피격 구멍
+    holes.forEach(h => { if (h.age < h.life) { circ(h.x, h.y, h.r, '#1a1414'); circ(h.x, h.y, Math.max(1, h.r - 2), '#0c0a0a'); } else { for (let i = -h.r - 1; i <= h.r + 1; i += 2) R(h.x + i, h.y - h.r - 1, 1, h.r * 2 + 3, '#c2a35a'); R(h.x - h.r - 1, h.y, h.r * 2 + 3, 1, '#c2a35a'); } });
+  }
+  function drawFront(s) {
+    const pal = [['#ffb7d5', '#f78fb3', '#7bc96f'], ['#2f9e44', '#38b764', '#5fbf5a'], ['#ef7d57', '#ffcd75', '#b9a26a'], ['#6b4f3a', '#8b6a50', '#e8eef5']][s];
+    R(0, G, W, H - G, pal[2]);
+    R(0, G, W, 14, '#4a4f5c'); R(0, G, W, 1, '#9aa0a8'); for (let x = 2; x < W; x += 12) R(x, G + 6, 6, 1, '#e8e8e8'); R(0, G + 13, W, 2, '#b8b2a6');
+    if (s === 3) { R(0, G + 1, W, 1, '#ffffff'); R(0, G + 12, W, 1, '#ffffff'); }
+    for (let i = 0; i < 12; i++) { const x = i * 16 - 4 + (i % 2) * 5, y = G + 26 + (i % 3) * 6, r = 8 + (i % 3);
+      R(x + r - 1, y, 2, 14, '#5a3a20');
+      if (s === 3) { R(x + r - 6, y - 2, 12, 1, '#6b4f3a'); R(x + r - 4, y - 6, 8, 1, '#6b4f3a'); R(x + r - 6, y - 3, 12, 1, '#ffffff'); R(x + r - 4, y - 7, 8, 1, '#ffffff'); }
+      else { circ(x + r, y, r, pal[0]); circ(x + r - 2, y - 2, r - 4, pal[1]); }
+    }
+  }
+  function drawWeather(s, f, dt) {
+    if (s === 1 && rainy) { c.fillStyle = 'rgba(200,220,255,.5)'; for (let i = 0; i < 60; i++) { const x = (i * 37 + T * 140) % (W + 20) - 10, y = (i * 71 + T * 260) % H; c.fillRect(x, y, 1, 4); } if (Math.random() < dt * .4) { flash = .5; say('[날씨] 수도권 장맛비… 천둥·번개 주의'); } }
+    if (s === 0 && Math.random() < dt * 8) parts.push({ x: irnd(0, W), y: -2, vx: irnd(4, 12), vy: irnd(8, 14), life: 9, col: ipick(['#ffb7d5', '#ffffff']), s: 1, g: 0, sway: 1 });
+    if (s === 2 && Math.random() < dt * 6) parts.push({ x: irnd(0, W), y: -2, vx: irnd(-4, 8), vy: irnd(10, 16), life: 9, col: ipick(['#ef7d57', '#ffcd75', '#d9480f']), s: 2, g: 0, sway: 1 });
+    if (s === 3 && Math.random() < dt * 22) parts.push({ x: irnd(0, W), y: -2, vx: irnd(-3, 3), vy: irnd(8, 14), life: 12, col: '#ffffff', s: ipick([1, 1, 2]), g: 0, sway: 1 });
+  }
+
+  // ---------- 메인 루프 ----------
+  function frame(now) {
+    if (!on) return; raf = requestAnimationFrame(frame); try { step(now); } catch (e) { console.error(e); }
+  }
+  function step(now) {
+    const dt = Math.min(.05, (now - (last || now)) / 1000); last = now; T += dt;
+    const f = dayF(), s = season(), nf = nightF(f), sf = sunsetF(f);
+    if ((tickT -= dt) <= 0 && tq.length) { show(tq.shift()); tickT = 7; }
+    if (s !== lastSeason) { if (lastSeason >= 0) say(['[날씨] 벚꽃 만개… 보도국 앞 꽃길', '[날씨] 본격 무더위와 장마 시작', '[날씨] 단풍 절정… 가을 나들이 행렬', '[날씨] 첫눈 소식… 출근길 빙판 주의'][s]); lastSeason = s; }
+    rainy = s === 1 && Math.floor(T / IDAY) % 2 === 0;
+    clouds.forEach(cl => { cl.x += cl.s * (rainy ? 1.6 : 1) * dt; if (cl.x > W + 10) { cl.x = -cl.w - 10; cl.y = irnd(15, BT - 10); } });
+    if (Math.random() < dt * .6) { const w = ipick(wins); w.on = !w.on; } if (Math.random() < dt * .4) { const a = ipick(apts); a.on = !a.on; }
+    holes.forEach(h => h.age += dt); for (let i = holes.length - 1; i >= 0; i--) if (holes[i].age > holes[i].life + 3) { holes.splice(i, 1); if (!holes.length) say('[복구] 보도국 건물 복구 완료… "방송은 계속됩니다"'); }
+    if (disk.gone && (disk.t -= dt) <= 0) disk.gone = 0;
+    if ((next -= dt) <= 0) { // 랜덤 이벤트가 끝없이 겹쳐서 이어진다
+      // 같은 종류는 한 번에 하나: 큰 사건(UFO·로봇) 1개, 히어로 1명, 헬기 1대
+      next = irnd(3.5, 6.5); const opts = [];
+      if (!bigs.length) { opts.push('battle'); if (!heroOn()) opts.push('robot'); }
+      if (!heroOn()) opts.push('flyby', 'flyby');
+      if (!acts.some(a => a.heli)) opts.push('heli');
+      if (opts.length) ({ battle, robot, flyby: () => flyby(), heli })[ipick(opts)](); }
+    acts = acts.filter(a => a.up(dt)); bigs = bigs.filter(b => b.up(dt)); road(dt);
+    parts.forEach(p => { p.vy += p.g * dt; p.x += (p.vx + (p.sway ? Math.sin(T * 3 + p.y * .1) * 6 : 0)) * dt; p.y += p.vy * dt; p.life -= dt; if (p.ground && p.y > G + 6) { p.y = G + 6; p.vx = 0; p.vy = 0; } }); parts = parts.filter(p => p.life > 0 && p.y < H + 4);
+    holes.forEach(h => { if (h.age < h.life * .7 && Math.random() < dt * 8) { parts.push({ x: h.x + irnd(-1, 1), y: h.y - 1, vx: irnd(-3, 3), vy: -12, life: 1.6, col: ipick(['#555566', '#3a3a48']), s: 2, g: -2 }); parts.push({ x: h.x + irnd(-2, 2), y: h.y, vx: 0, vy: -8, life: .3, col: ipick(['#ffd24a', '#ff7a2a']), s: 1, g: 0, glow: 1 }); } });
+    // 낮 색으로 그린 뒤 밤/노을 색을 덮고, 빛나는 것은 그 위에 그린다
+    drawSky(f, s); drawBuilding(s); drawFront(s);
+    const tint = () => { if (nf > 0) { c.fillStyle = `rgba(8,10,40,${.55 * nf})`; c.fillRect(0, 0, W, H); } if (sf > 0) { c.fillStyle = `rgba(255,110,50,${.2 * sf})`; c.fillRect(0, 0, W, H); } };
+    tint(); // 배경에 밤/노을 색
+    if (nf > .3) { c.globalAlpha = Math.min(1, (nf - .3) * 2); wins.forEach(w => { if (w.on) R(w.x, w.y, 4, 3, '#ffd68a'); }); apts.forEach(a => { if (a.on) R(a.x, a.y, 4, 3, '#ffe9a8'); }); c.globalAlpha = 1; }
+    if ((T * 1.5 | 0) % 2) R(B1 - 14, BT - 45, 1, 1, '#ff004d');
+    holes.forEach(h => { if (h.age < h.life * .7) { R(h.x - 1, h.y - 2 - (T * 10 | 0) % 2, 3, 2, '#ff7a2a'); R(h.x, h.y - 3, 1, 1, '#ffd24a'); } });
+    // 움직이는 것들은 창문 '앞'에 별도 레이어로 그리고, 그 레이어에만 같은 밤 색을 입힌다
+    c = lc; c.clearRect(0, 0, W, H);
+    drawRoad(); acts.forEach(a => a.draw()); bigs.forEach(b => b.draw());
+    parts.forEach(p => { if (!p.glow) R(p.x, p.y, p.s, p.s, p.col); });
+    c.globalCompositeOperation = 'source-atop'; tint(); c.globalCompositeOperation = 'source-over';
+    c = mc; c.drawImage(lay, 0, 0);
+    acts.forEach(a => a.glow && a.glow()); bigs.forEach(b => b.glow && b.glow());
+    if (nf > .4) { cars.forEach(k => R(k.x + (k.d > 0 ? 6 : -8), G + 3, 2, 1, '#fff2b0')); vans.forEach(v => R(v.x + (v.d > 0 ? 11 : -13), G + 7, 2, 1, '#fff2b0')); }
+    parts.forEach(p => { if (p.glow) R(p.x, p.y, p.s, p.s, p.col); });
+    drawWeather(s, f, dt);
+    if (flash > 0) { c.fillStyle = `rgba(255,255,255,${Math.min(.6, flash)})`; c.fillRect(0, 0, W, H); flash -= dt * 2; }
+    if (clockEl) { const hr = (f * 24 + 0) % 24; clockEl.textContent = `${ISEASONS[s]} · ${String(hr | 0).padStart(2, '0')}:${String((hr % 1) * 60 | 0).padStart(2, '0')}${rainy ? ' · 비' : ''}`; }
+  }
+  addEventListener('resize', () => { if (on) resize(); });
+  return {
+    start() { if (on) return; on = true; last = 0; resize(); tq = []; tickT = 0; say('[LIVE] 오늘도 보도국은 쉬지 않습니다'); raf = requestAnimationFrame(frame); },
+    stop() { on = false; cancelAnimationFrame(raf); },
+  };
+}
+
+// 튜토리얼 단계: tab은 그 단계에서 열 탭, target은 강조할 요소 id, done(s, ui)가 참이면 자동으로 다음 단계로 넘어간다
+const TUTORIAL = [
+  { t: '방송국 개국을 축하해요! 취재 → 인제스트 → 편집 → CG → 송출 순서로 영상이 자동으로 흘러가고, 송출될 때마다 점수가 쌓여요.', tab: 'desk', target: 'floors' },
+  { t: '점수로 층을 업그레이드해요. 편집 층의 UP 버튼을 눌러 영상편집기자를 늘려 보세요. (점수 200이 모이면 눌러져요)', tab: 'desk', target: 'fb2', done: s => s.lv.edit >= 1 },
+  { t: '노란 테두리가 둘러진 층이 병목이에요. 병목 층을 올려야 점수 속도가 빨라져요. BUY에서 x10이나 MAX로 한 번에 살 수도 있어요.', tab: 'desk', target: 'seg' },
+  { t: '속보가 터지면 화면 위에 경보가 떠요. 우선 편집을 누르면 그 속보 동안 점수 +50%! 가끔 튀어나오는 특종 버튼도 놓치지 마세요.', tab: 'desk', target: 'spdb' },
+  { t: '매일 8시 뉴스에서 시청률이 평가돼요(게임 속 하루 = 5분). 시청률이 높을수록 광고 수입과 유튜브 조회수가 늘어요.', tab: 'desk', target: 'rate' },
+  { t: '아래 스카우트 탭을 눌러 보세요. 직원 카드를 모으면 층 속도가 영구로 올라가고, 주간 목표를 달성하면 스카우트 티켓을 받아요.', target: 'tab-scout', done: (s, ui) => ui.tab === 'scout' },
+  { t: '순위 탭에서는 다른 방송국과 시즌 순위를 겨루고, 성장 탭에서는 개편과 챌린지로 더 강해질 수 있어요. 막히면 위의 ? 버튼으로 이 가이드를 다시 볼 수 있어요.', target: 'tabs' },
+];
+
+
+
+
+
+
+
+
+const $ = id => document.getElementById(id);
+const fmt = n => { n = Math.floor(n); return n >= 1e12 ? (n / 1e12).toFixed(1) + '조' : n >= 1e8 ? (n / 1e8).toFixed(1) + '억' : n >= 1e4 ? (n / 1e4).toFixed(1) + '만' : n.toLocaleString('ko-KR'); };
+const FLOORS = [['취재', '카메라 기자 · 취재 기자', 'crew'], ['인제스트', '인제스트실', 'ing'], ['편집', '영상편집기자', 'edit'], ['CG', '그래픽 디자이너', 'cg'], ['송출', '뉴스 스튜디오', 'out'], ['중계 장비', '중계 차량 · 리포터', 'live'], ['방송 품질', '화질 · 시청률', 'qual']];
+const byId = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
+const floorHtml = i => `<section class="panel floor" id="fl${i}"><div class="fh"><div><b>${FLOORS[i][0]}</b> <small>${FLOORS[i][1]}</small><div class="cnt" id="c${i}"></div></div><div class="bs"><button class="btn mini" data-id="${FLOORS[i][2]}" id="fb${i}"></button>${i < 5 ? `<button class="btn mini" data-hire="${i}" id="mb${i}"></button>` : ''}</div></div><div class="ms"><i id="m${i}"></i></div><canvas width="320" height="64"></canvas></section>`;
+// View: DOM을 만들고 갱신만 한다. 사용자 입력은 버스 이벤트로만 내보낸다
+function Hud(bus) {
+  $('floors').innerHTML = [0, 1, 2, 3, 4].map(floorHtml).join(''); $('hq').innerHTML = [5, 6].map(floorHtml).join('');
+  const click = e => { const b = e.target.closest('[data-id],[data-hire]'); if (!b || b.disabled) return; if (b.dataset.id) bus.emit('buy', b.dataset.id); else bus.emit('hire', +b.dataset.hire); };
+  $('floors').onclick = click; $('hq').onclick = click;
+  $('seg').onclick = e => { const b = e.target.closest('[data-n]'); if (b) bus.emit('setn', b.dataset.n); };
+  $('ach').innerHTML = ACHIEVEMENTS.map(() => '<i></i>').join(''); $('gold').onclick = () => bus.emit('gold'); $('spdb').onclick = () => bus.emit('spd');
+  let selCard = 0, armedCh = '', armT, cur = null, bd = null, view = 'all', tab = 'desk', hiId = null, tutShown = -2;
+  // 탭: 보도국 / 스카우트 / 순위 / 성장. 마지막으로 연 탭을 이 브라우저에 기억한다
+  function showTab(t) {
+    tab = t; document.querySelectorAll('.pane').forEach(p => { p.hidden = p.dataset.tab !== t; });
+    document.querySelectorAll('#tabs [data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+    try { localStorage.setItem('newsDesk.tab', t); } catch (e) { }
+    if (window.scrollTo) window.scrollTo(0, 0);
+  }
+  try { tab = localStorage.getItem('newsDesk.tab') || 'desk'; } catch (e) { }
+  $('tabs').onclick = e => { const b = e.target.closest('[data-t]'); if (b) showTab(b.dataset.t); };
+  $('tutnext').onclick = () => { if (!cur) return; const n = cur.tut + 1; bus.emit('tut', n >= TUTORIAL.length ? -1 : n); };
+  $('tutskip').onclick = () => bus.emit('tut', -1);
+  $('helpb').onclick = () => bus.emit('tut', 0);
+  $('clist').innerHTML = CHALLENGES.map((c, i) => `<div class="wg"><div class="row2"><span><b>${c.n}</b><br><small>${c.d}</small></span><span id="chp${i}"></span><button class="btn mini" data-ch="${c.id}" id="chb${i}"></button></div><div class="ms"><i id="chm${i}"></i></div></div>`).join('');
+  $('clist').onclick = e => { // 두 번 눌러야 실행 (회차 초기화가 일어나므로)
+    const b = e.target.closest('[data-ch]'); if (!b || b.disabled || !cur) return; const id = b.dataset.ch, key = (cur.chal === id ? 'q' : '') + id;
+    if (armedCh !== key) { armedCh = key; clearTimeout(armT); armT = setTimeout(() => { armedCh = ''; }, 3000); return; }
+    armedCh = ''; bus.emit(key[0] === 'q' ? 'chalquit' : 'chal', id);
+  };
+  $('lbseg').onclick = e => { const b = e.target.closest('[data-v]'); if (b) { view = b.dataset.v; drawBoard(); } };
+  function drawBoard() { // 다른 사용자의 이름은 textContent로만 넣는다 (XSS 방지)
+    document.querySelectorAll('#lbseg [data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === view));
+    if (!bd) return; const { me, mode, season } = bd;
+    const list = view === 'season' ? bd.list.filter(e => e.season === season).sort((a, b) => b.seasonPts - a.seasonPts) : bd.list;
+    const ol = $('lb'); ol.replaceChildren();
+    list.slice(0, 10).forEach((e, i) => {
+      const li = document.createElement('li'), n = document.createElement('b'), d = document.createElement('small'); if (e.uid === me) li.className = 'me';
+      n.textContent = `${i + 1}. ${isBlocked(e.name) ? '(숨김)' : String(e.name).slice(0, 12)}${e.sample ? ' (샘플)' : ''}`;
+      d.textContent = view === 'season' ? `시즌 ${TIERS[tierOf(e.seasonPts)].n} · 시즌 점수 ${fmt(e.seasonPts)}` : `순위점수 ${e.rankScore} · 누적 ${fmt(e.total)}점 · 최대 Lv.${e.maxLv} · 최고 시청률 ${e.bestRating.toFixed(1)}% · 유튜브 ${fmt(e.views)}회`;
+      li.append(n, d); ol.append(li);
+    });
+    if (!list.length) { const li = document.createElement('li'); li.textContent = '아직 이번 시즌 기록이 없어요.'; ol.append(li); }
+    $('lbn').textContent = { db: '공유 순위 (이 페이지를 연 사용자끼리)', rest: '온라인 순위', local: '오프라인 모드: 샘플 방송국과 비교 중이에요. 서버를 연결하면 사용자 간 순위가 돼요.' }[mode];
+  }
+  { const p = x => +(x * 100).toFixed(1) + '%'; $('odds').textContent = `확률 꽝 ${p(1 - ODDS.reduce((a, b) => a + b, 0))} · ${RARITY.map((r, i) => `${r.n} ${p(ODDS[i])}`).join(' · ')} · ${PITY}번째는 영웅 이상 보장`; }
+  $('wlist').innerHTML = WEEKLY.map((g, i) => `<div class="wg"><div class="row2"><span>${g.n}</span><span id="wp${i}"></span><button class="btn mini" data-goal="${g.id}" id="wb${i}">받기</button></div><div class="ms"><i id="wm${i}"></i></div></div>`).join('');
+  $('mlist').innerHTML = [0, 1, 2].map(i => `<div class="wg"><div class="row2"><span id="mt${i}"></span><span id="mp${i}"></span></div><div class="ms"><i id="mm${i}"></i></div></div>`).join('');
+  $('rlist').innerHTML = RESEARCH.map((r, i) => `<div class="wg"><div class="row2"><span><b>${r.n}</b> <small id="rlv${i}"></small><br><small>${r.d}</small></span><button class="btn mini" data-res="${r.id}" id="rb${i}"></button></div><div class="ms"><i id="rm${i}"></i></div></div>`).join('');
+  $('rlist').onclick = e => { const b = e.target.closest('[data-res]'); if (b && !b.disabled) bus.emit('research', b.dataset.res); };
+  $('dlist').innerHTML = DECOS.map((d, i) => `<div class="wg"><div class="row2"><span>${d.n}<br><small id="dn${i}"></small></span><button class="btn mini" data-deco="${d.id}" id="db${i}"></button></div></div>`).join('');
+  $('dlist').onclick = e => { const b = e.target.closest('[data-deco]'); if (b && !b.disabled) bus.emit('deco', b.dataset.deco); };
+  $('pok').onclick = () => { $('paper').hidden = true; }; $('pad').onclick = () => bus.emit('paperad');
+  $('dilR').onclick = () => bus.emit('judge', 'risk'); $('dilS').onclick = () => bus.emit('judge', 'safe');
+  $('wlist').onclick = e => { const b = e.target.closest('[data-goal]'); if (b && !b.disabled) bus.emit('goal', b.dataset.goal); };
+  $('scoutb').onclick = () => bus.emit('scout', 'paid'); $('scouta').onclick = () => bus.emit('scout', 'free');
+  $('cards').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); selCard = Math.floor((e.clientY - r.top) / r.height * 2) * 6 + Math.floor((e.clientX - r.left) / r.width * 6); };
+  $('hist').innerHTML = '<i></i>'.repeat(7); $('boardb').onclick = () => bus.emit('board');
+  $('startb').onclick = () => { const r = checkName($('nameIn').value); if (r.err) { $('nameErr').textContent = r.err; return; } bus.emit('name', r.name); };
+  $('nameIn').onkeydown = e => { if (e.key === 'Enter') $('startb').click(); };
+  $('cancelb').onclick = () => { $('start').hidden = true; }; $('renameb').onclick = () => bus.emit('rename');
+  $('chiefb').onclick = () => bus.emit('chief'); $('evb').onclick = () => bus.emit('boost'); $('mute').onclick = () => bus.emit('mute');
+  $('offOk').onclick = () => bus.emit('claim', 1); $('offAd').onclick = () => bus.emit('claim', 2);
+  const armed = (id, label, evt) => { const b = $(id); let t; b.onclick = () => { if (b.dataset.a) { clearTimeout(t); delete b.dataset.a; b.textContent = label; bus.emit(evt); return; } b.dataset.a = 1; b.textContent = '한 번 더'; t = setTimeout(() => { delete b.dataset.a; b.textContent = label; }, 3000); }; };
+  armed('presb', '개편', 'prestige'); armed('resetb', 'RESET', 'reset');
+  showTab(tab);
+  let tt;
+  return {
+    showTab, canvases: [...document.querySelectorAll('.floor canvas')], cardCanvas: $('cards'), sel: () => selCard,
+    askName(cur = '') { $('nameIn').value = cur; $('nameErr').textContent = ''; $('cancelb').hidden = !cur; $('startb').textContent = cur ? '저장' : '방송 시작'; $('start').hidden = false; setTimeout(() => $('nameIn').focus(), 0); },
+    closeName() { $('start').hidden = true; },
+    board(list, me, mode, season) { bd = { list, me, mode, season }; drawBoard(); },
+    toast(m) { const e = $('toast'); e.textContent = m; clearTimeout(tt); tt = setTimeout(() => e.textContent = '', 3500); },
+    offline(o) { $('offd').textContent = `${o.min}분 동안 야간 근무로 ${fmt(o.n)}점을 벌었어요.`; $('offline').hidden = false; },
+    showPaper(p) { $('pmast').textContent = p.mast; $('pno').textContent = p.no; $('phead').textContent = p.head; $('pfoot').textContent = p.foot; $('psubs').innerHTML = ''; p.subs.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('psubs').appendChild(li); }); $('pad').disabled = false; $('pad').textContent = '광고 보고 수입 2배'; $('paper').hidden = false; },
+    paperAdDone() { $('pad').disabled = true; $('pad').textContent = '받음'; },
+    hideOffline() { $('offline').hidden = true; },
+    setMute(on) { $('mute').textContent = on ? 'SOUND ON' : 'SOUND OFF'; },
+    render(s) {
+      cur = s;
+      const r = rates(s); let w = -1, wv = 4.99;
+      $('score').textContent = fmt(s.score); $('ps').textContent = `+${fmt(perSec(s))}/s`;
+      { const rk = rank(s), nx = RANKS[rk + 1]; $('rank').textContent = `${RANKS[rk].n} (x${2 ** rk})` + (nx ? ` → ${nx.n} ${fmt(nx.at - s.run)}점` : ' · 최종 단계'); $('rkb').style.width = (nx ? (s.run - RANKS[rk].at) / (nx.at - RANKS[rk].at) * 100 : 100) + '%'; } $('pt').textContent = `개편 x${prestigeBonus(s).toFixed(2)}`;
+      document.querySelectorAll('#seg [data-n]').forEach(b => b.classList.toggle('on', b.dataset.n === s.buyN));
+      for (let i = 1; i < 5; i++) if (s.q[i] > wv) { wv = s.q[i]; w = i; }
+      FLOORS.forEach(([n, sub, id], i) => {
+        const u = byId[id], l = s.lv[id], { k, total } = bulk(s, u, s.buyN), nx = MILESTONES.find(m => m > l) || 100, pv = MILESTONES.filter(m => m <= l).pop() || 0, tier = MILESTONES.filter(m => l >= m).length;
+        const info = i === 0 ? `${r[0].toFixed(1)}/s` : i < 5 ? `대기 ${Math.floor(s.q[i])}` : `${id === 'live' ? '속보 보상' : '점수'} x${mult(s, u).toFixed(2)}`;
+        $('c' + i).textContent = `${info} ${'★'.repeat(tier)}`;
+        $('fb' + i).textContent = `Lv.${l} +${k} ${fmt(total)}`; $('fb' + i).classList.toggle('can', s.score >= total);
+        $('m' + i).style.width = Math.min(100, (l - pv) / (nx - pv) * 100) + '%'; $('fl' + i).classList.toggle('bn', i === w);
+        if (i < 5) { const b = $('mb' + i); b.textContent = s.mg[i] ? '매니저 ✓' : `매니저 ${fmt(MANAGER[i])}`; b.disabled = !!s.mg[i]; b.classList.toggle('can', !s.mg[i] && s.score >= MANAGER[i]); }
+      });
+      $('chiefb').textContent = s.chief ? '고용 완료' : `고용 ${fmt(CHIEF)}`; $('chiefb').disabled = !!s.chief; $('chiefb').classList.toggle('can', !s.chief && s.score >= CHIEF);
+      $('note').textContent = w > 0 ? `병목: ${FLOORS[w][0]} 대기 ${Math.floor(s.q[w])}건` : '흐름이 원활해요.';
+      const g = $('gold'); g.hidden = !s.gold; if (s.gold) { g.style.left = s.gold.x + '%'; g.style.top = s.gold.y + '%'; }
+      const on = s.clock < s.spdEnd, cd = s.clock < s.spdReady;
+      $('spdb').textContent = on ? `속도 x2 부스트 ${Math.ceil(s.spdEnd - s.clock)}초` : cd ? `부스트 대기 ${Math.ceil(s.spdReady - s.clock)}초` : '광고 보고 속도 x2 (2분)'; $('spdb').disabled = cd;
+      document.querySelectorAll('#ach i').forEach((e, i) => e.classList.toggle('on', s.ach.includes(ACHIEVEMENTS[i].id)));
+      const na = ACHIEVEMENTS.find(a => !s.ach.includes(a.id)); $('achn').textContent = na ? `다음 업적: ${na.n} · ${na.d}` : '모든 업적을 달성했어요!';
+      $('achd').textContent = `${s.ach.length}/${ACHIEVEMENTS.length} · 점수 +${s.ach.length * 2}%`;
+      $('sname').textContent = s.name;
+      const hr = 6 + 14 * s.dayT / DAY_SEC, hh = Math.floor(hr), mm = Math.floor((hr - hh) * 60);
+      $('clock').textContent = `D+${s.day} · ${hh}:${String(mm).padStart(2, '0')} → 8시 뉴스 ${Math.ceil(DAY_SEC - s.dayT)}초`; $('dayb').style.width = s.dayT / DAY_SEC * 100 + '%';
+      $('rnow').textContent = s.lastRating ? `${s.lastRating.toFixed(1)}%` : '-';
+      $('rdiff').textContent = s.lastRating && s.prevRating ? ` 전일 ${s.prevRating.toFixed(1)}% ${s.lastRating >= s.prevRating ? '▲' : '▼'}${Math.abs(s.lastRating - s.prevRating).toFixed(1)}` : ' 첫 평가 대기 중';
+      document.querySelectorAll('#hist i').forEach((b, i) => { const v = s.hist[s.hist.length - 7 + i] || 0; b.style.height = Math.min(100, v / 20 * 100) + '%'; });
+      $('rnote').textContent = `최고 시청률 ${s.bestRating.toFixed(1)}% · 유튜브 조회수 ${fmt(s.views)}${s.lastViews ? ` (전일 +${fmt(s.lastViews)})` : ''} · 오늘 송출 ${Math.floor(s.dOut)}건`;
+      { // 라이벌 대결
+        const rp = s.report, w = s.win || 0;
+        $('vs').innerHTML = '';
+        const line = (t, cls) => { const e = document.createElement('div'); e.textContent = t; if (cls) e.className = cls; $('vs').appendChild(e); };
+        if (rp && rp.rival != null) { line(`VS ${RIVAL} ${rp.rival.toFixed(1)}% → ${rp.won ? '승리!' : '패배'}`, rp.won ? 'w' : 'l'); line(w ? `${w}연승 중 · 오늘 이기면 광고 수입 x${(1.4 + .1 * Math.min(w + 1, 10)).toFixed(1)}` : `오늘 8시에 ${RIVAL}을(를) 이기면 광고 수입 x1.5`); }
+        else line(`오늘 8시 뉴스에서 라이벌 ${RIVAL}과 시청률 대결!`);
+        if (s.dAdj) line(`오늘 단독 보도 효과: 시청률 ${s.dAdj > 0 ? '+' : ''}${s.dAdj.toFixed(1)}`, s.dAdj > 0 ? 'w' : 'l');
+      }
+      if (s.mis) {
+        s.mis.list.forEach((m, i) => { const p = progress(s, m); $('mt' + i).textContent = (m.done ? '✓ ' : '') + missionText(m, fmt); $('mp' + i).textContent = m.done ? '완료' : `${fmt(p)}/${fmt(m.goal)}`; $('mm' + i).style.width = p / m.goal * 100 + '%'; });
+        const nd = s.mis.list.filter(m => m.done).length; $('misd').textContent = s.mis.all ? '올클리어! 내일 새 미션' : `${nd}/3 · 모두 달성 시 티켓 +1`;
+      }
+      { const d = s.ev && s.ev.dil && !s.ev.pick; $('dilp').hidden = !d; if (d) { $('dilt').textContent = DILEMMAS[s.ev.id] || '확인되지 않은 제보가 들어왔어요.'; $('dils').textContent = `${Math.max(0, Math.ceil(s.ev.dilEnd - s.clock))}초 뒤 자동 확인`; } }
+      let resOk = false;
+      RESEARCH.forEach((r, i) => {
+        const l = rl(s, r.id), c = r.c * (l + 1), lock = r.req && rl(s, r.req[0]) < r.req[1], max = l >= r.max, b = $('rb' + i), ok = !max && !lock && s.rp >= c;
+        $('rlv' + i).textContent = `Lv.${l}/${r.max}` + (lock ? ` · ${RESEARCH.find(x => x.id === r.req[0]).n} Lv.${r.req[1]} 필요` : '');
+        b.textContent = max ? '완료' : lock ? '잠김' : `RP ${c}`; b.disabled = !ok; b.classList.toggle('can', ok); $('rm' + i).style.width = l / r.max * 100 + '%'; resOk = resOk || ok;
+      });
+      $('rpd').textContent = `연구 포인트 ${s.rp}`;
+      let decoOk = false;
+      DECOS.forEach((d, i) => {
+        const own = s.deco[d.id], b = $('db' + i), ok = !own && (d.need ? d.need(s) : s.score >= d.at);
+        $('dn' + i).textContent = own ? '배치됨 · 점수 +2%' : d.need ? `해금 조건: ${d.nt}` : '';
+        b.textContent = own ? '✓' : d.need ? (ok ? '받기' : '잠김') : `${fmt(d.at)}점`; b.disabled = !ok; b.classList.toggle('can', ok); if (ok && d.need) decoOk = true;
+      });
+      $('dcd').textContent = `${Object.keys(s.deco).length}/${DECOS.length} · 점수 +${Object.keys(s.deco).length * 2}%`;
+      $('dot-grow').hidden = !(resOk || decoOk);
+      const ncard = Object.keys(s.cards).length, scost = scoutCost(s), adcd = s.clock < s.freeReady;
+      $('scd').textContent = `카드 ${ncard}/${CARDS.length} · 티켓 ${s.tickets}장 · 영웅 보장까지 ${Math.max(0, PITY - s.pity)}회`;
+      $('scoutb').textContent = `스카우트 ${fmt(scost)}점`; $('scoutb').classList.toggle('can', s.score >= scost);
+      $('scouta').textContent = s.tickets > 0 ? `티켓 사용 (${s.tickets}장)` : adcd ? `광고 스카우트 ${Math.ceil(s.freeReady - s.clock)}초` : '광고 보고 무료 스카우트'; $('scouta').disabled = s.tickets < 1 && adcd;
+      const c0 = CARDS[selCard] || CARDS[0], n0 = s.cards[c0.id] || 0;
+      $('cinfo').textContent = n0 ? `${c0.n} · ${RARITY[c0.rar].n} · ${c0.st < 0 ? '전 층' : FLOORS[c0.st][0]} 속도 +${Math.round(RARITY[c0.rar].b * (1 + .5 * (n0 - 1)) * 100)}% · ★${n0}` : '??? · 아직 모르는 직원이에요. 카드를 눌러 확인해 보세요.';
+      $('cbonus').textContent = '도감 보너스 ' + FLOORS.slice(0, 5).map(([n], i) => `${n} +${Math.round(cardBonus(s, i) * 100)}%`).join(' · ');
+      WEEKLY.forEach((g, i) => { const p = Math.min(g.goal, s.week.prog[g.k] || 0), dn = s.week.done[g.id], b = $('wb' + i); $('wp' + i).textContent = `${p}/${g.goal}`; $('wm' + i).style.width = p / g.goal * 100 + '%'; b.textContent = dn ? '완료' : '받기'; b.disabled = !!dn || p < g.goal; b.classList.toggle('can', !dn && p >= g.goal); });
+      $('wkd').textContent = `출석 ${s.login.streak}일째 · 7일 연속 시 티켓`;
+      if (s.chal === 'noMgr') { for (let i = 0; i < 5; i++) if (!s.mg[i]) { const b = $('mb' + i); b.textContent = '매니저 금지'; b.disabled = true; b.classList.remove('can'); } if (!s.chief) { $('chiefb').textContent = '고용 금지'; $('chiefb').disabled = true; $('chiefb').classList.remove('can'); } }
+      $('fb6').disabled = s.chal === 'noQual'; if (s.chal === 'noQual') { $('fb6').textContent = '구매 금지 (챌린지)'; $('fb6').classList.remove('can'); }
+      if (s.season.key) {
+        const sk = s.season.key, th = themeOf(sk), sp = seasonPts(s), ti = tierOf(sp), nx = TIERS[ti + 1], now = new Date(), left = new Date(now.getFullYear(), now.getMonth() + 1, 1) - now;
+        $('sn').textContent = `${+sk.slice(5)}월 시즌 · ${th ? th.n : ''}`; $('sleft').textContent = `종료까지 ${Math.max(1, Math.ceil(left / 864e5))}일`;
+        $('sth').textContent = th ? th.d : '';
+        $('stier').textContent = TIERS[ti].n; $('spts').textContent = ` 시즌 점수 ${fmt(sp)}` + (nx ? ` · ${nx.n}까지 ${fmt(nx.at - sp)}` : ' · 최고 등급');
+        $('sbar').style.width = (nx ? (sp - TIERS[ti].at) / (nx.at - TIERS[ti].at) * 100 : 100) + '%';
+        const ls = s.lastSeason; $('slast').textContent = ls ? `지난 시즌(${+ls.key.slice(5)}월) ${TIERS[ls.tier].n} · 티켓 ${ls.tk}장 지급` : '시즌이 끝나면 등급에 따라 스카우트 티켓 1~5장을 받아요.';
+      }
+      CHALLENGES.forEach((c, i) => {
+        const done = s.chalDone[c.id], on = s.chal === c.id, b = $('chb' + i);
+        b.textContent = done ? '완료 ✓' : (armedCh === (on ? 'q' : '') + c.id) ? '한 번 더' : on ? '포기' : '도전'; b.disabled = !!done;
+        $('chm' + i).style.width = (done ? 100 : on ? Math.min(100, s.run / c.goal * 100) : 0) + '%';
+        $('chp' + i).textContent = done ? '' : on ? `${fmt(s.run)}/${fmt(c.goal)}` : '';
+      });
+      { const nd = Object.keys(s.chalDone).length; $('chd').textContent = s.chal ? `진행 중: ${CHALLENGES.find(c => c.id === s.chal).n}` : `완료 ${nd}/${CHALLENGES.length} · 점수 +${nd * 10}%`; }
+      $('dot-scout').hidden = !(s.tickets > 0 || s.clock >= s.freeReady || WEEKLY.some(g => !s.week.done[g.id] && (s.week.prog[g.k] || 0) >= g.goal));
+      const ts = s.tut, showT = !!s.name && ts >= 0 && ts < TUTORIAL.length && $('start').hidden, tgt = showT ? TUTORIAL[ts].target : null;
+      $('tut').hidden = !showT;
+      if (tgt !== hiId) { if (hiId && $(hiId)) $(hiId).classList.remove('tut-hi'); if (tgt && $(tgt)) $(tgt).classList.add('tut-hi'); hiId = tgt; }
+      if (!showT) tutShown = -2;
+      else {
+        const step = TUTORIAL[ts];
+        if (ts !== tutShown) {
+          tutShown = ts; if (step.tab) showTab(step.tab);
+          $('tutt').textContent = step.t; $('tutn').textContent = `${ts + 1}/${TUTORIAL.length}`; $('tutnext').textContent = ts === TUTORIAL.length - 1 ? '시작하기' : '다음';
+          const el = tgt && $(tgt); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }
+        if (step.done && step.done(s, { tab })) bus.emit('tut', ts + 1 >= TUTORIAL.length ? -1 : ts + 1);
+      }
+      $('alert').hidden = !s.ev;
+      if (s.ev) { $('evt').textContent = `속보 · ${s.ev.name}`; $('evd').textContent = `${s.ev.k} · 유입 x${s.ev.inf} · 점수 x${s.ev.sc}${s.ev.boost ? ' (+50%)' : ''} · ${Math.max(0, Math.ceil(s.ev.end - s.clock))}초`; $('evb').disabled = s.ev.boost; $('evb').textContent = s.ev.boost ? '편집 중' : '우선 편집'; }
+      $('presd').textContent = `이번 회차 ${fmt(s.run)}점 · 개편 시 포인트 +${prestigeGain(s)} · 보유 ${s.pts}`;
+    },
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
+const bus = new EventBus(), store = createStore(reducer, initialState());
+const ui = Hud(bus), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
+let pending = 0, board = null;
+const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+const saved = Repo.load();
+if (saved) { store.dispatch({ type: 'LOAD', s: saved.s }); if (saved.offline) { pending = saved.offline.n; ui.offline(saved.offline); } }
+const dstr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+function checkDates() { // 일일 출석과 주간 목표 초기화(월요일 기준)
+  if (!store.getState().name) return; const d = new Date();
+  store.dispatch({ type: 'WEEK', key: dstr(new Date(d.getFullYear(), d.getMonth(), d.getDate() - (d.getDay() + 6) % 7)) }); store.dispatch({ type: 'SEASON', key: seasonKey(d) }); store.dispatch({ type: 'CHECKIN', day: dstr(d) });
+}
+if (store.getState().name) checkDates();
+// 인트로 타이틀 화면: 메뉴를 고르면 게임으로 들어간다
+const $i = id => document.getElementById(id), intro = Intro($i('introcv'), $i('iticker'), $i('iclock'));
+function showIntro() {
+  const n = store.getState().name; $i('istart').textContent = n ? '이어하기' : '게임 시작'; $i('iname').textContent = n ? `${n} 방송 중` : '';
+  $i('inew').hidden = $i('iname2').hidden = !n; $i('inew').textContent = '새로 시작'; delete $i('inew').dataset.a;
+  $i('isound').textContent = $i('mute').textContent; $i('intro').classList.remove('open'); $i('intro').hidden = false; intro.start();
+}
+function enter(after) { $i('intro').hidden = true; intro.stop(); Sfx.play('buy'); if (!store.getState().name) ui.askName(); else if (after) after(); }
+$i('istart').onclick = () => enter(() => ui.showTab('desk'));
+$i('irank').onclick = () => enter(() => { ui.showTab('rank'); refresh(); });
+$i('iguide').onclick = () => enter(() => bus.emit('tut', 0));
+$i('isound').onclick = () => { bus.emit('mute'); $i('isound').textContent = $i('mute').textContent; };
+$i('titleb').onclick = showIntro;
+// 새로 시작: 모든 기록을 지우므로 두 번 눌러야 실행. 이름 변경: 기록은 그대로 두고 방송국 이름만 바꾼다
+let newT = 0;
+$i('inew').onclick = () => {
+  const b = $i('inew');
+  if (!b.dataset.a) { b.dataset.a = 1; b.textContent = '기록 삭제! 한 번 더'; clearTimeout(newT); newT = setTimeout(() => { delete b.dataset.a; b.textContent = '새로 시작'; }, 3000); return; }
+  clearTimeout(newT); $i('intro').hidden = true; intro.stop(); bus.emit('reset'); ui.showTab('desk');
+};
+$i('iname2').onclick = () => enter(() => bus.emit('rename'));
+// 처음엔 PRESS START만. 화면을 누르면 타이틀이 위에서, 메뉴가 아래에서 나오고 5초 동안 조작이 없으면 역순으로 사라진다
+let itimer = 0;
+const openMenu = () => { $i('intro').classList.add('open'); clearTimeout(itimer); itimer = setTimeout(() => $i('intro').classList.remove('open'), 5000); };
+$i('intro').addEventListener('pointerdown', openMenu);
+addEventListener('keydown', e => { if (!$i('intro').hidden && (e.key === 'Enter' || e.key === ' ')) openMenu(); });
+showIntro();
+
+// 순위 동기화: 내 기록을 올리고 상위 목록을 받아 그린다
+async function refresh() {
+  if (!board) return; const s = store.getState();
+  try { if (s.name) await board.submit(toEntry(s)); ui.board(await board.top(50, toEntry(s)), board.me || s.uid, board.mode, s.season.key); } catch (e) { ui.toast('순위를 불러오지 못했어요.'); }
+}
+createBoard(LEADERBOARD).then(b => { board = b; refresh(); });
+
+// Command 핸들러: 사용자 의도 -> 상태 변경 + 피드백
+bus.on('name', raw => {
+  const r = checkName(raw); if (r.err) return ui.toast(r.err);
+  const renamed = !!store.getState().name; store.dispatch({ type: 'NAME', name: r.name, uid: newId() }); ui.closeName(); Sfx.play('rank');
+  ui.toast(renamed ? `방송국 이름을 ${r.name}(으)로 바꿨어요.` : `${r.name} 방송 시작!`); checkDates(); refresh();
+});
+bus.on('rename', () => ui.askName(store.getState().name));
+bus.on('board', refresh);
+bus.on('buy', id => {
+  const u = UPGRADES.find(x => x.id === id), s = store.getState(), { total } = bulk(s, u, s.buyN);
+  if (s.chal === 'noQual' && id === 'qual') return ui.toast('저예산 방송 챌린지 중에는 방송 품질을 올릴 수 없어요.');
+  if (s.score < total) { Sfx.play('fail'); return ui.toast('점수가 부족해요.'); }
+  const l0 = s.lv[id]; store.dispatch({ type: 'BUY', id, n: s.buyN }); Sfx.play('buy');
+  const l1 = store.getState().lv[id];
+  if (MILESTONES.some(m => l0 < m && l1 >= m)) ui.toast(u.nm ? `${u.n} 시설이 한 단계 업그레이드됐어요!` : `${u.n} 마일스톤! 효과 x2, 시설 업그레이드`);
+});
+bus.on('hire', i => {
+  const s = store.getState(); if (s.mg[i]) return;
+  if (s.chal === 'noMgr') return ui.toast('매니저 없이 운영 챌린지 중이에요.');
+  if (s.score < MANAGER[i]) { Sfx.play('fail'); return ui.toast('점수가 부족해요.'); }
+  store.dispatch({ type: 'HIRE', i }); Sfx.play('rank'); ui.toast(`${STAGES[i]} 매니저 고용! 처리 속도 x2`);
+});
+bus.on('chief', () => {
+  const s = store.getState(); if (s.chief) return;
+  if (s.chal === 'noMgr') return ui.toast('매니저 없이 운영 챌린지 중이에요.');
+  if (s.score < CHIEF) { Sfx.play('fail'); return ui.toast('점수가 부족해요.'); }
+  store.dispatch({ type: 'CHIEF' }); Sfx.play('rank'); ui.toast('영상편집팀장 고용! 속보마다 우선 편집이 자동 적용돼요.');
+});
+bus.on('research', id => { const p = store.getState(); store.dispatch({ type: 'RESEARCH', id }); if (store.getState() !== p) { Sfx.play('rank'); ui.toast('연구 완료! 영구 강화가 적용됐어요.'); } else Sfx.play('fail'); });
+bus.on('deco', id => { const p = store.getState(); store.dispatch({ type: 'DECO', id }); if (store.getState() !== p) { Sfx.play('rank'); ui.toast('사무실에 배치했어요! 점수 +2%'); } else { Sfx.play('fail'); ui.toast('점수가 부족해요.'); } });
+let paperBonus = 0;
+bus.on('paperad', () => { if (!paperBonus) return; store.dispatch({ type: 'GAIN', n: paperBonus }); paperBonus = 0; ui.paperAdDone(); Sfx.play('buy'); ui.toast('실제 앱에서는 보상형 광고가 나와요. 광고 수입 2배!'); });
+bus.on('judge', pick => { const s = store.getState(); if (!s.ev || !s.ev.dil || s.ev.pick) return; store.dispatch({ type: 'JUDGE', pick, r: Math.random() }); });
+bus.on('setn', n => store.dispatch({ type: 'SETN', n }));
+bus.on('boost', () => {
+  const s = store.getState();
+  if (!s.ev) return ui.toast('지금은 진행 중인 속보가 없어요.');
+  if (s.ev.boost) return;
+  store.dispatch({ type: 'BOOST' }); Sfx.play('buy'); ui.toast('우선 편집: 이번 속보 점수 +50%');
+});
+bus.on('claim', k => { store.dispatch({ type: 'GAIN', n: pending * k }); pending = 0; ui.hideOffline(); Sfx.play('buy'); if (k > 1) ui.toast('실제 앱에서는 보상형 광고가 나와요.'); });
+bus.on('prestige', () => { if (prestigeGain(store.getState()) < 1) return ui.toast('누적 5,000점부터 개편할 수 있어요.'); store.dispatch({ type: 'PRESTIGE' }); Sfx.play('rank'); ui.toast('개편 완료! 시청률 포인트를 얻었어요.'); });
+bus.on('reset', () => { Repo.clear(); store.dispatch({ type: 'RESET' }); ui.toast('저장 데이터를 지웠어요.'); ui.askName(); });
+bus.on('gold', () => {
+  const s = store.getState(); if (!s.gold) return;
+  const r = Math.random(), g = goldReward(s, r); store.dispatch({ type: 'GOLD', r }); Sfx.play('rank');
+  ui.toast(g.frenzy ? '특종 터졌다! 20초 동안 점수 x7' : `특종! 점수 +${fmt(g.cash)}`);
+});
+bus.on('spd', () => {
+  const s = store.getState(); if (s.clock < s.spdReady) return ui.toast('부스트는 잠시 후 다시 쓸 수 있어요.');
+  store.dispatch({ type: 'SPD' }); Sfx.play('buy'); ui.toast('실제 앱에서는 보상형 광고가 나와요. 2분 동안 처리 속도 x2');
+});
+bus.on('scout', how => {
+  const s = store.getState(), h = how === 'free' ? (s.tickets > 0 ? 'ticket' : 'ad') : how;
+  if (h === 'paid' && s.score < scoutCost(s)) { Sfx.play('fail'); return ui.toast('점수가 부족해요.'); }
+  if (h === 'ad' && s.clock < s.freeReady) return ui.toast('광고 스카우트는 잠시 후 다시 쓸 수 있어요.');
+  store.dispatch({ type: 'SCOUT', how: h, r: Math.random(), r2: Math.random() }); Sfx.play(store.getState().last.miss ? 'fail' : 'rank');
+  const l = store.getState().last;
+  if (l.miss) return ui.toast(`꽝! 이번엔 합격자가 없어요${l.back ? ` · 위로금 +${fmt(l.back)}점` : ''}${h === 'ad' ? ' · 실제 앱에서는 보상형 광고가 나와요' : ''}`);
+  const c = CARDS.find(x => x.id === l.id);
+  ui.toast(`스카우트: ${c.n} (${RARITY[c.rar].n})${l.isNew ? ' NEW!' : l.maxed ? ' 최대 ★ 보너스 +500점' : ' ★ 상승'}${h === 'ad' ? ' · 실제 앱에서는 보상형 광고가 나와요' : ''}`);
+});
+bus.on('goal', id => {
+  const s = store.getState(), g = WEEKLY.find(x => x.id === id); if (!g || s.week.done[id] || (s.week.prog[g.k] || 0) < g.goal) return;
+  store.dispatch({ type: 'CLAIM', id }); Sfx.play('rank'); ui.toast(`주간 목표 달성: ${g.n} · 보상과 스카우트 티켓 +1`);
+});
+bus.on('chal', id => { const c = CHALLENGES.find(x => x.id === id); store.dispatch({ type: 'CHAL', id }); Sfx.play('rank'); ui.toast(`챌린지 시작: ${c.n} · 목표 누적 ${fmt(c.goal)}점`); });
+bus.on('chalquit', () => { store.dispatch({ type: 'CHAL_QUIT' }); Sfx.play('fail'); ui.toast('챌린지를 포기했어요. 회차가 처음부터 다시 시작돼요.'); });
+bus.on('tut', step => { store.dispatch({ type: 'TUT', step }); if (step === 0) ui.showTab('desk'); if (step === -1) ui.toast('가이드를 닫았어요. 위의 ? 버튼으로 다시 볼 수 있어요.'); });
+bus.on('mute', () => ui.setMute(Sfx.toggle()));
+
+// 상태 변화 구독: 효과음과 알림
+store.subscribe((s, p) => {
+  if (s.ev && (!p.ev || p.ev.id !== s.ev.id || p.ev.end !== s.ev.end)) Sfx.play('alert');
+  if (s.gold && !p.gold) Sfx.play('alert');
+  if (s.chalWin && s.chalWin !== p.chalWin) { const c = CHALLENGES.find(x => x.id === s.chalWin.split(':')[0]); Sfx.play('rank'); ui.toast(`챌린지 완료: ${c.n}! 영구 점수 +10%`); }
+  if (s.lastSeason && s.lastSeason !== p.lastSeason) { const l = s.lastSeason; Sfx.play('rank'); ui.toast(`시즌 종료: ${TIERS[l.tier].n} 달성 · 스카우트 티켓 +${l.tk}장`); }
+  if (s.daily && s.daily !== p.daily) { const d = s.daily; Sfx.play('rank'); ui.toast(`출석 ${d.streak}일째! 보너스 +${fmt(d.gain)}점${d.tk ? ' · 스카우트 티켓 +1' : ''}`); }
+  if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; if (s.tut < 0 || s.tut >= 7) ui.showPaper(paper(s.name, r)); else ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}% · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
+  if (s.judge && s.judge !== p.judge) { const j = s.judge.res; Sfx.play(j === 'fail' ? 'fail' : j === 'win' ? 'rank' : 'buy'); ui.toast(j === 'win' ? '단독 성공! 이번 속보 점수 x2 · 오늘 시청률 +0.8' : j === 'fail' ? '오보! 정정 보도 나갑니다... 오늘 시청률 -1.2' : '팩트 체크 완료, 안전하게 송출 (점수 x1.2)'); }
+  if (s.misHit && s.misHit !== p.misHit) { const m = s.misHit; Sfx.play('rank'); ui.toast(m.all ? `오늘의 미션 올클리어! +${fmt(m.gain)}점 · 스카우트 티켓 +1` : `미션 달성! +${fmt(m.gain)}점`); }
+  if (s.ach.length > p.ach.length) { const a = ACHIEVEMENTS.find(x => x.id === s.ach[s.ach.length - 1]); Sfx.play('rank'); ui.toast(`업적 달성: ${a.n} (점수 +2%)`); }
+  if (rank(s) > rank(p)) { Sfx.play('rank'); ui.toast(`승급: ${RANKS[rank(s)].n}`); }
+});
+
+GameLoop({
+  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); },
+  render: t => scene.draw(store.getState(), t, ui.sel()),
+}).start();
+setInterval(() => Repo.save(store.getState()), 5000);
+setInterval(refresh, 60000);
+setInterval(checkDates, 60000);
+
+})();</script>
 </body>
 </html>

@@ -1,10 +1,12 @@
 # NEWS DESK 8BIT
 
-뉴스 편집실 방치형 게임 (8비트 스타일). 빌드 없이 정적 호스팅(GitHub Pages)으로 동작합니다.
+뉴스 편집실 방치형 게임 (16비트 스타일). 정적 호스팅(GitHub Pages)으로 동작합니다.
 
 ## 구조
 ```
-index.html            진입점
+index.html            배포용 한 파일 (build.py가 생성, 직접 고치지 않음)
+dev.html              개발용 진입점 (ES 모듈)
+build.py              dev.html + js + css → index.html
 css/main.css          8비트 테마
 js/main.js            Composition Root (조립만)
 js/core/              EventBus(Observer), Store(Redux식 단일 상태), Loop(고정 타임스텝)
@@ -16,7 +18,12 @@ js/ui/                scene(픽셀 렌더러), hud(DOM 뷰)
 ```
 
 ## 배포
-저장소에 올리고 Settings > Pages에서 브랜치 루트를 지정하면 됩니다. ES 모듈을 쓰므로 로컬에서는 `python -m http.server`로 열어야 합니다.
+1. `dev.html`, `js/`, `css/`를 고친다.
+2. `python3 build.py`로 `index.html`(모든 코드가 들어간 한 파일)을 만든다. 타이틀 화면 왼쪽 위에 빌드 번호가 찍힌다.
+3. 저장소에 올리면 GitHub Pages(Settings > Pages, `main` / root)가 `index.html`을 연다.
+
+한 파일로 배포하는 이유: GitHub Pages는 파일을 최대 10분 캐시하는데, 파일이 여러 개면 브라우저가 새 파일과 옛 파일을 섞어 써서 게임이 멈출 수 있다.
+개발용 `dev.html`은 ES 모듈이라 로컬에서는 `python3 -m http.server`로 열어야 한다.
 
 ## 순위 보드 (사용자 간 순위)
 - 순위 점수 = 30*log10(1+누적 점수) + 0.6*최대 레벨 + 4*최고 시청률 + 10*log10(1+유튜브 조회수) (`js/systems/ranking.js`)
