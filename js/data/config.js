@@ -44,7 +44,7 @@ export const ACHIEVEMENTS = [
 ];
 export const DAY_SEC = 300; // 게임 속 하루(오전 6시 → 8시 뉴스)의 실제 시간(초): 5분
 // 사용자 간 순위 서버 (Supabase REST). 비워두면 오프라인 모드(샘플 방송국과 비교)로 동작한다. README 참고
-export const LEADERBOARD = { url: '', key: '' };
+export const LEADERBOARD = { url: 'https://ndyiuefcvhnqnfdziacv.supabase.co', key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5keWl1ZWZjdmhucW5mZHppYWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxMTE5MDEsImV4cCI6MjEwNzY4NzkwMX0.Tlb5AhmdCeQdZNkB5zd9P3Fw-4vdqZqM9k8oH4aOvWE' }; // anon(공개) 키. service_role 키는 절대 넣지 말 것
 // 직원 카드 도감 (AFK Arena식 수집): 가진 카드는 해당 층 속도를 영구로 올리고, 중복으로 뽑으면 별(최대 3)이 올라 효과가 커진다
 export const RARITY = [{ n: '일반', b: .05, c: '#94b0c2' }, { n: '희귀', b: .10, c: '#41a6f6' }, { n: '영웅', b: .20, c: '#b45bff' }, { n: '전설', b: .25, c: '#ffd24a' }];
 export const CARDS = [

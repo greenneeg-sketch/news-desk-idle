@@ -14,7 +14,7 @@ const SB_KEY = 'newsDeskSb';
 const SupabaseAdapter = ({ url, key }) => {
   let ses = null; try { ses = JSON.parse(localStorage.getItem(SB_KEY)); } catch (e) { }
   const save = () => { try { localStorage.setItem(SB_KEY, JSON.stringify(ses)); } catch (e) { } };
-  const H = t => ({ apikey: key, Authorization: 'Bearer ' + (t || key), 'Content-Type': 'application/json' });
+  const H = t => ({ apikey: key, 'Content-Type': 'application/json', ...(t ? { Authorization: 'Bearer ' + t } : {}) }); // 로그인 전에는 apikey만(익명 읽기)
   async function auth() {
     if (ses && ses.exp > Date.now() / 1000 + 60) return ses;
     let r = null;
@@ -28,12 +28,12 @@ const SupabaseAdapter = ({ url, key }) => {
     mode: 'server', get me() { return ses && ses.uid; },
     async submit(e) {
       const s = await auth();
-      const r = await fetch(`${url}/rest/v1/leaderboard?on_conflict=user_id`, { method: 'POST', headers: { ...H(s.token), Prefer: 'resolution=merge-duplicates,return=minimal' },
+      const r = await fetch(`${url}/rest/v1/nd_leaderboard?on_conflict=user_id`, { method: 'POST', headers: { ...H(s.token), Prefer: 'resolution=merge-duplicates,return=minimal' },
         body: JSON.stringify({ user_id: s.uid, name: e.name, total: e.total, max_lv: e.maxLv, best_rating: Math.min(30, e.bestRating), views: e.views, season: e.season, season_pts: e.seasonPts }) });
       if (!r.ok) throw new Error('submit ' + r.status + ' ' + (await r.text()).slice(0, 120));
     },
-    async top(n) { const r = await fetch(`${url}/rest/v1/leaderboard?select=*&order=rank_score.desc&limit=${n}`, { headers: H() }); if (!r.ok) throw new Error('top ' + r.status); return (await r.json()).map(row); },
-    async now() { const r = await fetch(`${url}/rest/v1/rpc/server_time`, { method: 'POST', headers: H(), body: '{}' }); if (!r.ok) throw new Error('time'); return Date.parse(await r.json()); },
+    async top(n) { const r = await fetch(`${url}/rest/v1/nd_leaderboard?select=*&order=rank_score.desc&limit=${n}`, { headers: H() }); if (!r.ok) throw new Error('top ' + r.status); return (await r.json()).map(row); },
+    async now() { const r = await fetch(`${url}/rest/v1/rpc/nd_server_time`, { method: 'POST', headers: H(), body: '{}' }); if (!r.ok) throw new Error('time'); return Date.parse(await r.json()); },
   };
 };
 export async function createBoard(cfg) {

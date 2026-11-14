@@ -30,6 +30,7 @@ js/ui/                scene(픽셀 렌더러), hud(DOM 뷰)
 - 서버를 연결하지 않으면 샘플 방송국과 비교하는 오프라인 모드입니다. 플레이어끼리 순위를 보려면 Supabase(무료)를 연결합니다.
 
 ### Supabase 연결 (한 번만)
+- 현재 연결: 프로젝트 `dailykit-game`(ndyiuefcvhnqnfdziacv)에 `nd_leaderboard` 테이블로 적용됨. 다른 게임 테이블과 겹치지 않게 이름에 `nd_`를 붙였습니다.
 1. supabase.com 가입 → New project 생성 (Region: Northeast Asia (Seoul), DB 비밀번호는 아무거나 저장).
 2. **Authentication → Sign In / Providers**에서 **Allow anonymous sign-ins**를 켭니다. (플레이어마다 자동으로 익명 계정이 생깁니다)
 3. **SQL Editor → New query**에 `supabase/setup.sql` 전체를 붙여넣고 **Run**.
