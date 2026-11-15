@@ -14,6 +14,7 @@ import { createBoard } from './services/leaderboard.js';
 import { Sfx } from './services/audio.js';
 import { Music } from './services/music.js';
 import { heroCount } from './systems/weekly.js';
+import { TIPS } from './data/tips.js';
 import { Scene } from './ui/scene.js';
 import { Bubbles } from './ui/bubbles.js';
 import { paper } from './ui/paper.js';
@@ -48,7 +49,7 @@ $i('irank').onclick = () => enter(() => { ui.showTab('rank'); refresh(); });
 $i('iguide').onclick = () => enter(() => bus.emit('tut', 0));
 $i('isound').onclick = () => { bus.emit('mute'); $i('isound').textContent = $i('mute').textContent; };
 // 메인 화면으로: 바로 저장하고 타이틀로 나간다 (상단 ⌂ 버튼, 설정의 타이틀 버튼)
-const goHome = () => { Repo.save(store.getState()); showIntro(); ui.toast('저장했어요.'); };
+const goHome = () => { if (!restoring) Repo.save(store.getState()); showIntro(); ui.toast('저장했어요.'); };
 $i('titleb').onclick = goHome; $i('homeb').onclick = goHome;
 // 홈 화면 앱(PWA): GitHub Pages에서만 서비스 워커를 켠다. 안드로이드 크롬은 설치 창, 아이폰 사파리는 안내 창
 const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -87,6 +88,46 @@ async function disablePush() {
 }
 $i('pushb').onclick = () => (pushSub ? disablePush() : enablePush()).catch(() => ui.toast('알림을 켜지 못했어요. 잠시 후 다시 시도해 주세요.'));
 pushLabel();
+// ---------- 클라우드 저장 ----------
+const CLOUD_KEY = 'newsDeskCloud';
+let cloud = { code: '', at: 0 }; try { cloud = JSON.parse(localStorage.getItem(CLOUD_KEY)) || cloud; } catch (e) { }
+ui.cloud(cloud.code, cloud.at);
+const cloudSave = (keep = false) => {
+  const s = store.getState(); if (!board || board.mode !== 'server' || !s.name) return Promise.resolve(false);
+  return board.savePut(Repo.snapshot(s), keep).then(code => { cloud = { code, at: Date.now() }; try { localStorage.setItem(CLOUD_KEY, JSON.stringify(cloud)); } catch (e) { } ui.cloud(cloud.code, cloud.at); return true; }).catch(() => false);
+};
+$i('cloudnow').onclick = () => cloudSave().then(ok => ui.toast(ok ? '클라우드에 저장했어요.' : '아직 저장할 수 없어요. 순위 서버 연결과 방송국 등록(1분 정도)을 기다려 주세요.'));
+$i('cloudcp').onclick = () => { const c = cloud.code; (navigator.clipboard ? navigator.clipboard.writeText(c) : Promise.reject()).then(() => ui.toast('복구 코드를 복사했어요. 안전한 곳에 적어 두세요.'), () => ui.toast(`복구 코드: ${c}`)); };
+let getArm = 0;
+$i('cloudget').onclick = async () => {
+  const code = $i('cloudin').value.trim(), b = $i('cloudget');
+  if (code.replace(/[^0-9A-Za-z]/g, '').length !== 12) return ui.toast('복구 코드 12자리를 정확히 넣어 주세요.');
+  if (!board || board.mode !== 'server') return ui.toast('순위 서버에 연결된 뒤 다시 시도해 주세요.');
+  if (!b.dataset.a) { b.dataset.a = 1; b.textContent = '덮어쓰기! 한 번 더'; clearTimeout(getArm); getArm = setTimeout(() => { delete b.dataset.a; b.textContent = '불러오기'; }, 3000); return; }
+  clearTimeout(getArm); delete b.dataset.a; b.textContent = '불러오는 중…';
+  try {
+    const j = await board.restore(code); restoring = true; Repo.write(j.data);
+    try { localStorage.setItem(CLOUD_KEY, JSON.stringify({ code: code.toUpperCase(), at: Date.now() })); } catch (e) { }
+    ui.toast('기록을 불러왔어요! 다시 시작합니다.'); setTimeout(() => location.reload(), 900);
+  } catch (e) { b.textContent = '불러오기'; ui.toast('복구 코드를 찾지 못했어요. 다시 확인해 주세요.'); }
+};
+let restoring = false; // 불러온 직후에는 지금 상태로 덮어쓰지 않는다
+setInterval(() => cloudSave(), 120000);
+
+// ---------- 새 기능 안내 팁 ----------
+let tipNow = null;
+const tipBlocked = () => !$i('intro').hidden || !$i('tut').hidden || document.querySelectorAll('.modal:not([hidden])').length > 0; // 다른 창이 떠 있으면 기다린다
+function checkTip(s) {
+  if (tipNow || ui.tipOpen() || !s.name || (s.tut >= 0 && s.tut < 7) || tipBlocked()) return;
+  const t = TIPS.find(x => !(s.tips || {})[x.id] && x.when(s)); if (!t) return;
+  tipNow = t; ui.showTip(t);
+}
+const closeTip = go => {
+  if (!tipNow) return; const t = tipNow; tipNow = null; ui.hideTip(); store.dispatch({ type: 'TIP', id: t.id });
+  if (go && t.tab) { ui.showTab(t.tab); const el = $i(t.target); if (el && el.scrollIntoView) setTimeout(() => el.scrollIntoView({ block: 'start', behavior: 'smooth' }), 50); }
+};
+$i('tipok').onclick = () => closeTip(false); $i('tipgo').onclick = () => closeTip(true);
+
 const pushSchedule = hidden => { if (!pushSub || !board || !store.getState().name) return; const cap = (8 + ((store.getState().res || {}).night || 0)) * 3600e3; board.pushSet(pushSub, hidden ? new Date(Date.now() + clockOff + cap).toISOString() : null, hidden).catch(() => { }); };
 // 새로 시작: 모든 기록을 지우므로 두 번 눌러야 실행. 이름 변경: 기록은 그대로 두고 방송국 이름만 바꾼다
 let newT = 0;
@@ -195,6 +236,7 @@ bus.on('mute', () => ui.setMute(Sfx.toggle()));
 
 // 상태 변화 구독: 효과음과 알림
 store.subscribe((s, p) => {
+  checkTip(s);
   if (s.ev && (!p.ev || p.ev.id !== s.ev.id || p.ev.end !== s.ev.end)) Sfx.play('alert');
   if (!!s.ev !== !!p.ev && $i('intro').hidden) Music.play(s.ev ? 'breaking' : 'desk'); // 속보 중에는 긴박한 곡
   if (s.gold && !p.gold) Sfx.play('alert');
@@ -215,9 +257,9 @@ GameLoop({
   step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); },
   render: t => scene.draw(store.getState(), t, ui.sel()),
 }).start();
-setInterval(() => Repo.save(store.getState()), 5000); // 자동 저장: 5초마다
+setInterval(() => { if (!restoring) Repo.save(store.getState()); }, 5000); // 자동 저장: 5초마다
 // 앱을 닫거나 다른 앱으로 넘어갈 때도 즉시 저장
-document.addEventListener('visibilitychange', () => { if (document.hidden) { Repo.save(store.getState()); Music.pause(); pushSchedule(true); } else { Music.resume(); pushSchedule(false); } });
-addEventListener('pagehide', () => Repo.save(store.getState()));
+document.addEventListener('visibilitychange', () => { if (document.hidden) { if (!restoring) { Repo.save(store.getState()); cloudSave(true); } Music.pause(); pushSchedule(true); } else { Music.resume(); pushSchedule(false); } });
+addEventListener('pagehide', () => { if (!restoring) Repo.save(store.getState()); });
 setInterval(refresh, 60000);
 setInterval(checkDates, 60000);

@@ -22,11 +22,18 @@ const SupabaseAdapter = ({ url, key }) => {
   const COLS = 'id,name,total,max_lv,best_rating,views,rank_score,season,season_pts';
   const row = x => clean({ uid: x.id, name: x.name, total: x.total, maxLv: x.max_lv, bestRating: x.best_rating, views: x.views, rankScore: x.rank_score, season: x.season, seasonPts: x.season_pts });
   return {
-    mode: 'server', me: dev.id,
+    mode: 'server', get me() { return dev.id; },
     submit: e => rpc('nd_submit', { p_id: dev.id, p_key: dev.key, p_name: e.name, p_total: e.total, p_max_lv: e.maxLv, p_best: Math.min(30, e.bestRating), p_views: e.views, p_season: e.season, p_season_pts: e.seasonPts }),
     async top(n) { const r = await fetch(`${url}/rest/v1/nd_leaderboard?select=${COLS}&order=rank_score.desc&limit=${n}`, { headers: H }); if (!r.ok) throw new Error('top ' + r.status); return (await r.json()).map(row); },
     now: async () => Date.parse(await rpc('nd_server_time', {})),
     vapid: () => rpc('nd_vapid_public', {}),
+    // 클라우드 저장: 저장본을 올리고 복구 코드를 받는다
+    savePut: (data, keep = false) => rpc('nd_save_put', { p_id: dev.id, p_key: dev.key, p_data: data }, keep),
+    // 복구: 코드로 저장본을 받고, 그 방송국의 기기 열쇠를 이 기기 것으로 바꾼다
+    async restore(code) {
+      const nk = rand(32), j = await rpc('nd_save_restore', { p_code: code, p_new_key: nk });
+      dev = { id: j.id, key: nk }; try { localStorage.setItem(SB_KEY, JSON.stringify(dev)); } catch (e) { } return j;
+    },
     // 푸시 알림 구독·예약: at(ISO 시각)에 알림, at=null이면 예약 취소, sub=null이면 구독 해제. 앱을 닫는 순간에도 보내지게 keepalive
     pushSet: (sub, at, keep = false) => rpc('nd_push_set', { p_id: dev.id, p_key: dev.key, p_sub: sub, p_at: at, p_kind: 'offline' }, keep),
   };
@@ -43,5 +50,7 @@ export async function createBoard(cfg) {
     now: () => ad.now ? ad.now() : Promise.resolve(Date.now()),
     vapid: () => ad.vapid ? ad.vapid() : Promise.reject(new Error('no server')),
     pushSet: (...a) => ad.pushSet ? ad.pushSet(...a) : Promise.reject(new Error('no server')),
+    savePut: (...a) => ad.savePut ? ad.savePut(...a) : Promise.reject(new Error('no server')),
+    restore: c => ad.restore ? ad.restore(c) : Promise.reject(new Error('no server')),
   };
 }

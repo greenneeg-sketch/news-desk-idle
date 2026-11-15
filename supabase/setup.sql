@@ -163,3 +163,58 @@ begin
 end $$;
 revoke execute on function public.nd_push_tick() from public, anon, authenticated;
 select cron.schedule('nd-push', '*/10 * * * *', 'select public.nd_push_tick()');
+
+-- ============================================================
+-- 클라우드 저장: 기기 열쇠로 저장, 복구 코드(12자, 약 60비트)로 다른 기기에서 불러오기
+-- ============================================================
+create table if not exists public.nd_saves (
+  id         uuid primary key references public.nd_lb_keys(id) on delete cascade,
+  code       text not null unique,
+  data       jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table public.nd_saves enable row level security;                 -- 정책 없음: 함수로만 접근
+revoke all on public.nd_saves from anon, authenticated;
+
+create or replace function public.nd_new_code() returns text language plpgsql volatile set search_path = '' as $$
+declare a text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; b bytea := extensions.gen_random_bytes(12); c text := ''; i int;
+begin
+  for i in 0..11 loop c := c || substr(a, (get_byte(b, i) % 32) + 1, 1); if i in (3, 7) then c := c || '-'; end if; end loop;
+  return c;
+end $$;
+revoke execute on function public.nd_new_code() from public, anon, authenticated;
+
+create or replace function public.nd_save_put(p_id uuid, p_key text, p_data jsonb) returns text
+language plpgsql security definer set search_path = '' as $$
+declare h text; ok boolean; c text; last timestamptz;
+begin
+  if p_id is null or p_key is null or p_data is null then raise exception 'bad request'; end if;
+  if length(p_data::text) > 65536 then raise exception 'save too large'; end if;
+  h := encode(pg_catalog.sha256(convert_to(p_key, 'UTF8')), 'hex');
+  select k.key_hash = h into ok from public.nd_lb_keys k where k.id = p_id;
+  if ok is null then raise exception 'no key yet'; end if;
+  if not ok then raise exception 'forbidden'; end if;
+  select s.code, s.updated_at into c, last from public.nd_saves s where s.id = p_id;
+  if c is null then
+    loop c := public.nd_new_code(); exit when not exists (select 1 from public.nd_saves where code = c); end loop;
+    insert into public.nd_saves(id, code, data) values (p_id, c, p_data);
+  elsif now() - last >= interval '30 seconds' then
+    update public.nd_saves set data = p_data, updated_at = now() where id = p_id;
+  end if;
+  return c;
+end $$;
+
+create or replace function public.nd_save_restore(p_code text, p_new_key text) returns jsonb
+language plpgsql security definer set search_path = '' as $$
+declare r record;
+begin
+  if p_new_key is null or length(p_new_key) < 32 or length(p_new_key) > 128 then raise exception 'bad key'; end if;
+  select s.id, s.data, s.updated_at into r from public.nd_saves s where s.code = upper(replace(trim(p_code), ' ', ''));
+  if r.id is null then perform pg_sleep(1); raise exception 'code not found'; end if;
+  update public.nd_lb_keys set key_hash = encode(pg_catalog.sha256(convert_to(p_new_key, 'UTF8')), 'hex') where id = r.id;
+  return jsonb_build_object('id', r.id, 'data', r.data, 'saved_at', r.updated_at);
+end $$;
+revoke execute on function public.nd_save_put(uuid, text, jsonb) from public;
+revoke execute on function public.nd_save_restore(text, text) from public;
+grant execute on function public.nd_save_put(uuid, text, jsonb) to anon, authenticated;
+grant execute on function public.nd_save_restore(text, text) to anon, authenticated;

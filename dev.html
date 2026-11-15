@@ -124,6 +124,14 @@
       <p class="note">시작하면 이번 회차가 초기화돼요(개편 포인트·카드·업적은 유지). 제약 속에서 목표를 달성하면 영구 점수 +10%. 버튼은 두 번 눌러야 실행돼요.</p>
     </section>
     <section class="panel"><div class="fh"><b>업적</b><span class="cnt" id="achd"></span></div><div class="ach" id="ach"></div><p class="note" id="achn"></p></section>
+    <section class="panel" id="cloudp">
+      <div class="fh"><b>클라우드 저장</b><span class="cnt" id="cloudt"></span></div>
+      <p class="note" id="cloudn">순위 서버에 방송국이 등록되면 2분마다 자동으로 저장돼요.</p>
+      <div class="code" id="cloudc" hidden></div>
+      <div class="row"><button class="btn alt" id="cloudcp" hidden>코드 복사</button><button class="btn alt" id="cloudnow">지금 저장</button></div>
+      <p class="note">다른 기기에서 이어 하기: 그 기기에서 게임을 열고 아래에 복구 코드를 넣으세요. 지금 기기의 기록은 불러온 기록으로 바뀌어요.</p>
+      <div class="row"><input id="cloudin" maxlength="16" placeholder="복구 코드 12자리" autocomplete="off" autocapitalize="characters"><button class="btn warn" id="cloudget">불러오기</button></div>
+    </section>
     <section class="panel">
       <div class="fh"><b>설정</b></div>
       <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="bgmb">BGM ON</button><button class="btn alt" id="pushb">알림 켜기</button><button class="btn alt" id="renameb">이름 변경</button><button class="btn alt" id="titleb">타이틀</button><button class="btn alt" id="resetb">RESET</button></div>
@@ -131,6 +139,11 @@
   </div>
 </main>
 <p class="toast" id="toast"></p>
+<section class="panel tip" id="tip" hidden>
+  <div class="fh"><b id="tipt"></b><span class="cnt">NEW</span></div>
+  <p id="tipd"></p>
+  <div class="row"><button class="btn" id="tipok">알겠어요</button><button class="btn alt" id="tipgo">보러 가기</button></div>
+</section>
 <section class="panel tut" id="tut" hidden>
   <div class="fh"><b>보도국 가이드</b><span class="cnt" id="tutn"></span></div>
   <p id="tutt"></p>

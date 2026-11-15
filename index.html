@@ -144,6 +144,10 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 /* 두 번 탭 확대 막기(아이폰 사파리): 빠른 연타가 확대 대신 버튼 입력으로 들어가게 */
 html,body,button,canvas,.intro{touch-action:manipulation}
 button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+.tip{position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top,0px));z-index:12;max-width:456px;margin:0 auto!important;background:#2a4a3a;box-shadow:0 0 0 3px #a7f070,0 6px 0 rgba(0,0,0,.5)}
+.tip .cnt{color:#a7f070}.tip p{margin:6px 0 10px;line-height:1.5}
+.code{font:16px "Press Start 2P",monospace;letter-spacing:2px;color:var(--y);background:#14141f;padding:12px;text-align:center;margin:6px 0;box-shadow:inset 0 0 0 2px #566c86;word-break:break-all}
+#cloudin{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px;background:var(--ink);color:var(--tx);border:0;box-shadow:inset 0 0 0 2px #566c86;text-transform:uppercase}
 </style>
 </head>
 <body>
@@ -254,6 +258,14 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
       <p class="note">시작하면 이번 회차가 초기화돼요(개편 포인트·카드·업적은 유지). 제약 속에서 목표를 달성하면 영구 점수 +10%. 버튼은 두 번 눌러야 실행돼요.</p>
     </section>
     <section class="panel"><div class="fh"><b>업적</b><span class="cnt" id="achd"></span></div><div class="ach" id="ach"></div><p class="note" id="achn"></p></section>
+    <section class="panel" id="cloudp">
+      <div class="fh"><b>클라우드 저장</b><span class="cnt" id="cloudt"></span></div>
+      <p class="note" id="cloudn">순위 서버에 방송국이 등록되면 2분마다 자동으로 저장돼요.</p>
+      <div class="code" id="cloudc" hidden></div>
+      <div class="row"><button class="btn alt" id="cloudcp" hidden>코드 복사</button><button class="btn alt" id="cloudnow">지금 저장</button></div>
+      <p class="note">다른 기기에서 이어 하기: 그 기기에서 게임을 열고 아래에 복구 코드를 넣으세요. 지금 기기의 기록은 불러온 기록으로 바뀌어요.</p>
+      <div class="row"><input id="cloudin" maxlength="16" placeholder="복구 코드 12자리" autocomplete="off" autocapitalize="characters"><button class="btn warn" id="cloudget">불러오기</button></div>
+    </section>
     <section class="panel">
       <div class="fh"><b>설정</b></div>
       <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="bgmb">BGM ON</button><button class="btn alt" id="pushb">알림 켜기</button><button class="btn alt" id="renameb">이름 변경</button><button class="btn alt" id="titleb">타이틀</button><button class="btn alt" id="resetb">RESET</button></div>
@@ -261,6 +273,11 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
   </div>
 </main>
 <p class="toast" id="toast"></p>
+<section class="panel tip" id="tip" hidden>
+  <div class="fh"><b id="tipt"></b><span class="cnt">NEW</span></div>
+  <p id="tipd"></p>
+  <div class="row"><button class="btn" id="tipok">알겠어요</button><button class="btn alt" id="tipgo">보러 가기</button></div>
+</section>
 <section class="panel tut" id="tut" hidden>
   <div class="fh"><b>보도국 가이드</b><span class="cnt" id="tutn"></span></div>
   <p id="tutt"></p>
@@ -302,7 +319,7 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-0933</span>
+  <span class="iver">v2026.11.15-0939</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -475,6 +492,20 @@ const QUOTES = [
 const URGENT = ['속보입니다!', '지금 바로 올려요!', '일단 나갑시다!', '확인 확인!', '시간 없어요!', '큐 빨리요!'];
 
 
+// 새 기능 안내: 기능이 처음 열릴 때 한 번씩 보여 준다 (처음 가이드가 끝난 뒤, 다른 창이 없을 때)
+const TIPS = [
+  { id: 'mis', when: s => !!s.mis, t: '오늘의 미션', d: '게임 속 하루(5분)마다 미션 3개가 나와요. 하나 달성할 때마다 점수, 3개 모두 달성하면 스카우트 티켓을 받아요.', tab: 'desk', target: 'misp' },
+  { id: 'dil', when: s => !!(s.ev && s.ev.dil && !s.ev.pick), t: '데스크 판단', d: '아래 카드에서 단독으로 바로 내보낼지, 확인 후 내보낼지 골라요. 단독이 성공하면 점수 2배, 오보면 오늘 시청률이 떨어져요.' },
+  { id: 'week', when: s => !!s.wev, t: '이번 주 한정 이벤트', d: '매주 월요일마다 이벤트가 바뀌어요. 목표를 채우면 티켓 2장과 한정 배지를 받아요.', tab: 'desk', target: 'wevp' },
+  { id: 'rival', when: s => !!s.report, t: '라이벌 한누리방송', d: '매일 8시 뉴스에서 시청률 대결을 해요. 이기면 광고 수입이 1.5배, 연승할수록 더 늘어나요.', tab: 'desk', target: 'rate' },
+  { id: 'res', when: s => s.rp > 0, t: '방송 기술 연구소', d: '8시 뉴스·미션·단독·라이벌 승리로 연구 포인트가 쌓여요. 성장 탭에서 영구 강화를 해 보세요.', tab: 'grow', target: 'resp' },
+  { id: 'deco', when: s => s.score >= 2e4, t: '사무실 꾸미기', d: '점수로 사무실 소품을 살 수 있어요. 소품은 장면에 나타나고 하나당 점수 +2%예요.', tab: 'grow', target: 'decop' },
+  { id: 'pres', when: s => prestigeGain(s) >= 3, t: '개편', d: '개편하면 이번 회차가 처음부터 시작되지만, 개편 포인트로 점수가 영구히 올라가요. 진행이 느려질 때 해 보세요.', tab: 'grow', target: 'presp' },
+  { id: 'robot', when: s => !!(s.ev && s.ev.id === 'robot'), t: '거대 로봇 속보', d: '뉴스 디펜더즈 히어로 카드가 있으면 로봇 속보 점수가 1장당 +50%예요. 스카우트에서 모아 보세요.', tab: 'scout', target: 'scout' },
+  { id: 'cloud', when: s => s.total >= 1e5, t: '클라우드 저장', d: '기록이 서버에 자동 저장돼요. 성장 탭의 복구 코드를 적어 두면 휴대폰을 바꿔도 이어서 할 수 있어요.', tab: 'grow', target: 'cloudp' },
+];
+
+
 // 이번 주 한정 이벤트와 히어로 카드 보유 수 (순수 함수)
 const weekEvent = s => (s.wev && WEEK_EVENTS.find(e => e.id === s.wev.id)) || null;
 const weekFor = key => WEEK_EVENTS[((Math.floor(Date.parse(key + 'T00:00:00Z') / 864e5 / 7) % WEEK_EVENTS.length) + WEEK_EVENTS.length) % WEEK_EVENTS.length];
@@ -631,10 +662,10 @@ const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null,
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {},
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -749,6 +780,7 @@ function reducer(st, a) {
       return { ...st, score: st.score - (d.at || 0), deco: { ...st.deco, [a.id]: 1 } };
     }
     case 'TUT': return { ...st, tut: a.step };
+    case 'TIP': return { ...st, tips: { ...st.tips, [a.id]: 1 } };
     case 'SETN': return { ...st, buyN: a.n };
     case 'GAIN': return earn(st, a.n);
     case 'PRESTIGE': return { ...keep(st), pts: st.pts + prestigeGain(st) };
@@ -792,10 +824,12 @@ const EventScheduler = store => ({
 
 
 
-const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges'];
+const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips'];
 // Repository 패턴: 저장 매체(localStorage)를 이 모듈 안에 가둔다
 const Repo = {
-  save(s) { try { localStorage.setItem(SAVE_KEY, JSON.stringify({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() })); } catch (e) { } },
+  snapshot: s => ({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() }), // 클라우드 저장에도 같은 모양을 쓴다
+  save(s) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(Repo.snapshot(s))); } catch (e) { } },
+  write(o) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(o)); return true; } catch (e) { return false; } }, // 클라우드에서 불러온 저장본
   load() {
     try {
       const o = JSON.parse(localStorage.getItem(SAVE_KEY)); if (!o || !o.lv) return null;
@@ -832,11 +866,18 @@ const SupabaseAdapter = ({ url, key }) => {
   const COLS = 'id,name,total,max_lv,best_rating,views,rank_score,season,season_pts';
   const row = x => clean({ uid: x.id, name: x.name, total: x.total, maxLv: x.max_lv, bestRating: x.best_rating, views: x.views, rankScore: x.rank_score, season: x.season, seasonPts: x.season_pts });
   return {
-    mode: 'server', me: dev.id,
+    mode: 'server', get me() { return dev.id; },
     submit: e => rpc('nd_submit', { p_id: dev.id, p_key: dev.key, p_name: e.name, p_total: e.total, p_max_lv: e.maxLv, p_best: Math.min(30, e.bestRating), p_views: e.views, p_season: e.season, p_season_pts: e.seasonPts }),
     async top(n) { const r = await fetch(`${url}/rest/v1/nd_leaderboard?select=${COLS}&order=rank_score.desc&limit=${n}`, { headers: H }); if (!r.ok) throw new Error('top ' + r.status); return (await r.json()).map(row); },
     now: async () => Date.parse(await rpc('nd_server_time', {})),
     vapid: () => rpc('nd_vapid_public', {}),
+    // 클라우드 저장: 저장본을 올리고 복구 코드를 받는다
+    savePut: (data, keep = false) => rpc('nd_save_put', { p_id: dev.id, p_key: dev.key, p_data: data }, keep),
+    // 복구: 코드로 저장본을 받고, 그 방송국의 기기 열쇠를 이 기기 것으로 바꾼다
+    async restore(code) {
+      const nk = rand(32), j = await rpc('nd_save_restore', { p_code: code, p_new_key: nk });
+      dev = { id: j.id, key: nk }; try { localStorage.setItem(SB_KEY, JSON.stringify(dev)); } catch (e) { } return j;
+    },
     // 푸시 알림 구독·예약: at(ISO 시각)에 알림, at=null이면 예약 취소, sub=null이면 구독 해제. 앱을 닫는 순간에도 보내지게 keepalive
     pushSet: (sub, at, keep = false) => rpc('nd_push_set', { p_id: dev.id, p_key: dev.key, p_sub: sub, p_at: at, p_kind: 'offline' }, keep),
   };
@@ -853,6 +894,8 @@ async function createBoard(cfg) {
     now: () => ad.now ? ad.now() : Promise.resolve(Date.now()),
     vapid: () => ad.vapid ? ad.vapid() : Promise.reject(new Error('no server')),
     pushSet: (...a) => ad.pushSet ? ad.pushSet(...a) : Promise.reject(new Error('no server')),
+    savePut: (...a) => ad.savePut ? ad.savePut(...a) : Promise.reject(new Error('no server')),
+    restore: c => ad.restore ? ad.restore(c) : Promise.reject(new Error('no server')),
   };
 }
 
@@ -1597,6 +1640,10 @@ function Hud(bus) {
     offline(o) { $('offd').textContent = `${o.min}분 동안 야간 근무로 ${fmt(o.n)}점을 벌었어요.`; $('offline').hidden = false; },
     showPaper(p) { $('pmast').textContent = p.mast; $('pno').textContent = p.no; $('phead').textContent = p.head; $('pfoot').textContent = p.foot; $('psubs').innerHTML = ''; p.subs.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('psubs').appendChild(li); }); $('pad').disabled = false; $('pad').textContent = '광고 보고 수입 2배'; $('paper').hidden = false; },
     showPromo(i, name) { const c = CAREER[i]; $('prt').textContent = `${name}님을 ${c.n}(으)로 임명합니다.`; $('prwho').textContent = c.who; $('prsay').textContent = c.say.join(' '); $('prrew').textContent = `보상: 영구 점수 +5% · 스카우트 티켓 ${c.tk}장`; $('promo').hidden = false; },
+    showTip(t) { $('tipt').textContent = t.t; $('tipd').textContent = t.d; $('tipgo').hidden = !t.tab; $('tip').hidden = false; },
+    hideTip() { $('tip').hidden = true; },
+    tipOpen: () => !$('tip').hidden,
+    cloud(code, at) { $('cloudc').hidden = !code; $('cloudcp').hidden = !code; if (code) $('cloudc').textContent = code; $('cloudt').textContent = at ? `저장 ${new Date(at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}` : ''; $('cloudn').textContent = code ? '복구 코드는 이 기록의 열쇠예요. 다른 사람에게 알려 주지 마세요.' : '순위 서버에 방송국이 등록되면 2분마다 자동으로 저장돼요.'; },
     paperAdDone() { $('pad').disabled = true; $('pad').textContent = '받음'; },
     hideOffline() { $('offline').hidden = true; },
     setMute(on) { $('mute').textContent = on ? 'SOUND ON' : 'SOUND OFF'; },
@@ -1741,6 +1788,7 @@ function Hud(bus) {
 
 
 
+
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
 const ui = Hud(bus), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
@@ -1769,7 +1817,7 @@ $i('irank').onclick = () => enter(() => { ui.showTab('rank'); refresh(); });
 $i('iguide').onclick = () => enter(() => bus.emit('tut', 0));
 $i('isound').onclick = () => { bus.emit('mute'); $i('isound').textContent = $i('mute').textContent; };
 // 메인 화면으로: 바로 저장하고 타이틀로 나간다 (상단 ⌂ 버튼, 설정의 타이틀 버튼)
-const goHome = () => { Repo.save(store.getState()); showIntro(); ui.toast('저장했어요.'); };
+const goHome = () => { if (!restoring) Repo.save(store.getState()); showIntro(); ui.toast('저장했어요.'); };
 $i('titleb').onclick = goHome; $i('homeb').onclick = goHome;
 // 홈 화면 앱(PWA): GitHub Pages에서만 서비스 워커를 켠다. 안드로이드 크롬은 설치 창, 아이폰 사파리는 안내 창
 const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -1808,6 +1856,46 @@ async function disablePush() {
 }
 $i('pushb').onclick = () => (pushSub ? disablePush() : enablePush()).catch(() => ui.toast('알림을 켜지 못했어요. 잠시 후 다시 시도해 주세요.'));
 pushLabel();
+// ---------- 클라우드 저장 ----------
+const CLOUD_KEY = 'newsDeskCloud';
+let cloud = { code: '', at: 0 }; try { cloud = JSON.parse(localStorage.getItem(CLOUD_KEY)) || cloud; } catch (e) { }
+ui.cloud(cloud.code, cloud.at);
+const cloudSave = (keep = false) => {
+  const s = store.getState(); if (!board || board.mode !== 'server' || !s.name) return Promise.resolve(false);
+  return board.savePut(Repo.snapshot(s), keep).then(code => { cloud = { code, at: Date.now() }; try { localStorage.setItem(CLOUD_KEY, JSON.stringify(cloud)); } catch (e) { } ui.cloud(cloud.code, cloud.at); return true; }).catch(() => false);
+};
+$i('cloudnow').onclick = () => cloudSave().then(ok => ui.toast(ok ? '클라우드에 저장했어요.' : '아직 저장할 수 없어요. 순위 서버 연결과 방송국 등록(1분 정도)을 기다려 주세요.'));
+$i('cloudcp').onclick = () => { const c = cloud.code; (navigator.clipboard ? navigator.clipboard.writeText(c) : Promise.reject()).then(() => ui.toast('복구 코드를 복사했어요. 안전한 곳에 적어 두세요.'), () => ui.toast(`복구 코드: ${c}`)); };
+let getArm = 0;
+$i('cloudget').onclick = async () => {
+  const code = $i('cloudin').value.trim(), b = $i('cloudget');
+  if (code.replace(/[^0-9A-Za-z]/g, '').length !== 12) return ui.toast('복구 코드 12자리를 정확히 넣어 주세요.');
+  if (!board || board.mode !== 'server') return ui.toast('순위 서버에 연결된 뒤 다시 시도해 주세요.');
+  if (!b.dataset.a) { b.dataset.a = 1; b.textContent = '덮어쓰기! 한 번 더'; clearTimeout(getArm); getArm = setTimeout(() => { delete b.dataset.a; b.textContent = '불러오기'; }, 3000); return; }
+  clearTimeout(getArm); delete b.dataset.a; b.textContent = '불러오는 중…';
+  try {
+    const j = await board.restore(code); restoring = true; Repo.write(j.data);
+    try { localStorage.setItem(CLOUD_KEY, JSON.stringify({ code: code.toUpperCase(), at: Date.now() })); } catch (e) { }
+    ui.toast('기록을 불러왔어요! 다시 시작합니다.'); setTimeout(() => location.reload(), 900);
+  } catch (e) { b.textContent = '불러오기'; ui.toast('복구 코드를 찾지 못했어요. 다시 확인해 주세요.'); }
+};
+let restoring = false; // 불러온 직후에는 지금 상태로 덮어쓰지 않는다
+setInterval(() => cloudSave(), 120000);
+
+// ---------- 새 기능 안내 팁 ----------
+let tipNow = null;
+const tipBlocked = () => !$i('intro').hidden || !$i('tut').hidden || document.querySelectorAll('.modal:not([hidden])').length > 0; // 다른 창이 떠 있으면 기다린다
+function checkTip(s) {
+  if (tipNow || ui.tipOpen() || !s.name || (s.tut >= 0 && s.tut < 7) || tipBlocked()) return;
+  const t = TIPS.find(x => !(s.tips || {})[x.id] && x.when(s)); if (!t) return;
+  tipNow = t; ui.showTip(t);
+}
+const closeTip = go => {
+  if (!tipNow) return; const t = tipNow; tipNow = null; ui.hideTip(); store.dispatch({ type: 'TIP', id: t.id });
+  if (go && t.tab) { ui.showTab(t.tab); const el = $i(t.target); if (el && el.scrollIntoView) setTimeout(() => el.scrollIntoView({ block: 'start', behavior: 'smooth' }), 50); }
+};
+$i('tipok').onclick = () => closeTip(false); $i('tipgo').onclick = () => closeTip(true);
+
 const pushSchedule = hidden => { if (!pushSub || !board || !store.getState().name) return; const cap = (8 + ((store.getState().res || {}).night || 0)) * 3600e3; board.pushSet(pushSub, hidden ? new Date(Date.now() + clockOff + cap).toISOString() : null, hidden).catch(() => { }); };
 // 새로 시작: 모든 기록을 지우므로 두 번 눌러야 실행. 이름 변경: 기록은 그대로 두고 방송국 이름만 바꾼다
 let newT = 0;
@@ -1916,6 +2004,7 @@ bus.on('mute', () => ui.setMute(Sfx.toggle()));
 
 // 상태 변화 구독: 효과음과 알림
 store.subscribe((s, p) => {
+  checkTip(s);
   if (s.ev && (!p.ev || p.ev.id !== s.ev.id || p.ev.end !== s.ev.end)) Sfx.play('alert');
   if (!!s.ev !== !!p.ev && $i('intro').hidden) Music.play(s.ev ? 'breaking' : 'desk'); // 속보 중에는 긴박한 곡
   if (s.gold && !p.gold) Sfx.play('alert');
@@ -1936,10 +2025,10 @@ GameLoop({
   step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); },
   render: t => scene.draw(store.getState(), t, ui.sel()),
 }).start();
-setInterval(() => Repo.save(store.getState()), 5000); // 자동 저장: 5초마다
+setInterval(() => { if (!restoring) Repo.save(store.getState()); }, 5000); // 자동 저장: 5초마다
 // 앱을 닫거나 다른 앱으로 넘어갈 때도 즉시 저장
-document.addEventListener('visibilitychange', () => { if (document.hidden) { Repo.save(store.getState()); Music.pause(); pushSchedule(true); } else { Music.resume(); pushSchedule(false); } });
-addEventListener('pagehide', () => Repo.save(store.getState()));
+document.addEventListener('visibilitychange', () => { if (document.hidden) { if (!restoring) { Repo.save(store.getState()); cloudSave(true); } Music.pause(); pushSchedule(true); } else { Music.resume(); pushSchedule(false); } });
+addEventListener('pagehide', () => { if (!restoring) Repo.save(store.getState()); });
 setInterval(refresh, 60000);
 setInterval(checkDates, 60000);
 
