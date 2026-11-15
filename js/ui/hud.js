@@ -60,11 +60,13 @@ export function Hud(bus) {
   let meetKey = '';
   $('meeto').onclick = e => { const b = e.target.closest('[data-meet]'); if (b) bus.emit('meet', b.dataset.meet); };
   function drawMeet(s) {
-    const m = s.meet, on = isUnlocked(s, 'meet') && m && m.opts && m.opts.length; $('meetp').hidden = !on; if (!on) return;
+    const m = s.meet, on = isUnlocked(s, 'meet') && m && m.opts && m.opts.length; $('meetp').hidden = !on;
+    const force = on && !m.pick && m.day === s.day && $('intro').hidden && $('tut').hidden && !document.querySelector('.modal:not([hidden])'); // 회의 결정 전: 화면 가운데 띄워 반드시 고르게
+    $('meetp').classList.toggle('force', !!force); $('meetbg').hidden = !force; if (!on) return;
     const K = id => (EVENTS.find(e => e.id === id) || {}).k || id, key = m.day + ':' + (m.pick || '') + ':' + m.hits;
     $('meetp').classList.toggle('done', !!m.pick);
     if (m.pick) { $('meett').textContent = `오늘의 톱: ${K(m.pick)}`; $('meets').textContent = `D+${m.day}`; $('meetn').textContent = m.hits ? `관련 속보 ${m.hits}건 · 점수 x1.5 · 시청률 +${(Math.min(m.hits, MEET_MAX) * MEET_ADJ).toFixed(1)}%p` : `아직 ${K(m.pick)} 속보가 없어요. 오늘 안에 한 건도 없으면 시청률 ${MEET_MISS}%p`; }
-    else { $('meett').textContent = '오늘의 편집회의'; $('meets').textContent = '톱뉴스 분야를 골라 주세요'; $('meetn').textContent = '고른 분야 속보가 터지면 점수 x1.5 · 시청률 상승. ★이 많을수록 유력해요(가끔 틀려요). 안 골라도 손해는 없어요.'; }
+    else { $('meett').textContent = '오늘의 편집회의'; $('meets').textContent = '결정 전까지 보도국이 멈춰 있어요'; $('meetn').textContent = '오늘의 톱뉴스 분야를 정해야 하루가 시작돼요. 고른 분야 속보가 터지면 점수 x1.5 · 시청률 상승. ★이 많을수록 유력해요(가끔 틀려요).'; }
     if (key === meetKey) return; meetKey = key;
     const box = $('meeto'); box.replaceChildren();
     if (!m.pick) m.opts.forEach(id => { const b = document.createElement('button'), t = document.createElement('b'), d = document.createElement('small'), st = document.createElement('i'); b.dataset.meet = id; t.textContent = K(id); d.textContent = (MEET_MEMO[id] || ['', ''])[m.memo ? m.memo[id] : (id === m.hot ? 0 : 1)]; st.textContent = '★'.repeat(m.stars[id] || 1); b.append(t, d, st); box.append(b); });

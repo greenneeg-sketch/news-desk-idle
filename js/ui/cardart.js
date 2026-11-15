@@ -159,3 +159,5 @@ export function drawPortrait(c, id, px, t) {
   figure((gx, gy, w, h, col) => { c.fillStyle = col; c.fillRect((gx - 3) * px, (gy + 4) * px, w * px, h * px); }, L, 1, t, false, CARDS.findIndex(cd => cd.id === id));
   c.restore();
 }
+// 미니게임 등에서 쓰는 인물 그림(카드 인물 그대로). P0(칸x, 칸y, 칸w, 칸h, 색)
+export const drawFigure = (P0, id, n, t) => figure(P0, LOOK[id] || LOOK.c1, n, t, false, 0);

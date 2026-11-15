@@ -213,3 +213,6 @@ section.gh{display:none!important}
 #svp{width:52px;height:52px;flex:none;image-rendering:pixelated;box-shadow:0 0 0 2px #14141f}.svtx{flex:1}#svn{display:block;color:#b13e53;margin-bottom:4px;min-height:1em}#svn.me{color:#257179}
 #svt{margin:0;font-size:16px;line-height:1.55;min-height:3.1em;word-break:keep-all}#svnext{position:absolute;right:10px;bottom:6px;font-style:normal;color:#b13e53;animation:svb 1s steps(2) infinite}@keyframes svb{50%{opacity:0}}
 .svmis{margin-top:10px;padding:12px;background:var(--pn);box-shadow:0 0 0 3px var(--y)}.svmis small{color:var(--y)}.svmis b{display:block;font-size:17px;margin:4px 0}.svmis p{margin:4px 0;color:var(--sub);font-size:13px}.svmis .svrw{color:#a7f070}
+.meetbg{position:fixed;inset:0;z-index:18;background:#0b0b14e0}
+#meetp.force{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:19;width:calc(100% - 28px);max-width:420px;margin:0;box-shadow:0 0 0 4px var(--y),0 10px 0 4px #0b0b14}
+#meetp.force::before{content:'아침 편집회의';display:block;color:var(--y);font-weight:bold;margin-bottom:6px;font-size:13px}

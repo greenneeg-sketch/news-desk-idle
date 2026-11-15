@@ -130,7 +130,7 @@ setInterval(() => cloudSave(), 120000);
 // ---------- 알림 창 대기열: 창은 한 번에 하나, 튜토리얼·다른 창이 끝난 뒤 간격을 두고 ----------
 // 종류: promo(승진 창), tip(해금·상황 안내 카드)
 const popQ = []; let tipNow = null, lastPop = 0;
-const busy = () => !$i('intro').hidden || !$i('tut').hidden || ui.tipOpen() || document.querySelectorAll('.modal:not([hidden])').length > 0;
+const busy = () => !$i('intro').hidden || !$i('tut').hidden || !$i('meetbg').hidden || ui.tipOpen() || document.querySelectorAll('.modal:not([hidden])').length > 0;
 const tutOn = s => s.tut >= 0 && s.tut < TUTORIAL.length;
 function pump(s) {
   if (!s.name || tutOn(s) || busy() || Date.now() - lastPop < 2500) return;

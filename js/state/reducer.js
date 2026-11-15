@@ -23,6 +23,7 @@ const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hi
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
+export const meetLock = st => !!(st.unl && st.unl.meet && st.name && st.meet && st.meet.day === st.day && st.meet.opts && st.meet.opts.length && !st.meet.pick);
 const earn = (st, n) => ({ ...st, score: st.score + n, run: st.run + n, total: st.total + n });
 // 파이프라인 시스템: 대기열을 단계별로 흘려보낸다
 function flow(s, dt) {
@@ -46,6 +47,7 @@ function judge(s, pick, r) {
 export function reducer(st, a) {
   switch (a.type) {
     case 'TICK': {
+      if (meetLock(st)) return st; // 아침 편집회의에서 톱뉴스를 고르기 전에는 보도국이 멈춘다
       const s = { ...st, q: [...st.q], clock: st.clock + a.dt };
       if (s.ev && s.clock >= s.ev.end) { s.ev = null; s.nextEv = s.clock + 25 + a.rnd * 20; }
       if (s.gold && s.clock >= s.gold.end) { s.gold = null; s.nextGold = s.clock + goldGap(s, a.rnd); }
