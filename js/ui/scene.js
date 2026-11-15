@@ -1,3 +1,4 @@
+import { drawEditHD } from './edithd.js';
 import { MILESTONES, CARDS, RARITY, DECOS } from '../data/config.js';
 import { drawCards } from './cardart.js';
 // 16비트풍 픽셀 렌더러: 그라데이션 밴드, 베벨 셰이딩, 음영 있는 캐릭터, 단계별 외형 변화(tier 0~4)
@@ -161,6 +162,7 @@ export function Scene(canvases, cardCv) {
       ctx.forEach((c, i) => {
         const k = i === 7 ? s.chief : MILESTONES.filter(m => s.lv[IDS[i]] >= m).length;
         act[i] += ((i === 0 || i >= 5 || s.q[i] > .02 ? 1 : 0) - act[i]) * .15; const a = act[i] > .4;
+        if (i === 2) { c.setTransform(3, 0, 0, 3, 0, 0); drawEditHD(c, s, t, a, k); c.setTransform(1, 0, 0, 1, 0, 0); return; } // 편집실: 고해상도 장면(ui/edithd.js)
         DRAW[i](c, s, t, a, k);
         if (s.deco) DECOS.forEach(d => { if (d.fl === i && s.deco[d.id]) DECO_DRAW[d.id](c, t); });
         if (i < 4) { R(c, 0, GY + 5, 320, 3, '#14141f'); if (a) R(c, (t * 40 + i * 37) % 340 - 10, GY + 5, 8, 3, COL[i]); }
