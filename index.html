@@ -455,7 +455,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-2103</span>
+  <span class="iver">v2026.11.15-2146</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -504,8 +504,8 @@ const ACHIEVEMENTS = [
   { id: 'a2', n: '지역 방송 기자', d: '누적 1만 점', t: s => s.run >= 1e4 },
   { id: 'a3', n: '메인 뉴스 입성', d: '누적 100만 점', t: s => s.run >= 1e6 },
   { id: 'a4', n: '시청률 왕', d: '누적 1억 점', t: s => s.run >= 1e8 },
-  { id: 'a5', n: '속보 초보', d: '속보 5회 대응', t: s => s.evCount >= 5 },
-  { id: 'a6', n: '속보 베테랑', d: '속보 25회 대응', t: s => s.evCount >= 25 },
+  { id: 'a5', n: '속보 초보', d: '속보 5건 송출', t: s => s.evCount >= 5 },
+  { id: 'a6', n: '속보 베테랑', d: '속보 25건 송출', t: s => s.evCount >= 25 },
   { id: 'a7', n: '첫 매니저', d: '매니저 1명 고용', t: s => s.mg.some(Boolean) },
   { id: 'a8', n: '전 층 매니저', d: '모든 층 매니저 고용', t: s => s.mg.every(Boolean) },
   { id: 'a9', n: '시설 강화', d: '업그레이드 Lv.25 달성', t: s => Object.values(s.lv).some(l => l >= 25) },
@@ -536,7 +536,7 @@ const CARDS = [
 ];
 // 주간 목표 (Egg Inc의 계약식): 매주 월요일에 초기화
 const WEEKLY = [
-  { id: 'w1', n: '속보 20회 대응', k: 'ev', goal: 20 }, { id: 'w2', n: '시청률 6% 이상 3일', k: 'rate', goal: 3 }, { id: 'w3', n: '특종 5회 획득', k: 'gold', goal: 5 },
+  { id: 'w1', n: '속보 20건 송출', k: 'ev', goal: 20 }, { id: 'w2', n: '시청률 6% 이상 3일', k: 'rate', goal: 3 }, { id: 'w3', n: '특종 5회 획득', k: 'gold', goal: 5 },
   { id: 'w4', n: '업그레이드 50레벨 구매', k: 'buy', goal: 50 }, { id: 'w5', n: '스카우트 3회', k: 'pull', goal: 3 },
 ];
 // 스카우트 확률(등급 순서: 일반, 희귀, 영웅, 전설). 합계의 나머지가 꽝이다. PITY번째 스카우트는 영웅 이상 보장
@@ -562,7 +562,7 @@ const RIVAL = '한누리방송';
 // 오늘의 미션: 게임 속 하루마다 3개. {g}는 목표치. out 목표는 현재 처리 속도로 정한다
 const MISSIONS = [
   { k: 'out', n: '뉴스 {g}건 송출' },
-  { k: 'ev', n: '속보 {g}건 대응', g: 2 },
+  { k: 'ev', n: '속보 {g}건 직접 대응 (우선 편집·데스크 판단)', g: 2 },
   { k: 'gold', n: '특종 {g}번 잡기', g: 1 },
   { k: 'buy', n: '업그레이드 {g}레벨 올리기', g: 10 },
   { k: 'pull', n: '스카우트 {g}회', g: 1 },
@@ -689,10 +689,10 @@ const jobOf = s => { const id = s && s.job === 'anchor' ? 'engineer' : s && s.jo
 const careerOf = s => jobOf(s).career;
 // 주간 한정 이벤트: 매주 월요일(서버 시각)마다 바뀐다. 목표 달성 시 티켓 2장 + 한정 배지
 const WEEK_EVENTS = [
-  { id: 'vote', n: '대선 개표 방송 주간 (가상)', d: '정치 속보가 4배 자주, 점수 x1.5', ev: 'politics', w: 4, sc: 1.5, k: 'ev', goal: 8, gd: '정치 속보 8회 대응' },
-  { id: 'games', n: '세계 스포츠 대회 주간', d: '스포츠 속보가 4배 자주, 점수 x1.5', ev: 'sports', w: 4, sc: 1.5, k: 'ev', goal: 8, gd: '스포츠 속보 8회 대응' },
-  { id: 'storm', n: '태풍 특보 주간', d: '날씨 속보가 4배 자주, 점수 x1.5', ev: 'weather', w: 4, sc: 1.5, k: 'ev', goal: 10, gd: '날씨 속보 10회 대응' },
-  { id: 'robots', n: '로봇 출몰 주간 (가상)', d: '거대 로봇 속보가 자주, 히어로 카드 확률 2배', ev: 'robot', w: 4, sc: 1.5, hero: 2, k: 'ev', goal: 5, gd: '로봇 속보 5회 대응' },
+  { id: 'vote', n: '대선 개표 방송 주간 (가상)', d: '정치 속보가 4배 자주, 점수 x1.5', ev: 'politics', w: 4, sc: 1.5, k: 'ev', goal: 8, gd: '정치 속보 8건 송출' },
+  { id: 'games', n: '세계 스포츠 대회 주간', d: '스포츠 속보가 4배 자주, 점수 x1.5', ev: 'sports', w: 4, sc: 1.5, k: 'ev', goal: 8, gd: '스포츠 속보 8건 송출' },
+  { id: 'storm', n: '태풍 특보 주간', d: '날씨 속보가 4배 자주, 점수 x1.5', ev: 'weather', w: 4, sc: 1.5, k: 'ev', goal: 10, gd: '날씨 속보 10건 송출' },
+  { id: 'robots', n: '로봇 출몰 주간 (가상)', d: '거대 로봇 속보가 자주, 히어로 카드 확률 2배', ev: 'robot', w: 4, sc: 1.5, hero: 2, k: 'ev', goal: 5, gd: '로봇 속보 5건 송출' },
   { id: 'scoop', n: '특종 사냥 주간', d: '특종이 1.7배 자주 나타나요', gold: .6, k: 'gold', goal: 12, gd: '특종 12번 잡기' },
   { id: 'war', n: '시청률 전쟁 주간', d: '라이벌을 이기면 광고 수입 2배 더', rival: 2, k: 'win', goal: 6, gd: '라이벌에게 6번 승리' },
 ];
@@ -860,9 +860,9 @@ function evaluateDay(s, r, r2, r3 = .5) {
 
 
 // 오늘의 미션: 누적 카운터의 '하루 시작 시점 값'을 기준으로 진행도를 잰다 (별도 일일 카운터 불필요)
-const CNT = { out: s => s.outT || 0, ev: s => s.evCount, gold: s => s.goldCount, buy: s => s.buyT || 0, pull: s => s.pulls, scoop: s => s.scoopT || 0 };
+const CNT = { out: s => s.outT || 0, ev: s => s.evH || 0, gold: s => s.goldCount, buy: s => s.buyT || 0, pull: s => s.pulls, scoop: s => s.scoopT || 0 };
 function newMissions(s, r) {
-  const pool = MISSIONS.filter(m => !(s.chal === 'calm' && (m.k === 'ev' || m.k === 'gold' || m.k === 'scoop')));
+  const pool = MISSIONS.filter(m => !(s.chal === 'calm' && (m.k === 'ev' || m.k === 'gold' || m.k === 'scoop')) && !(s.chief && m.k === 'ev')); // 팀장이 있으면 우선 편집이 자동이라 '속보 대응' 미션은 빼다
   let x = Math.floor(r * 1e9) || 7; const rnd = () => (x = (x * 1103515245 + 12345) % 2147483648) / 2147483648;
   const pick = [...pool].sort(() => rnd() - .5).slice(0, 3);
   return { day: s.day, all: 0, list: pick.map(m => ({ k: m.k, goal: m.k === 'out' ? Math.max(20, Math.round(Math.min(...rates(s)) * DAY_SEC * .4)) : m.g, base: CNT[m.k](s), done: 0 })) };
@@ -915,10 +915,10 @@ const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0, br: {}, lr: null, guild: null,
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0, br: {}, evH: 0, lr: null, guild: null,
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild', 'evH'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -978,9 +978,9 @@ function reducer(st, a) {
       return s;
     }
     case 'NAME': return { ...st, name: a.name, uid: st.uid || a.uid, job: a.job || st.job || 'editor' };
-    case 'SPAWN': return { ...st, evCount: st.evCount + 1, dEv: st.dEv + 1, dLog: [...(st.dLog || []), a.ev.name].slice(-3), wev: wevBump(st, 'ev', a.ev.id), week: bump(st.week, 'ev'), ev: { ...a.ev, end: st.clock + a.ev.dur, boost: !!st.chief, dilEnd: st.clock + DIL_SEC, pick: null } };
-    case 'JUDGE': return st.ev && st.ev.dil && !st.ev.pick ? judge({ ...st }, a.pick, a.r) : st;
-    case 'BOOST': return st.ev ? { ...st, ev: { ...st.ev, boost: true } } : st;
+    case 'SPAWN': return { ...st, evCount: st.evCount + 1, dEv: st.dEv + 1, dLog: [...(st.dLog || []), a.ev.name].slice(-3), wev: wevBump(st, 'ev', a.ev.id), week: bump(st.week, 'ev'), ev: { ...a.ev, end: st.clock + a.ev.dur, boost: !!st.chief, auto: !!st.chief, dilEnd: st.clock + DIL_SEC, pick: null } };
+    case 'JUDGE': return st.ev && st.ev.dil && !st.ev.pick ? judge({ ...st, evH: (st.evH || 0) + 1 }, a.pick, a.r) : st; // 데스크 판단도 대응
+    case 'BOOST': return st.ev && !st.ev.boost ? { ...st, evH: (st.evH || 0) + 1, ev: { ...st.ev, boost: true } } : st; // 직접 우선 편집 = 속보 대응
     case 'GOLD': {
       if (!st.gold) return st; const g = goldReward(st, a.r), n = g.cash || 0;
       return { ...earn(st, n), gold: null, nextGold: st.clock + goldGap(st, a.r), goldCount: st.goldCount + 1, wev: wevBump(st, 'gold'), week: bump(st.week, 'gold'), gbEnd: g.frenzy ? st.clock + 20 : st.gbEnd };
@@ -1093,7 +1093,7 @@ const EventScheduler = store => ({
 
 
 
-const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'br', 'lr', 'guild'];
+const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'br', 'lr', 'guild', 'evH'];
 // Repository 패턴: 저장 매체(localStorage)를 이 모듈 안에 가둔다
 const Repo = {
   snapshot: s => ({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() }), // 클라우드 저장에도 같은 모양을 쓴다
@@ -1103,6 +1103,7 @@ const Repo = {
     try {
       const o = JSON.parse(localStorage.getItem(SAVE_KEY)); if (!o || !o.lv) return null;
       if (!o.presV) { if (o.pts > 0) o.pts = Math.floor(Math.cbrt(o.pts * o.pts / 200)); o.presV = 2; }
+      if (o.mis && o.mis.list) o.mis.list.forEach(m => { if (m.k === 'ev' && !m.done) m.base = Math.min(m.base, o.evH || 0); }); // '속보 대응' 미션 기준이 바뀐 것 맞추기
       if ((o.lbEp || 0) < LB_EP) { o.lbBase = { total: o.total || 0, views: o.views || 0 }; if (o.season) o.season = { ...o.season, base: Math.max(o.season.base || 0, o.total || 0) }; o.lbEp = LB_EP; } // 순위 초기화: 지금까지 쌓인 기록은 순위에서 빼고 새로 센다 // 개편 공식 변경 전 기록: 같은 점수를 새 공식으로 받았을 때의 포인트로 변환
       const nt = (o.res && o.res.night) || 0, sec = Math.min((Date.now() - o.t) / 1000, 28800 + 3600 * nt), { t, ...s } = o;
     const jo = jobOf(o).off || 0; // 방송 엔지니어: 오프라인 수익 +20%p
@@ -2583,7 +2584,7 @@ function Hud(bus) {
         if (step.done && step.done(s, { tab })) bus.emit('tut', ts + 1 >= TUTORIAL.length ? -1 : ts + 1);
       }
       $('alert').hidden = !s.ev;
-      if (s.ev) { $('evt').textContent = `속보 · ${s.ev.name}`; $('evd').textContent = `${s.ev.k} · 유입 x${s.ev.inf} · 점수 x${s.ev.sc}${s.ev.boost ? ' (+50%)' : ''} · ${Math.max(0, Math.ceil(s.ev.end - s.clock))}초`; $('evb').disabled = s.ev.boost; $('evb').textContent = s.ev.boost ? '편집 중' : '우선 편집'; }
+      if (s.ev) { $('evt').textContent = `속보 · ${s.ev.name}`; $('evd').textContent = `${s.ev.k} · 유입 x${s.ev.inf} · 점수 x${s.ev.sc}${s.ev.boost ? ' (+50%)' : ''} · ${Math.max(0, Math.ceil(s.ev.end - s.clock))}초`; $('evb').disabled = s.ev.boost; $('evb').textContent = s.ev.auto ? '팀장 편집 중' : s.ev.boost ? '편집 중' : '우선 편집'; }
       { const g = prestigeGain(s); $('presd').textContent = `이번 회차 ${fmt(s.run)}점 · 개편하면 포인트 +${fmt(g)} (점수 배율 x${prestigeBonus(s).toFixed(2)} → x${prestigeBonus({ pts: s.pts + g }).toFixed(2)}) · 포인트 1당 +2%, 개편 직후엔 처음부터 다시 시작해요`; }
     },
   };
@@ -2673,10 +2674,10 @@ function Social(bus) {
       $s('gnone').hidden = !!g; $s('gin').hidden = !g; if (!g) return;
       $s('gtitle').textContent = g.name; $s('gcnt').textContent = `${g.n}/20명 · 연합 버프 점수 +${Math.min(10, g.n) * 2}%`; $s('gcodev').textContent = g.code;
       const wk = +String(g.week).slice(-2) || 0, story = SO_STORIES[wk % SO_STORIES.length], pr = Math.min(1, g.total / g.goal);
-      $s('gstory').textContent = `이번 주 공동 특보: ${story}`; $s('gprog').textContent = `연합 속보 대응 ${fmt(g.total)} / ${fmt(g.goal)}건`; $s('gbar').style.width = pr * 100 + '%';
+      $s('gstory').textContent = `이번 주 공동 특보: ${story}`; $s('gprog').textContent = `연합 속보 송출 ${fmt(g.total)} / ${fmt(g.goal)}건`; $s('gbar').style.width = pr * 100 + '%';
       $s('gcl').disabled = g.claimed || pr < 1; $s('gcl').textContent = g.claimed ? '이번 주 보상 받음 ✓' : pr < 1 ? `목표 달성 시 티켓 3장 + ${fmt(perSec * 1800)}점` : `보상 받기: 티켓 3장 + ${fmt(perSec * 1800)}점`;
       const ul = $s('gmem'); ul.replaceChildren();
-      (g.members || []).forEach((m, i) => { const li = el('li', m.me ? 'me' : null); li.append(el('b', null, `${i + 1}. ${String(m.name).slice(0, 12)}${m.owner ? ' ★' : ''}`), el('small', null, `이번 주 속보 대응 ${m.c}건`)); ul.append(li); });
+      (g.members || []).forEach((m, i) => { const li = el('li', m.me ? 'me' : null); li.append(el('b', null, `${i + 1}. ${String(m.name).slice(0, 12)}${m.owner ? ' ★' : ''}`), el('small', null, `이번 주 속보 송출 ${m.c}건`)); ul.append(li); });
     },
   };
 }

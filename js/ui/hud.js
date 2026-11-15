@@ -255,7 +255,7 @@ export function Hud(bus) {
         if (step.done && step.done(s, { tab })) bus.emit('tut', ts + 1 >= TUTORIAL.length ? -1 : ts + 1);
       }
       $('alert').hidden = !s.ev;
-      if (s.ev) { $('evt').textContent = `속보 · ${s.ev.name}`; $('evd').textContent = `${s.ev.k} · 유입 x${s.ev.inf} · 점수 x${s.ev.sc}${s.ev.boost ? ' (+50%)' : ''} · ${Math.max(0, Math.ceil(s.ev.end - s.clock))}초`; $('evb').disabled = s.ev.boost; $('evb').textContent = s.ev.boost ? '편집 중' : '우선 편집'; }
+      if (s.ev) { $('evt').textContent = `속보 · ${s.ev.name}`; $('evd').textContent = `${s.ev.k} · 유입 x${s.ev.inf} · 점수 x${s.ev.sc}${s.ev.boost ? ' (+50%)' : ''} · ${Math.max(0, Math.ceil(s.ev.end - s.clock))}초`; $('evb').disabled = s.ev.boost; $('evb').textContent = s.ev.auto ? '팀장 편집 중' : s.ev.boost ? '편집 중' : '우선 편집'; }
       { const g = prestigeGain(s); $('presd').textContent = `이번 회차 ${fmt(s.run)}점 · 개편하면 포인트 +${fmt(g)} (점수 배율 x${prestigeBonus(s).toFixed(2)} → x${prestigeBonus({ pts: s.pts + g }).toFixed(2)}) · 포인트 1당 +2%, 개편 직후엔 처음부터 다시 시작해요`; }
     },
   };

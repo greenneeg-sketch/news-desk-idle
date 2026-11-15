@@ -30,10 +30,10 @@ export function Social(bus) {
       $s('gnone').hidden = !!g; $s('gin').hidden = !g; if (!g) return;
       $s('gtitle').textContent = g.name; $s('gcnt').textContent = `${g.n}/20명 · 연합 버프 점수 +${Math.min(10, g.n) * 2}%`; $s('gcodev').textContent = g.code;
       const wk = +String(g.week).slice(-2) || 0, story = SO_STORIES[wk % SO_STORIES.length], pr = Math.min(1, g.total / g.goal);
-      $s('gstory').textContent = `이번 주 공동 특보: ${story}`; $s('gprog').textContent = `연합 속보 대응 ${fmt(g.total)} / ${fmt(g.goal)}건`; $s('gbar').style.width = pr * 100 + '%';
+      $s('gstory').textContent = `이번 주 공동 특보: ${story}`; $s('gprog').textContent = `연합 속보 송출 ${fmt(g.total)} / ${fmt(g.goal)}건`; $s('gbar').style.width = pr * 100 + '%';
       $s('gcl').disabled = g.claimed || pr < 1; $s('gcl').textContent = g.claimed ? '이번 주 보상 받음 ✓' : pr < 1 ? `목표 달성 시 티켓 3장 + ${fmt(perSec * 1800)}점` : `보상 받기: 티켓 3장 + ${fmt(perSec * 1800)}점`;
       const ul = $s('gmem'); ul.replaceChildren();
-      (g.members || []).forEach((m, i) => { const li = el('li', m.me ? 'me' : null); li.append(el('b', null, `${i + 1}. ${String(m.name).slice(0, 12)}${m.owner ? ' ★' : ''}`), el('small', null, `이번 주 속보 대응 ${m.c}건`)); ul.append(li); });
+      (g.members || []).forEach((m, i) => { const li = el('li', m.me ? 'me' : null); li.append(el('b', null, `${i + 1}. ${String(m.name).slice(0, 12)}${m.owner ? ' ★' : ''}`), el('small', null, `이번 주 속보 송출 ${m.c}건`)); ul.append(li); });
     },
   };
 }
