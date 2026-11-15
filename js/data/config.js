@@ -163,17 +163,17 @@ export const JOBS = [
       { n: '뉴스그래픽팀장', need: s => s.total >= CAREER_AT[3] && s.pts >= 10 && s.lv.cg >= 100, nd: '누적 10조 점 · 개편 포인트 10 · CG 템플릿 Lv.100', tk: 2, who: '보도국장', say: ['그래픽팀을 맡아 줘.', '수정 요청은 이제 네가 정리하는 거야.'] },
       { n: '디자인센터장', need: s => s.total >= CAREER_AT[4] && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['방송국의 얼굴을 맡기겠습니다.', '오늘도 화면은 계속됩니다.'] },
     ] },
-  { id: 'anchor', n: '앵커', st: 4, d: '8시, 시청자와 눈을 맞춘다', perk: '송출 속도 +50% · 시청률 +1.0 · 8시 뉴스 광고 수입 x1.5', rating: 1, ad: 1.5,
+  { id: 'engineer', n: '방송 엔지니어', st: 4, d: '방송사고 없는 송출을 책임진다', perk: '송출 속도 +50% · 오프라인 수익 +20%p · 8시 뉴스 광고 수입 x1.3', off: .2, ad: 1.3,
     career: [
-      { n: '수습 아나운서' },
-      { n: '아나운서', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '아나운서팀장', say: ['첫 리딩 깔끔했어.', '숨 쉬는 자리만 조금 더 연습하자.'] },
-      { n: '주말뉴스 앵커', need: s => s.total >= CAREER_AT[1] && s.bestRating >= 6 && s.day >= 10, nd: '누적 1천만 점 · 최고 시청률 6% · 게임 속 10일째', tk: 1, who: '보도국장', say: ['주말 뉴스를 맡아 줘.', '프롬프터가 멈춰도 표정은 멈추면 안 돼.'] },
-      { n: '8시 뉴스 앵커', need: s => s.total >= CAREER_AT[2] && s.bestRating >= 12 && s.day >= 30, nd: '누적 100억 점 · 최고 시청률 12% · 게임 속 30일째', tk: 2, who: '보도국장', say: ['이제 8시는 자네 시간이야.', '오늘 첫 문장이 내일 신뢰를 만든다.'] },
-      { n: '간판 앵커', need: s => s.total >= CAREER_AT[3] && s.pts >= 10 && (s.bestWin || 0) >= 3, nd: '누적 10조 점 · 개편 포인트 10 · 라이벌 3연승', tk: 2, who: '보도국장', say: ['방송국 하면 자네 얼굴이 떠오른대.', '그만큼 말 한마디가 무거워졌어.'] },
-      { n: '보도본부장', need: s => s.total >= CAREER_AT[4] && (s.bestWin || 0) >= 7, nd: '누적 1경 점 · 라이벌 7연승', tk: 3, who: '사장', say: ['보도본부를 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+      { n: '수습 엔지니어' },
+      { n: '방송 엔지니어', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '주조정실 선배', say: ['첫 송출 무사고. 오늘부터 콘솔 하나 맡아.', '이상하면 일단 백업 라인부터 확인해.'] },
+      { n: '선임 엔지니어', need: s => s.total >= CAREER_AT[1] && s.lv.out >= 25 && s.day >= 10, nd: '누적 1천만 점 · 송출 장비 Lv.25 · 게임 속 10일째', tk: 1, who: '방송기술부장', say: ['야간 근무 때 장비 다 살려 놨더라.', '후배들 장애 대응 훈련 좀 맡아 줘.'] },
+      { n: '주조정실 기술감독', need: s => s.total >= CAREER_AT[2] && s.lv.out >= 100 && s.bestRating >= 12 && s.day >= 30, nd: '누적 100억 점 · 송출 장비 Lv.100 · 최고 시청률 12% · 게임 속 30일째', tk: 2, who: '보도국장', say: ['8시 뉴스 주조정실, 이제 자네가 지휘해.', '큐는 1초도 늦으면 안 돼.'] },
+      { n: '방송기술부장', need: s => s.total >= CAREER_AT[3] && s.pts >= 10 && s.lv.ing >= 100, nd: '누적 10조 점 · 개편 포인트 10 · 인제스트 서버 Lv.100', tk: 2, who: '기술본부장', say: ['방송기술부를 맡아 줘.', '장비는 바뀌어도 원칙은 같아. 무사고.'] },
+      { n: '기술본부장', need: s => s.total >= CAREER_AT[4] && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['방송국의 심장을 맡기겠습니다.', '오늘도 전파는 멈추지 않습니다.'] },
     ] },
 ];
-export const jobOf = s => JOBS.find(j => j.id === (s && s.job)) || JOBS[2]; // 직업을 고르기 전 저장본은 영상편집기자로 본다
+export const jobOf = s => { const id = s && s.job === 'anchor' ? 'engineer' : s && s.job; return JOBS.find(j => j.id === id) || JOBS[2]; }; // 고르기 전 저장본은 영상편집기자, 예전 '앵커'는 방송 엔지니어로 본다
 export const careerOf = s => jobOf(s).career;
 // 주간 한정 이벤트: 매주 월요일(서버 시각)마다 바뀐다. 목표 달성 시 티켓 2장 + 한정 배지
 export const WEEK_EVENTS = [
