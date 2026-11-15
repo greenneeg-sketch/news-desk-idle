@@ -1,4 +1,4 @@
-import { BASE, UPGRADES, RANKS, MILESTONES, CARDS, RARITY, jobOf, PRESTIGE } from '../data/config.js';
+import { BASE, UPGRADES, RANKS, MILESTONES, CARDS, RARITY, jobOf, PRESTIGE, BRANCHES } from '../data/config.js';
 import { weekEvent, heroCount } from './weekly.js';
 // 순수 함수 모음: 상태를 받아 계산만 한다 (부작용 없음)
 const U = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
@@ -28,10 +28,13 @@ export function rates(s) {
   if (s.clock < s.spdEnd) r.forEach((v, i) => { r[i] = v * 2; });
   return r;
 }
+// 지국: 전체 점수 배수, 담당 분야 속보 배수
+export const brMul = s => 1 + BRANCHES.reduce((a, b) => a + ((s.br || {})[b.id] || 0) * b.pct, 0);
+export const brEv = (s, id) => BRANCHES.reduce((m, b) => { const lv = (s.br || {})[b.id] || 0; return lv && b.ev === id ? m * (1.2 + .02 * lv) : m; }, 1);
 export function scoreMul(s) {
   const jb = jobOf(s);
-  let m = prestigeBonus(s) * boost(mult(s, U.live), jb.live) * boost(mult(s, U.qual), jb.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? 7 : 1);
-  if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s); e *= jb.ev || 1; m *= e * (1 + .15 * rl(s, 'event')); }
+  let m = prestigeBonus(s) * boost(mult(s, U.live), jb.live) * boost(mult(s, U.qual), jb.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? 7 : 1) * brMul(s);
+  if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s); e *= jb.ev || 1; e *= brEv(s, s.ev.id); m *= e * (1 + .15 * rl(s, 'event')); }
   return m;
 }
 export const goldGap = (s, r) => (60 + r * 60) * (1 - .08 * rl(s, 'gold')) * ((weekEvent(s) || {}).gold || 1);

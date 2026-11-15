@@ -95,6 +95,15 @@
     </section>
   </div>
 
+  <div class="pane" data-tab="br" hidden>
+    <section class="panel" id="brp">
+      <div class="fh"><b>지국 운영</b><span class="cnt" id="brsum"></span></div>
+      <canvas id="brmap" width="320" height="150"></canvas>
+      <p class="note">지국을 열고 확장하면 전체 점수가 오르고, 지국이 맡은 분야의 속보 점수가 커져요. 개편하면 지국 레벨은 처음으로 돌아가요.</p>
+      <div id="brlist"></div>
+    </section>
+  </div>
+
   <div class="pane" data-tab="grow" hidden>
     <div class="sub" id="gsub"><button data-g="car">커리어</button><button data-g="res">연구</button><button data-g="deco">꾸미기</button><button data-g="pres">개편</button><button data-g="ach">업적</button></div>
     <section class="panel" id="carp" data-g="car">
@@ -141,6 +150,7 @@
 <nav class="tabs" id="tabs">
   <button data-t="desk" id="tab-desk">보도국</button>
   <button data-t="scout" id="tab-scout">스카우트<i class="dot" id="dot-scout" hidden></i></button>
+  <button data-t="br" id="tab-br">지국</button>
   <button data-t="rank" id="tab-rank">순위</button>
   <button data-t="grow" id="tab-grow">성장<i class="dot" id="dot-grow" hidden></i></button>
 </nav>

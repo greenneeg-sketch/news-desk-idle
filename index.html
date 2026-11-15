@@ -89,11 +89,12 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .mcshot{width:100%;min-height:52px;font-size:14px;margin-bottom:4px}.mcshot[hidden],#mcprow[hidden],#mcrow[hidden]{display:none}
 .mgi{display:flex;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--ink)}.mgi>div{flex:1}.mgi b{display:block}.mgi small{display:block;color:var(--sub);font-size:12px;margin-top:2px}.mgi .bg{font:12px "Press Start 2P",monospace;color:var(--y);min-width:22px;text-align:center}.mgi.my b::after{content:' · 내 직업';color:var(--g);font-size:11px}
 .mcrw{font-size:15px;margin:4px 0 10px}.mcx{width:100%;margin-top:8px;min-height:34px}
+#brmap{display:block;width:100%;image-rendering:pixelated;margin:6px 0;box-shadow:0 0 0 3px var(--ink)}.brrow.off{opacity:.45}.brk{color:var(--y)}
 .lbpg{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0}.lbpg span{min-width:56px;text-align:center;font-size:13px}.lbpg .btn:disabled{opacity:.4}
 #cards{cursor:pointer}
 .wg{margin:10px 0}.row2{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}.row2 span:first-child{flex:1}
 .app{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
-.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:480px;margin:0 auto;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--ink)}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:480px;margin:0 auto;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--ink)}
 .tabs button{position:relative;font:inherit;font-size:14px;color:var(--sub);background:var(--pn);border:0;min-height:44px;cursor:pointer}
 .tabs button.on{background:var(--y);color:var(--ink)}
 .tabs .dot{position:absolute;top:5px;right:6px;width:8px;height:8px;background:#e0475a}
@@ -291,6 +292,15 @@ section.gh{display:none!important}
     </section>
   </div>
 
+  <div class="pane" data-tab="br" hidden>
+    <section class="panel" id="brp">
+      <div class="fh"><b>지국 운영</b><span class="cnt" id="brsum"></span></div>
+      <canvas id="brmap" width="320" height="150"></canvas>
+      <p class="note">지국을 열고 확장하면 전체 점수가 오르고, 지국이 맡은 분야의 속보 점수가 커져요. 개편하면 지국 레벨은 처음으로 돌아가요.</p>
+      <div id="brlist"></div>
+    </section>
+  </div>
+
   <div class="pane" data-tab="grow" hidden>
     <div class="sub" id="gsub"><button data-g="car">커리어</button><button data-g="res">연구</button><button data-g="deco">꾸미기</button><button data-g="pres">개편</button><button data-g="ach">업적</button></div>
     <section class="panel" id="carp" data-g="car">
@@ -337,6 +347,7 @@ section.gh{display:none!important}
 <nav class="tabs" id="tabs">
   <button data-t="desk" id="tab-desk">보도국</button>
   <button data-t="scout" id="tab-scout">스카우트<i class="dot" id="dot-scout" hidden></i></button>
+  <button data-t="br" id="tab-br">지국</button>
   <button data-t="rank" id="tab-rank">순위</button>
   <button data-t="grow" id="tab-grow">성장<i class="dot" id="dot-grow" hidden></i></button>
 </nav>
@@ -414,7 +425,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-2046</span>
+  <span class="iver">v2026.11.15-2059</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -580,6 +591,20 @@ const DECOS = [
   { id: 'disc', n: '미니게임 골든 디스크', fl: 6, need: s => Object.values(s.mgBest || {}).includes('S'), nt: '미니게임 S등급' },
   { id: 'flower', n: '시청자 감사 꽃다발', fl: 6, need: s => (s.career || 0) >= 3, nt: '직급 3번 승진' },
 ];
+// 지국(여러 방송국 운영): 본사 밖에 지역 지국·해외 특파원을 연다. 레벨마다 전체 점수 +pct, 담당 분야(ev) 속보 점수 +20%(+레벨당 2%)
+// 개설·확장 비용 = at x 1.6^레벨. 개편하면 지국 레벨은 처음으로 돌아간다. x·y는 지도 좌표(320x150)
+const BRANCHES = [
+  { id: 'busan', n: '부산 지국', k: '국내', ev: 'weather', at: 3e4, pct: .08, x: 84, y: 98 },
+  { id: 'daejeon', n: '대전 지국', k: '국내', ev: 'tech', at: 3e5, pct: .08, x: 66, y: 80 },
+  { id: 'gwangju', n: '광주 지국', k: '국내', ev: 'culture', at: 3e6, pct: .08, x: 58, y: 100 },
+  { id: 'jeju', n: '제주 지국', k: '국내', ev: 'society', at: 3e7, pct: .08, x: 60, y: 128 },
+  { id: 'tokyo', n: '도쿄 특파원', k: '해외', ev: 'economy', at: 3e8, pct: .1, x: 124, y: 88 },
+  { id: 'beijing', n: '베이징 특파원', k: '해외', ev: 'world', at: 3e9, pct: .1, x: 18, y: 40 },
+  { id: 'dc', n: '워싱턴 특파원', k: '해외', ev: 'politics', at: 3e10, pct: .12, x: 206, y: 62 },
+  { id: 'paris', n: '파리 특파원', k: '해외', ev: 'sports', at: 3e11, pct: .12, x: 276, y: 44 },
+];
+const BR_MAX = 20;
+const brCost = (b, lv) => Math.floor(b.at * 1.6 ** lv);
 // 직업: 처음에 고른다. 주력 층(st) 처리 속도 +50%·그 층 업그레이드 비용 -20%, 직업마다 특기와 커리어(직급·조건·대사)가 다르다
 // 커리어는 누적 점수가 기준을 넘으면 승진(개편해도 유지). 승진마다 영구 점수 +5%와 스카우트 티켓. 기준은 모든 직업이 같고 직급 이름·대사만 다르다
 const CAREER_AT = [1e4, 1e6, 1e9, 1e12, 1e15]; // 직급은 누적 점수만으로 오른다
@@ -671,6 +696,7 @@ const UNLOCKS = [
   { id: 'grow', at: 1e4, t: '커리어', d: '승진할 때마다 영구 점수 +5%. 성장 탭에서 다음 승진 조건을 볼 수 있어요.', tab: 'grow', g: 'car', target: 'carp' },
   { id: 'rank', at: 2e4, t: '순위', d: '다른 방송국과 순위와 이번 달 시즌 등급을 겨뤄요.', tab: 'rank', target: 'board' },
   { id: 'chief', at: 2e4, t: '영상편집팀장', d: '팀장을 고용하면 속보 때 우선 편집을 자동으로 해 줘요.', tab: 'desk', target: 'flc' },
+  { id: 'br', at: 2e4, t: '지국 확장', d: '아래 "지국" 탭이 열렸어요. 부산 지국부터 해외 특파원까지 열면 점수가 오르고, 담당 분야 속보가 더 커져요.', tab: 'br', target: 'brp' },
   { id: 'deco', at: 3e4, t: '사무실 꾸미기', d: '소품을 사면 장면에 나타나고 하나당 점수 +2%예요.', tab: 'grow', g: 'deco', target: 'decop' },
   { id: 'dil', at: 5e4, t: '데스크 판단', d: '이제 일부 속보는 단독으로 바로 낼지, 확인 후 낼지 골라야 해요. 단독 성공 시 점수 2배!' },
   { id: 'res', at: 1e5, t: '방송 기술 연구소', d: '8시 뉴스·미션·단독으로 모은 연구 포인트로 영구 강화를 해요.', tab: 'grow', g: 'res', target: 'resp' },
@@ -729,10 +755,13 @@ function rates(s) {
   if (s.clock < s.spdEnd) r.forEach((v, i) => { r[i] = v * 2; });
   return r;
 }
+// 지국: 전체 점수 배수, 담당 분야 속보 배수
+const brMul = s => 1 + BRANCHES.reduce((a, b) => a + ((s.br || {})[b.id] || 0) * b.pct, 0);
+const brEv = (s, id) => BRANCHES.reduce((m, b) => { const lv = (s.br || {})[b.id] || 0; return lv && b.ev === id ? m * (1.2 + .02 * lv) : m; }, 1);
 function scoreMul(s) {
   const jb = jobOf(s);
-  let m = prestigeBonus(s) * boost(mult(s, U.live), jb.live) * boost(mult(s, U.qual), jb.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? 7 : 1);
-  if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s); e *= jb.ev || 1; m *= e * (1 + .15 * rl(s, 'event')); }
+  let m = prestigeBonus(s) * boost(mult(s, U.live), jb.live) * boost(mult(s, U.qual), jb.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? 7 : 1) * brMul(s);
+  if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s); e *= jb.ev || 1; e *= brEv(s, s.ev.id); m *= e * (1 + .15 * rl(s, 'event')); }
   return m;
 }
 const goldGap = (s, r) => (60 + r * 60) * (1 - .08 * rl(s, 'gold')) * ((weekEvent(s) || {}).gold || 1);
@@ -854,7 +883,7 @@ const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0,
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0, br: {},
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
 const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN'];
@@ -977,6 +1006,11 @@ function reducer(st, a) {
     case 'TIP': return { ...st, tips: { ...st.tips, [a.id]: 1 } };
     case 'SETN': return { ...st, buyN: a.n };
     case 'GAIN': return earn(st, a.n);
+    case 'BRUP': { // 지국 개설·확장
+      const b = BRANCHES.find(x => x.id === a.id), lv = (st.br || {})[a.id] || 0; if (!b || lv >= BR_MAX) return st;
+      const c = brCost(b, lv); if (st.score < c) return st;
+      return { ...st, score: st.score - c, br: { ...st.br, [a.id]: lv + 1 } };
+    }
     case 'MGREC': { // 미니게임 기록: 최고 등급(S>A>B>C), 실전 횟수
       const o = 'CBAS', b = (st.mgBest || {})[a.id];
       return { ...st, mgBest: { ...st.mgBest, [a.id]: !b || o.indexOf(a.grade) > o.indexOf(b) ? a.grade : b }, mgN: (st.mgN || 0) + (a.practice ? 0 : 1) };
@@ -1024,7 +1058,7 @@ const EventScheduler = store => ({
 
 
 
-const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN'];
+const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'br'];
 // Repository 패턴: 저장 매체(localStorage)를 이 모듈 안에 가둔다
 const Repo = {
   snapshot: s => ({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() }), // 클라우드 저장에도 같은 모양을 쓴다
@@ -2271,7 +2305,7 @@ function Hud(bus) {
   let selCard = 0, armedCh = '', armT, cur = null, bd = null, view = 'all', pg = 0, PG = 10, tab = 'desk', hiId = null, tutShown = -2;
   // 탭: 보도국 / 스카우트 / 순위 / 성장. 마지막으로 연 탭을 이 브라우저에 기억한다
   // 잠긴 탭: 해당 기능이 해금돼야 열린다
-  const TAB_UNL = { scout: 'scout', grow: 'grow', rank: 'rank' }, need = id => UNLOCKS.find(u => u.id === id);
+  const TAB_UNL = { scout: 'scout', grow: 'grow', rank: 'rank', br: 'br' }, need = id => UNLOCKS.find(u => u.id === id);
   let gsub = 'car';
   function showSub(g) {
     gsub = g; document.querySelectorAll('#gsub [data-g]').forEach(b => b.classList.toggle('on', b.dataset.g === g));
@@ -2506,6 +2540,59 @@ function Hud(bus) {
   };
 }
 
+// 지국 화면: 위쪽 픽셀 지도(국내 지국 + 해외 특파원, 본사와 연결선), 아래쪽 지국 목록(개설·확장 버튼)
+
+
+
+
+const BR_KO = [ // 한반도 모양(가로 줄 단위): [y, x시작, x끝]
+  [10, 52, 74], [16, 46, 84], [22, 42, 88], [28, 44, 82], [34, 46, 78], [40, 44, 76], [46, 46, 76], [52, 48, 78], [58, 50, 80], [64, 50, 82],
+  [70, 52, 84], [76, 52, 86], [82, 52, 88], [88, 52, 88], [94, 54, 88], [100, 54, 86], [106, 58, 80]];
+const BR_HQ = { x: 56, y: 58 }, BR_EVK = Object.fromEntries(EVENTS.map(e => [e.id, e.k]));
+function Branches(bus) {
+  const $b = id => document.getElementById(id), cv = $b('brmap'), c = cv.getContext('2d');
+  c.imageSmoothingEnabled = false;
+  const R = (x, y, w, h, k) => { c.fillStyle = k; c.fillRect(x, y, w, h); };
+  $b('brlist').innerHTML = BRANCHES.map(b => `<div class="wg brrow" id="brw-${b.id}"><div class="row2"><span><b>${b.n}</b> <small class="brk">${b.k}</small><br><small id="brd-${b.id}"></small></span><button class="btn mini" data-br="${b.id}" id="brb-${b.id}"></button></div></div>`).join('');
+  $b('brlist').onclick = e => { const x = e.target.closest('[data-br]'); if (x && !x.disabled) bus.emit('brup', x.dataset.br); };
+  let last = '';
+  return {
+    render(s) { // 목록: 바뀐 것만 다시 쓴다
+      const br = s.br || {}, key = JSON.stringify(br) + '|' + Math.floor(Math.log10(1 + s.score) * 20);
+      if (key === last) return; last = key;
+      const open = BRANCHES.filter(b => br[b.id]).length;
+      $b('brsum').textContent = `${open}/${BRANCHES.length}곳 운영 · 전체 점수 x${brMul(s).toFixed(2)}`;
+      BRANCHES.forEach((b, i) => {
+        const lv = br[b.id] || 0, prev = i === 0 || br[BRANCHES[i - 1].id], cost = brCost(b, lv), btn = $b('brb-' + b.id), max = lv >= BR_MAX;
+        $b('brw-' + b.id).classList.toggle('off', !prev && !lv);
+        $b('brd-' + b.id).textContent = !prev && !lv ? `앞 지국을 먼저 열어야 해요` : lv ? `Lv.${lv} · 점수 +${Math.round(lv * b.pct * 100)}% · ${BR_EVK[b.ev]} 속보 +${20 + 2 * lv}%` : `열면 점수 +${Math.round(b.pct * 100)}% · ${BR_EVK[b.ev]} 속보 +22%`;
+        btn.textContent = max ? 'MAX' : `${lv ? '확장' : '개설'} ${fmt(cost)}`; btn.disabled = max || (!prev && !lv) || s.score < cost; btn.classList.toggle('can', !btn.disabled);
+      });
+    },
+    draw(s, t) { // 지도
+      const br = s.br || {};
+      R(0, 0, 320, 150, '#1d2b53'); for (let y = 0; y < 150; y += 6) R(0, y, 320, 1, '#22325e'); // 바다
+      R(0, 0, 40, 64, '#3a4466'); R(0, 64, 26, 30, '#3a4466'); // 대륙(중국 쪽)
+      BR_KO.forEach(([y, a, b]) => R(a, y, b - a, 6, '#5a6988')); R(56, 124, 12, 6, '#5a6988'); // 한반도, 제주
+      [[110, 64, 10, 10], [116, 74, 12, 12], [120, 86, 10, 10], [108, 98, 10, 8]].forEach(([x, y, w, h]) => R(x, y, w, h, '#5a6988')); // 일본
+      R(150, 0, 2, 150, '#0b0b14'); c.fillStyle = '#94b0c2'; c.font = '6px "Press Start 2P",monospace'; c.fillText('WORLD', 160, 12); c.fillText('KOREA', 6, 145);
+      R(176, 30, 52, 44, '#3a4466'); R(186, 74, 22, 16, '#3a4466'); R(256, 26, 40, 34, '#3a4466'); R(262, 60, 30, 40, '#3a4466'); R(300, 30, 20, 40, '#3a4466'); // 북미, 유럽, 아프리카, 아시아 끝
+      BRANCHES.forEach(b => { // 본사 → 지국 연결선(점선이 흐른다)
+        if (!br[b.id]) return; const dx = b.x - BR_HQ.x, dy = b.y - BR_HQ.y, n = Math.max(6, Math.hypot(dx, dy) / 4 | 0);
+        for (let i = 0; i < n; i++) { const f = ((i + t * 3) % n) / n; if (i % 2) continue; R(BR_HQ.x + dx * f, BR_HQ.y + dy * f, 2, 2, b.k === '해외' ? '#ffcd75' : '#73eff7'); }
+      });
+      BRANCHES.forEach(b => {
+        const lv = br[b.id] || 0, on = lv > 0, p = on && (t * 2 + b.x) % 2 < 1;
+        R(b.x - 3, b.y - 3, 7, 7, '#0b0b14'); R(b.x - 2, b.y - 2, 5, 5, on ? (b.k === '해외' ? '#ffcd75' : '#73eff7') : '#566c86'); if (p) R(b.x - 1, b.y - 1, 3, 3, '#ffffff');
+        if (on) { c.fillStyle = '#f4f4f4'; c.font = '5px "Press Start 2P",monospace'; c.fillText('Lv' + lv, b.x + 5, b.y + 2); }
+      });
+      R(BR_HQ.x - 4, BR_HQ.y - 4, 9, 9, '#0b0b14'); R(BR_HQ.x - 3, BR_HQ.y - 3, 7, 7, '#b13e53'); R(BR_HQ.x - 1, BR_HQ.y - 1, 3, 3, '#ffcd75'); // 본사(서울)
+      c.fillStyle = '#ffcd75'; c.font = '5px "Press Start 2P",monospace'; c.fillText('HQ', BR_HQ.x - 18, BR_HQ.y + 2);
+    },
+  };
+}
+
+
 
 
 
@@ -2536,7 +2623,7 @@ function Hud(bus) {
 
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
-const ui = Hud(bus), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
+const ui = Hud(bus), branches = Branches(bus), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
 let pending = 0, board = null;
 const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -2791,6 +2878,7 @@ bus.on('chief', () => {
   store.dispatch({ type: 'CHIEF' }); Sfx.play('rank'); ui.toast('영상편집팀장 고용! 속보마다 우선 편집이 자동 적용돼요.');
 });
 bus.on('research', id => { const p = store.getState(); store.dispatch({ type: 'RESEARCH', id }); if (store.getState() !== p) { Sfx.play('rank'); ui.toast('연구 완료! 영구 강화가 적용됐어요.'); } else Sfx.play('fail'); });
+bus.on('brup', id => { const p = store.getState(); store.dispatch({ type: 'BRUP', id }); const s = store.getState(); if (s !== p) { Sfx.play('rank'); ui.toast((p.br || {})[id] ? '지국을 확장했어요!' : '새 지국을 열었어요! 지도를 확인해 보세요.'); } else Sfx.play('fail'); });
 bus.on('deco', id => { const p = store.getState(); store.dispatch({ type: 'DECO', id }); if (store.getState() !== p) { Sfx.play('rank'); ui.toast('사무실에 배치했어요! 점수 +2%'); } else { Sfx.play('fail'); ui.toast('점수가 부족해요.'); } });
 let paperBonus = 0;
 bus.on('paperad', () => { if (!paperBonus) return; store.dispatch({ type: 'GAIN', n: paperBonus }); paperBonus = 0; ui.paperAdDone(); Sfx.play('buy'); ui.toast('실제 앱에서는 보상형 광고가 나와요. 광고 수입 2배!'); });
@@ -2856,8 +2944,8 @@ store.subscribe((s, p) => {
 });
 
 GameLoop({
-  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); },
-  render: t => scene.draw(store.getState(), t, ui.sel()),
+  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
+  render: t => { scene.draw(store.getState(), t, ui.sel()); if (!$i('brp').closest('.pane').hidden) branches.draw(store.getState(), t); },
 }).start();
 setInterval(() => { if (!restoring) Repo.save(store.getState()); }, 5000); // 자동 저장: 5초마다
 // 앱을 닫거나 다른 앱으로 넘어갈 때도 즉시 저장

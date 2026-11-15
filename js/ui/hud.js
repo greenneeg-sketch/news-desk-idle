@@ -24,7 +24,7 @@ export function Hud(bus) {
   let selCard = 0, armedCh = '', armT, cur = null, bd = null, view = 'all', pg = 0, PG = 10, tab = 'desk', hiId = null, tutShown = -2;
   // 탭: 보도국 / 스카우트 / 순위 / 성장. 마지막으로 연 탭을 이 브라우저에 기억한다
   // 잠긴 탭: 해당 기능이 해금돼야 열린다
-  const TAB_UNL = { scout: 'scout', grow: 'grow', rank: 'rank' }, need = id => UNLOCKS.find(u => u.id === id);
+  const TAB_UNL = { scout: 'scout', grow: 'grow', rank: 'rank', br: 'br' }, need = id => UNLOCKS.find(u => u.id === id);
   let gsub = 'car';
   function showSub(g) {
     gsub = g; document.querySelectorAll('#gsub [data-g]').forEach(b => b.classList.toggle('on', b.dataset.g === g));

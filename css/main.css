@@ -72,11 +72,12 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .mcshot{width:100%;min-height:52px;font-size:14px;margin-bottom:4px}.mcshot[hidden],#mcprow[hidden],#mcrow[hidden]{display:none}
 .mgi{display:flex;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--ink)}.mgi>div{flex:1}.mgi b{display:block}.mgi small{display:block;color:var(--sub);font-size:12px;margin-top:2px}.mgi .bg{font:12px "Press Start 2P",monospace;color:var(--y);min-width:22px;text-align:center}.mgi.my b::after{content:' · 내 직업';color:var(--g);font-size:11px}
 .mcrw{font-size:15px;margin:4px 0 10px}.mcx{width:100%;margin-top:8px;min-height:34px}
+#brmap{display:block;width:100%;image-rendering:pixelated;margin:6px 0;box-shadow:0 0 0 3px var(--ink)}.brrow.off{opacity:.45}.brk{color:var(--y)}
 .lbpg{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0}.lbpg span{min-width:56px;text-align:center;font-size:13px}.lbpg .btn:disabled{opacity:.4}
 #cards{cursor:pointer}
 .wg{margin:10px 0}.row2{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}.row2 span:first-child{flex:1}
 .app{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
-.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:480px;margin:0 auto;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--ink)}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:480px;margin:0 auto;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--ink)}
 .tabs button{position:relative;font:inherit;font-size:14px;color:var(--sub);background:var(--pn);border:0;min-height:44px;cursor:pointer}
 .tabs button.on{background:var(--y);color:var(--ink)}
 .tabs .dot{position:absolute;top:5px;right:6px;width:8px;height:8px;background:#e0475a}

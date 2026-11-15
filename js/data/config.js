@@ -150,6 +150,20 @@ export const DECOS = [
   { id: 'disc', n: '미니게임 골든 디스크', fl: 6, need: s => Object.values(s.mgBest || {}).includes('S'), nt: '미니게임 S등급' },
   { id: 'flower', n: '시청자 감사 꽃다발', fl: 6, need: s => (s.career || 0) >= 3, nt: '직급 3번 승진' },
 ];
+// 지국(여러 방송국 운영): 본사 밖에 지역 지국·해외 특파원을 연다. 레벨마다 전체 점수 +pct, 담당 분야(ev) 속보 점수 +20%(+레벨당 2%)
+// 개설·확장 비용 = at x 1.6^레벨. 개편하면 지국 레벨은 처음으로 돌아간다. x·y는 지도 좌표(320x150)
+export const BRANCHES = [
+  { id: 'busan', n: '부산 지국', k: '국내', ev: 'weather', at: 3e4, pct: .08, x: 84, y: 98 },
+  { id: 'daejeon', n: '대전 지국', k: '국내', ev: 'tech', at: 3e5, pct: .08, x: 66, y: 80 },
+  { id: 'gwangju', n: '광주 지국', k: '국내', ev: 'culture', at: 3e6, pct: .08, x: 58, y: 100 },
+  { id: 'jeju', n: '제주 지국', k: '국내', ev: 'society', at: 3e7, pct: .08, x: 60, y: 128 },
+  { id: 'tokyo', n: '도쿄 특파원', k: '해외', ev: 'economy', at: 3e8, pct: .1, x: 124, y: 88 },
+  { id: 'beijing', n: '베이징 특파원', k: '해외', ev: 'world', at: 3e9, pct: .1, x: 18, y: 40 },
+  { id: 'dc', n: '워싱턴 특파원', k: '해외', ev: 'politics', at: 3e10, pct: .12, x: 206, y: 62 },
+  { id: 'paris', n: '파리 특파원', k: '해외', ev: 'sports', at: 3e11, pct: .12, x: 276, y: 44 },
+];
+export const BR_MAX = 20;
+export const brCost = (b, lv) => Math.floor(b.at * 1.6 ** lv);
 // 직업: 처음에 고른다. 주력 층(st) 처리 속도 +50%·그 층 업그레이드 비용 -20%, 직업마다 특기와 커리어(직급·조건·대사)가 다르다
 // 커리어는 누적 점수가 기준을 넘으면 승진(개편해도 유지). 승진마다 영구 점수 +5%와 스카우트 티켓. 기준은 모든 직업이 같고 직급 이름·대사만 다르다
 export const CAREER_AT = [1e4, 1e6, 1e9, 1e12, 1e15]; // 직급은 누적 점수만으로 오른다

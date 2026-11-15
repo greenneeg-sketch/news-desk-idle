@@ -1,4 +1,4 @@
-import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES, SCOOP_P, DIL_SEC, RESEARCH, DECOS, jobOf, careerOf } from '../data/config.js';
+import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES, SCOOP_P, DIL_SEC, RESEARCH, DECOS, jobOf, careerOf, BRANCHES, BR_MAX, brCost } from '../data/config.js';
 import { weekEvent, weekFor } from '../systems/weekly.js';
 import { UNLOCKS, unlockReady } from '../data/tips.js';
 import { newMissions, progress } from '../systems/missions.js';
@@ -14,7 +14,7 @@ export const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0,
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0, br: {},
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
 const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN'];
@@ -137,6 +137,11 @@ export function reducer(st, a) {
     case 'TIP': return { ...st, tips: { ...st.tips, [a.id]: 1 } };
     case 'SETN': return { ...st, buyN: a.n };
     case 'GAIN': return earn(st, a.n);
+    case 'BRUP': { // 지국 개설·확장
+      const b = BRANCHES.find(x => x.id === a.id), lv = (st.br || {})[a.id] || 0; if (!b || lv >= BR_MAX) return st;
+      const c = brCost(b, lv); if (st.score < c) return st;
+      return { ...st, score: st.score - c, br: { ...st.br, [a.id]: lv + 1 } };
+    }
     case 'MGREC': { // 미니게임 기록: 최고 등급(S>A>B>C), 실전 횟수
       const o = 'CBAS', b = (st.mgBest || {})[a.id];
       return { ...st, mgBest: { ...st.mgBest, [a.id]: !b || o.indexOf(a.grade) > o.indexOf(b) ? a.grade : b }, mgN: (st.mgN || 0) + (a.practice ? 0 : 1) };

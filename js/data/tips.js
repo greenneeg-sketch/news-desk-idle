@@ -10,6 +10,7 @@ export const UNLOCKS = [
   { id: 'grow', at: 1e4, t: '커리어', d: '승진할 때마다 영구 점수 +5%. 성장 탭에서 다음 승진 조건을 볼 수 있어요.', tab: 'grow', g: 'car', target: 'carp' },
   { id: 'rank', at: 2e4, t: '순위', d: '다른 방송국과 순위와 이번 달 시즌 등급을 겨뤄요.', tab: 'rank', target: 'board' },
   { id: 'chief', at: 2e4, t: '영상편집팀장', d: '팀장을 고용하면 속보 때 우선 편집을 자동으로 해 줘요.', tab: 'desk', target: 'flc' },
+  { id: 'br', at: 2e4, t: '지국 확장', d: '아래 "지국" 탭이 열렸어요. 부산 지국부터 해외 특파원까지 열면 점수가 오르고, 담당 분야 속보가 더 커져요.', tab: 'br', target: 'brp' },
   { id: 'deco', at: 3e4, t: '사무실 꾸미기', d: '소품을 사면 장면에 나타나고 하나당 점수 +2%예요.', tab: 'grow', g: 'deco', target: 'decop' },
   { id: 'dil', at: 5e4, t: '데스크 판단', d: '이제 일부 속보는 단독으로 바로 낼지, 확인 후 낼지 골라야 해요. 단독 성공 시 점수 2배!' },
   { id: 'res', at: 1e5, t: '방송 기술 연구소', d: '8시 뉴스·미션·단독으로 모은 연구 포인트로 영구 강화를 해요.', tab: 'grow', g: 'res', target: 'resp' },
