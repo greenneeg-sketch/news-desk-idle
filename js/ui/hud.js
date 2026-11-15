@@ -48,7 +48,7 @@ export function Hud(bus) {
   let tt0; const toastL = m => { const e = $('toast'); e.textContent = m; clearTimeout(tt0); tt0 = setTimeout(() => e.textContent = '', 3000); };
   $('tutnext').onclick = () => { if (!cur) return; const n = cur.tut + 1; bus.emit('tut', n >= TUTORIAL.length ? -1 : n); };
   $('tutskip').onclick = () => bus.emit('tut', -1);
-  $('helpb').onclick = () => bus.emit('tut', 0);
+  $('helpb').onclick = () => bus.emit('guide');
   $('clist').innerHTML = CHALLENGES.map((c, i) => `<div class="wg"><div class="row2"><span><b>${c.n}</b><br><small>${c.d}</small></span><span id="chp${i}"></span><button class="btn mini" data-ch="${c.id}" id="chb${i}"></button></div><div class="ms"><i id="chm${i}"></i></div></div>`).join('');
   $('clist').onclick = e => { // 두 번 눌러야 실행 (회차 초기화가 일어나므로)
     const b = e.target.closest('[data-ch]'); if (!b || b.disabled || !cur) return; const id = b.dataset.ch, key = (cur.chal === id ? 'q' : '') + id;

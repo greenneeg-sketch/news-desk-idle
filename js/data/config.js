@@ -72,7 +72,7 @@ export const WEEKLY = [
 export const ODDS = [.29, .17, .065, .025];
 export const PITY = 30;
 // 시즌(매월 1일 시작): 시즌 점수로 등급을 매기고, 시즌이 끝나면 등급에 따라 스카우트 티켓 1~5장 지급
-export const TIERS = [{ n: '브론즈', at: 0 }, { n: '실버', at: 1e5 }, { n: '골드', at: 1e6 }, { n: '플래티넘', at: 1e7 }, { n: '다이아', at: 1e8 }];
+export const TIERS = [{ n: '브론즈', at: 0 }, { n: '실버', at: 1e9 }, { n: '골드', at: 1e11 }, { n: '플래티넘', at: 1e13 }, { n: '다이아', at: 1e14 }]; // 한 달 동안 번 점수 기준
 // 시즌 테마: 해당 속보가 3배 자주 발생 (name: 같은 카테고리 안에서 쓸 속보 이름 번호)
 export const SEASON_THEMES = [
   { months: [12, 1, 2], n: '한파 시즌', ev: 'weather', name: 0, d: '한파·폭설 속보가 3배 자주 터져요.' },
@@ -82,9 +82,9 @@ export const SEASON_THEMES = [
 ];
 // 챌린지: 시작하면 이번 회차가 초기화되고, 제약 속에서 목표(이번 회차 누적 점수)를 달성하면 영구 점수 +10%
 export const CHALLENGES = [
-  { id: 'noMgr', n: '매니저 없이 운영', d: '매니저·영상편집팀장 고용 불가 · 누적 20만 점', goal: 2e5 },
-  { id: 'calm', n: '평온한 보도국', d: '속보와 특종이 오지 않음 · 누적 5만 점', goal: 5e4 },
-  { id: 'noQual', n: '저예산 방송', d: '방송 품질 업그레이드 불가 · 누적 20만 점', goal: 2e5 },
+  { id: 'noMgr', n: '매니저 없이 운영', d: '매니저·영상편집팀장 고용 불가 · 누적 1억 점', goal: 1e8 },
+  { id: 'calm', n: '평온한 보도국', d: '속보와 특종이 오지 않음 · 누적 3,000만 점', goal: 3e7 },
+  { id: 'noQual', n: '저예산 방송', d: '방송 품질 업그레이드 불가 · 누적 1억 점', goal: 1e8 },
 ];
 // 라이벌 방송국: 매일 8시 뉴스에서 시청률 대결 (가상 이름)
 export const RIVAL = '한누리방송';

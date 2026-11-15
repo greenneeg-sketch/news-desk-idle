@@ -24,13 +24,14 @@ import { Hud, fmt } from './ui/hud.js';
 import { MINI } from './ui/minigame.js';
 import { Branches } from './ui/branches.js';
 import { Social } from './ui/social.js';
+import { GuideUI } from './ui/guide.js';
 import { perSec } from './systems/economy.js';
 import { jobOf } from './data/config.js';
 import { isUnlocked } from './data/tips.js';
 
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
-const ui = Hud(bus), branches = Branches(bus), social = Social(bus), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
+const ui = Hud(bus), branches = Branches(bus), social = Social(bus), guide = GuideUI(bus, () => store.getState()), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
 let pending = 0, board = null;
 const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -53,7 +54,9 @@ function showIntro() {
 function enter(after) { $i('intro').hidden = true; intro.stop(); Sfx.play('buy'); Music.play(store.getState().ev ? 'breaking' : 'desk'); if (!store.getState().name) ui.askName(); else if (after) after(); }
 $i('istart').onclick = () => enter(() => ui.showTab('desk'));
 $i('irank').onclick = () => enter(() => { ui.showTab('rank'); refresh(); });
-$i('iguide').onclick = () => enter(() => bus.emit('tut', 0));
+$i('iguide').onclick = () => enter(() => guide.open('bc'));
+bus.on('guide', () => guide.open());
+bus.on('guideclose', () => markPop());
 $i('isound').onclick = () => { bus.emit('mute'); $i('isound').textContent = $i('mute').textContent; };
 // 메인 화면으로: 바로 저장하고 타이틀로 나간다 (상단 ⌂ 버튼, 설정의 타이틀 버튼)
 const goHome = () => { if (!restoring) Repo.save(store.getState()); showIntro(); ui.toast('저장했어요.'); };
@@ -363,7 +366,7 @@ bus.on('goal', id => {
 });
 bus.on('chal', id => { const c = CHALLENGES.find(x => x.id === id); store.dispatch({ type: 'CHAL', id }); Sfx.play('rank'); ui.toast(`챌린지 시작: ${c.n} · 목표 누적 ${fmt(c.goal)}점`); });
 bus.on('chalquit', () => { store.dispatch({ type: 'CHAL_QUIT' }); Sfx.play('fail'); ui.toast('챌린지를 포기했어요. 회차가 처음부터 다시 시작돼요.'); });
-bus.on('tut', step => { store.dispatch({ type: 'TUT', step }); if (step === 0) ui.showTab('desk'); if (step === -1) ui.toast('가이드를 닫았어요. 위의 ? 버튼으로 다시 볼 수 있어요.'); });
+bus.on('tut', step => { store.dispatch({ type: 'TUT', step }); if (step === 0) ui.showTab('desk'); if (step === -1) ui.toast('안내를 닫았어요. 위의 ? 버튼에서 안내서와 처음 안내를 다시 볼 수 있어요.'); });
 bus.on('mute', () => ui.setMute(Sfx.toggle()));
 
 // 상태 변화 구독: 효과음과 알림

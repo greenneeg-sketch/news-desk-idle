@@ -94,6 +94,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .dlog li.w b{color:#a7f070}.dlog li.l b{color:#ff8a8a}.gcode{font-size:12px;color:var(--sub)}.gcode b{font:12px "Press Start 2P",monospace;color:var(--y);letter-spacing:1px}.gstory{color:#ff8a8a;font-weight:700;margin:8px 0 4px}#gin .rt{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}#gin .rt strong{font-size:18px}#gname,#gcode{flex:1;margin:4px 0}#glv{margin-top:6px}
 .perk{display:flex;gap:10px;align-items:center;border-left:4px solid var(--g)}.perk>div{flex:1}.perk b{display:block;color:#a7f070}.perk small{display:block;color:var(--sub);font-size:12px;margin-top:2px}.perk i{display:block;height:3px;margin-top:6px;background:var(--g);transform-origin:left}.perk .btn{min-height:40px;font-size:10px}
 .meeto{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}.meeto button{font:inherit;text-align:left;background:var(--ink);color:var(--tx);border:0;padding:8px;cursor:pointer;box-shadow:inset 0 0 0 2px #566c86;min-height:72px}.meeto button b{display:block;font-size:14px;color:var(--y)}.meeto button small{display:block;font-size:11px;color:var(--sub);margin:3px 0;line-height:1.3}.meeto button i{font-style:normal;color:#ffcd75;font-size:12px}.meeto[hidden]{display:none}.meet.done #meeto{display:none}.meet{border-left:4px solid var(--y)}
+.gdlist{max-height:62vh;overflow-y:auto;margin-top:6px}.gdlist details{border-bottom:1px solid var(--ink);padding:2px 0}.gdlist summary{cursor:pointer;padding:9px 4px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:8px;align-items:center}.gdlist summary::-webkit-details-marker{display:none}.gdlist summary::after{content:'+';color:var(--y);font-weight:700}.gdlist details[open] summary::after{content:'−'}.gdlist p{margin:0 4px 10px;font-size:14px;line-height:1.6;color:#dfe6ee}.gdlock{color:var(--sub);font-weight:400;font-size:11px;margin-left:auto}.floor .fh b{cursor:help;text-decoration:underline dotted var(--sub);text-underline-offset:3px}
 .lbpg{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0}.lbpg span{min-width:56px;text-align:center;font-size:13px}.lbpg .btn:disabled{opacity:.4}
 #cards{cursor:pointer}
 .wg{margin:10px 0}.row2{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}.row2 span:first-child{flex:1}
@@ -443,6 +444,14 @@ section.gh{display:none!important}
     <button class="btn alt mcx" id="mcquit">그만하기</button>
   </div>
 </div>
+<div class="modal" id="guidem" hidden>
+  <div class="panel guide">
+    <div class="fh"><h1>안내서</h1><button class="btn mini" id="gdok">닫기</button></div>
+    <div class="seg" id="gdseg"><button data-g="bc">방송 이야기</button><button data-g="gm">게임 방법</button></div>
+    <div id="gdlist" class="gdlist"></div>
+    <button class="btn alt" id="gdtut" style="width:100%;margin-top:8px">처음 안내 다시 보기</button>
+  </div>
+</div>
 <div class="modal" id="mgmenu" hidden>
   <div class="panel">
     <div class="fh"><h1>미니게임</h1><button class="btn mini" id="mgmok">닫기</button></div>
@@ -466,7 +475,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-2245</span>
+  <span class="iver">v2026.11.15-2301</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -554,7 +563,7 @@ const WEEKLY = [
 const ODDS = [.29, .17, .065, .025];
 const PITY = 30;
 // 시즌(매월 1일 시작): 시즌 점수로 등급을 매기고, 시즌이 끝나면 등급에 따라 스카우트 티켓 1~5장 지급
-const TIERS = [{ n: '브론즈', at: 0 }, { n: '실버', at: 1e5 }, { n: '골드', at: 1e6 }, { n: '플래티넘', at: 1e7 }, { n: '다이아', at: 1e8 }];
+const TIERS = [{ n: '브론즈', at: 0 }, { n: '실버', at: 1e9 }, { n: '골드', at: 1e11 }, { n: '플래티넘', at: 1e13 }, { n: '다이아', at: 1e14 }]; // 한 달 동안 번 점수 기준
 // 시즌 테마: 해당 속보가 3배 자주 발생 (name: 같은 카테고리 안에서 쓸 속보 이름 번호)
 const SEASON_THEMES = [
   { months: [12, 1, 2], n: '한파 시즌', ev: 'weather', name: 0, d: '한파·폭설 속보가 3배 자주 터져요.' },
@@ -564,9 +573,9 @@ const SEASON_THEMES = [
 ];
 // 챌린지: 시작하면 이번 회차가 초기화되고, 제약 속에서 목표(이번 회차 누적 점수)를 달성하면 영구 점수 +10%
 const CHALLENGES = [
-  { id: 'noMgr', n: '매니저 없이 운영', d: '매니저·영상편집팀장 고용 불가 · 누적 20만 점', goal: 2e5 },
-  { id: 'calm', n: '평온한 보도국', d: '속보와 특종이 오지 않음 · 누적 5만 점', goal: 5e4 },
-  { id: 'noQual', n: '저예산 방송', d: '방송 품질 업그레이드 불가 · 누적 20만 점', goal: 2e5 },
+  { id: 'noMgr', n: '매니저 없이 운영', d: '매니저·영상편집팀장 고용 불가 · 누적 1억 점', goal: 1e8 },
+  { id: 'calm', n: '평온한 보도국', d: '속보와 특종이 오지 않음 · 누적 3,000만 점', goal: 3e7 },
+  { id: 'noQual', n: '저예산 방송', d: '방송 품질 업그레이드 불가 · 누적 1억 점', goal: 1e8 },
 ];
 // 라이벌 방송국: 매일 8시 뉴스에서 시청률 대결 (가상 이름)
 const RIVAL = '한누리방송';
@@ -769,6 +778,52 @@ const TIPS = [
   { id: 'robot', when: s => !!(s.ev && s.ev.id === 'robot'), t: '거대 로봇 속보', d: '뉴스 디펜더즈 히어로 카드 1장당 이번 속보 점수 +50%. 스카우트에서 모아 보세요.', tab: 'scout', target: 'scout' },
   { id: 'cloud', when: s => s.total >= 1e5, t: '클라우드 저장', d: '기록이 서버에 자동 저장돼요. 오른쪽 위 ⚙ 설정에서 복구 코드를 적어 두면 폰을 바꿔도 이어 할 수 있어요.' },
 ];
+
+// 안내서: 방송을 모르는 사람을 위한 '방송 이야기'와 '게임 방법'. u = 이 기능이 열리는 해금 id(잠겨 있으면 언제 열리는지 보여 준다)
+const GUIDE_BC = [
+  { id: 'flow', t: '뉴스가 방송되기까지', d: '방송 뉴스는 여러 부서가 이어달리기하듯 만들어요. 현장에서 취재한 영상이 방송국 서버에 등록(인제스트)되고, 영상편집기자가 편집하고, 그래픽이 더해진 뒤, 정해진 시간에 전파로 송출돼요. 게임의 층 다섯 개가 바로 이 순서예요.' },
+  { id: 'fl0', t: '취재 · 취재기자와 영상기자', d: '취재기자는 현장에서 사람을 만나고 사실을 확인해 기사를 써요. 영상기자는 카메라로 현장을 찍어요. 둘은 보통 한 팀으로 움직여요. 게임에서는 취재 층이 뉴스 재료(영상)를 들여보내는 출발점이에요.' },
+  { id: 'fl1', t: '인제스트', d: '현장에서 들어온 영상 파일을 방송국 서버에 올리고, 언제 어디서 찍었는지 이름과 정보를 붙여 정리하는 일이에요. 인제스트가 늦으면 편집실은 쓸 영상을 찾지 못해요.' },
+  { id: 'fl2', t: '편집 · 영상편집기자', d: '기자가 녹음한 기사 목소리에 맞춰 영상을 자르고 붙여 1분 30초 남짓한 리포트로 완성해요. 어떤 장면을 몇 초 쓰느냐가 뉴스의 전달력을 좌우해요. 마감 직전에 가장 바쁜 곳이에요.' },
+  { id: 'fl3', t: 'CG · 그래픽 디자이너', d: '화면 아래 자막, 지도, 그래프, 선거 개표 화면 같은 그래픽을 만들어요. 복잡한 숫자와 상황을 시청자가 3초 안에 이해하게 만드는 일이에요.' },
+  { id: 'fl4', t: '송출 · 방송 엔지니어', d: '완성된 뉴스를 순서대로 전파에 내보내요. 뉴스는 스튜디오 옆 부조정실에서 진행되고, 주조정실이 최종 신호를 송출해요. 1초의 공백도 방송사고가 되기 때문에 장비를 늘 이중으로 준비해요.' },
+  { id: 'live', t: '중계차와 생중계', d: '중계차는 현장에서 찍은 영상을 실시간으로 방송국에 보내는 차량이에요. 큰 사건이나 경기, 개표 방송 때 현장을 바로 연결해요. 게임의 "중계 장비"는 속보 때 점수를 키워요.' },
+  { id: 'breaking', t: '속보', d: '예정에 없던 큰 사건이 터졌을 때 정규 순서를 바꿔 가장 먼저 내보내는 뉴스예요. 화면 위에 빨간 띠로 "속보"가 뜨면 보도국 전체가 그 뉴스에 매달려요.' },
+  { id: 'scoop', t: '단독과 특종', d: '단독은 우리 방송국만 보도한 기사, 특종은 그중에서도 사회적 파장이 큰 단독이에요. 남보다 빨리 내보내는 것도 중요하지만, 확인 없이 내보냈다가 틀리면 오보가 돼요.' },
+  { id: 'desk', t: '데스크와 오보', d: '데스크는 기자의 기사를 검토하고 고쳐서 방송할지 결정하는 선임 기자예요. 확인되지 않은 제보를 바로 내보냈다가 사실이 아니면 오보가 되고, 정정 보도와 사과를 해야 해요. 그래서 "빨리"와 "정확히" 사이에서 늘 판단해요.' },
+  { id: 'meet', t: '편집회의와 큐시트', d: '매일 아침과 오후, 부서장들이 모여 오늘 어떤 뉴스를 몇 번째로 내보낼지 정해요. 이 순서표를 큐시트라고 하고, 맨 앞의 뉴스를 톱뉴스라고 해요.' },
+  { id: 'rating', t: '시청률과 동시간대 경쟁', d: '시청률은 TV를 가진 가구 중 그 방송을 본 가구의 비율이에요. 같은 시간대에 다른 방송국 뉴스와 경쟁하고, 시청률은 광고 수입으로 이어져요.' },
+  { id: 'embargo', t: '엠바고', d: '정해진 시각까지 보도를 미루기로 한 약속이에요. 정부 발표나 연구 결과처럼 미리 자료를 받아도, 약속한 시간 전에는 내보내지 않아요.' },
+  { id: 'pool', t: '풀 취재', d: '대통령 일정처럼 모든 기자가 들어갈 수 없는 곳은 몇몇 언론사가 대표로 취재하고 영상과 내용을 나눠 써요. 이를 공동취재(풀)라고 해요.' },
+  { id: 'standing', t: '스탠딩과 인서트', d: '스탠딩은 기자가 화면에 직접 나와 말하는 장면이에요. 인서트는 리포트 중간에 끼워 넣는 짧은 영상, VCR은 미리 녹화한 영상이에요.' },
+  { id: 'chroma', t: '크로마키', d: '초록이나 파란 배경 앞에서 촬영한 뒤 그 색만 지워 다른 화면을 합성하는 기술이에요. 날씨 예보의 지도 화면이 대표적이에요.' },
+];
+const GUIDE_GM = [
+  { id: 'score', t: '점수가 쌓이는 원리', d: '영상이 취재 → 인제스트 → 편집 → CG → 송출 순서로 자동으로 흘러가고, 송출될 때 점수가 들어와요. 다섯 층 중 가장 느린 층의 속도가 전체 속도가 돼요. 이 층을 "병목"이라고 하고, 빨간 "병목" 표시가 붙어요.' },
+  { id: 'up', t: '업그레이드와 ★', d: '층마다 버튼을 누르면 레벨이 올라 처리 속도가 빨라져요(레벨당 +15%). 10·25·50·100레벨마다 ★이 붙고 속도가 1.5배가 돼요. 레벨이 오를수록 비용도 올라요. x1·x10·MAX로 한 번에 살 수 있고, 반짝이는 "추천" 버튼이 지금 가장 효과 좋은 업그레이드예요.' },
+  { id: 'mg', u: 'mg', t: '매니저', d: '층마다 매니저를 고용하면 그 층 속도가 영구로 2배가 돼요(개편 전까지). 병목 층부터 고용하는 게 좋아요.' },
+  { id: 'hq', u: 'hq', t: '방송 품질 · 중계 장비', d: '방송 품질은 모든 점수를, 중계 장비는 속보 때 점수를 올려요. 보도국 화면 아래쪽 본사(HQ) 칸에 있어요.' },
+  { id: 'ev', t: '속보와 우선 편집', d: '속보가 뜨면 그동안 점수가 몇 배로 들어와요. "우선 편집"을 직접 누르면 그 속보 점수가 +50%가 되고, 오늘의 미션 "속보 직접 대응"에도 들어가요. 후반에 영상편집팀장을 고용하면 자동으로 해 줘요.' },
+  { id: 'dil', u: 'dil', t: '데스크 판단', d: '일부 속보에는 확인되지 않은 제보가 붙어요. "단독 송출"은 성공하면 점수 x2와 시청률 상승, 실패하면 오보로 속보가 끝나고 시청률이 떨어져요. "확인 후 송출"은 안전하게 점수 x1.2예요.' },
+  { id: 'gold', t: '특종', d: '가끔 화면에 "특종!" 버튼이 나타나요. 누르면 점수(생산량 3분치)를 바로 받거나, 20초 동안 점수가 3배가 돼요.' },
+  { id: 'day', t: '8시 뉴스와 시청률', d: '게임 속 하루는 5분이에요. 하루가 끝날 때 그날 송출량, 속보 대응, 방송 품질, 데스크 판단 결과로 8시 뉴스 시청률이 정해지고 광고 수입이 들어와요. 시청률이 6% 이상이면 성과급도 나와요. 결과는 다음 날 아침 신문 1면에 실려요.' },
+  { id: 'rival', t: '라이벌 대결', d: '매일 8시 뉴스에서 다른 방송국과 시청률로 겨뤄요. 이기면 광고 수입이 1.4배 이상으로 늘고, 연승할수록 더 커져요. 온라인에서는 실제 플레이어 방송국이 상대가 돼요.' },
+  { id: 'meet', u: 'meet', t: '아침 편집회의', d: '하루가 시작될 때 오늘의 톱뉴스 분야 3개 중 하나를 골라요. 그 분야 속보가 터지면 점수 x1.5에 시청률이 올라요. ★과 취재 메모가 힌트지만 가끔 틀려요. 안 골라도 손해는 없어요.' },
+  { id: 'mis', u: 'mis', t: '미션 · 주간 목표 · 주간 이벤트', d: '오늘의 미션 3개는 하루(5분)마다 바뀌고, 다 깨면 스카우트 티켓을 줘요. 주간 목표는 매주 월요일 초기화되고, 주간 한정 이벤트는 특정 분야 속보가 자주 나오는 대신 목표를 채우면 티켓과 배지를 줘요.' },
+  { id: 'perk', u: 'mis', t: '소소한 이벤트', d: '커피타임, 야식 배달, 시청자 제보 전화 같은 작은 이벤트가 4~7분마다 화면 위에 잠깐 떠요. 누르면 속도 증가나 점수, 연구 포인트, 티켓을 받아요. 놓쳐도 손해는 없어요.' },
+  { id: 'mini', u: 'mini', t: '미니게임', d: '왼쪽 아래에 빨간 아이콘(속보·단독·긴급·송출)이 가끔 떠요. 직업마다 다른 미니게임을 하고 등급(S~C)에 따라 생산량 12~1분치를 받아요. 내 직업 게임은 1.5배예요. 위쪽 🎮 버튼에서 연습할 수 있어요.' },
+  { id: 'scout', u: 'scout', t: '스카우트(직원 카드)', d: '점수나 티켓으로 직원 카드를 뽑아요. 카드를 모으면 해당 층 속도가 영구로 올라가고, 같은 카드를 다시 뽑으면 ★2·★3으로 강해져요. 30번 안에 영웅 이상이 반드시 나와요.' },
+  { id: 'car', u: 'grow', t: '커리어(직급)', d: '누적 점수가 기준을 넘으면 승진해요. 승진할 때마다 점수가 영구로 5% 오르고 스카우트 티켓을 받아요. 직업마다 직급 이름이 달라요.' },
+  { id: 'br', u: 'br', t: '지국 운영', d: '지국 탭에서 부산·대전 같은 국내 지국과 도쿄·워싱턴 같은 해외 특파원을 차례로 열어요. 지국 레벨마다 전체 점수가 오르고, 지국이 맡은 분야의 속보 점수가 커져요.' },
+  { id: 'res', u: 'res', t: '방송 기술 연구소', d: '8시 뉴스·미션·단독 성공으로 모은 연구 포인트로 영구 강화를 해요. 처리 속도, 시청률, 비용 할인, 오프라인 수익 등이 있어요.' },
+  { id: 'deco', u: 'deco', t: '사무실 꾸미기', d: '소품을 사면 층 그림에 나타나고 하나당 점수 +2%예요. 일부 소품은 라이벌 3연승, 미니게임 S등급 같은 조건을 달성하면 무료로 받아요.' },
+  { id: 'pres', u: 'pres', t: '개편', d: '진행이 느려지면 개편해요. 점수·업그레이드·매니저·지국은 처음으로 돌아가지만, 개편 포인트로 모든 점수가 영구히 올라가요. 카드, 직급, 연구, 소품, 업적은 그대로 남아요.' },
+  { id: 'chal', u: 'chal', t: '챌린지', d: '개편 후에는 "매니저 없이" 같은 제약을 걸고 목표 점수에 도전할 수 있어요. 성공하면 영구 점수 +10%예요.' },
+  { id: 'rank', u: 'rank', t: '순위 · 시즌 · 연합', d: '순위 탭에서 다른 방송국과 순위를 겨루고, 매달 시즌 등급에 따라 티켓을 받아요. 친구와 방송국 연합을 만들면 멤버당 점수 +2%와 주간 공동 특보 보상이 있어요.' },
+  { id: 'off', t: '자리를 비웠을 때 · 저장', d: '게임을 꺼 두어도 최대 8시간 동안 평소 생산량의 절반이 쌓여요. 기록은 자동 저장되고, 설정(⚙)의 클라우드 저장 복구 코드로 다른 기기에서 이어 할 수 있어요.' },
+];
+// 층 번호 → 방송 이야기 항목
+const GUIDE_FLOOR = ['fl0', 'fl1', 'fl2', 'fl3', 'fl4', 'live', 'rating'];
 
 
 // 이번 주 한정 이벤트와 히어로 카드 보유 수 (순수 함수)
@@ -2032,7 +2087,7 @@ const TUTORIAL = [
   { t: '편집 층의 버튼을 눌러 영상편집기자를 늘려 보세요.', tab: 'desk', target: 'fb2', done: s => s.lv.edit >= 1 },
   { t: '반짝이는 "추천" 버튼이 지금 올리면 가장 좋은 업그레이드예요. 노란 테두리 층은 일이 밀린 병목이에요.', tab: 'desk', target: 'floors' },
   { t: '게임 속 하루(5분)마다 8시 뉴스 시청률이 평가돼요. 속보 경보가 뜨면 "우선 편집"을 눌러 점수 +50%!', tab: 'desk', target: 'rate' },
-  { t: '새 기능은 점수가 오를수록 하나씩 열려요. 열릴 때마다 알려 드릴게요. 막히면 위의 ? 버튼!', tab: 'desk', target: 'tabs' },
+  { t: '새 기능은 점수가 오를수록 하나씩 열려요. 열릴 때마다 알려 드릴게요. 방송 용어나 게임 방법이 궁금하면 위의 ? 버튼(안내서)을 누르세요. 층 이름을 눌러도 그 부서 설명이 나와요.', tab: 'desk', target: 'tabs' },
 ];
 
 // 미니게임 모음. 공통 화면(모달·캔버스 240x150·판정 글자)은 main.js가 띄우고, 게임은 여기서 그리고 판정한다.
@@ -2448,7 +2503,7 @@ function Hud(bus) {
   let tt0; const toastL = m => { const e = $('toast'); e.textContent = m; clearTimeout(tt0); tt0 = setTimeout(() => e.textContent = '', 3000); };
   $('tutnext').onclick = () => { if (!cur) return; const n = cur.tut + 1; bus.emit('tut', n >= TUTORIAL.length ? -1 : n); };
   $('tutskip').onclick = () => bus.emit('tut', -1);
-  $('helpb').onclick = () => bus.emit('tut', 0);
+  $('helpb').onclick = () => bus.emit('guide');
   $('clist').innerHTML = CHALLENGES.map((c, i) => `<div class="wg"><div class="row2"><span><b>${c.n}</b><br><small>${c.d}</small></span><span id="chp${i}"></span><button class="btn mini" data-ch="${c.id}" id="chb${i}"></button></div><div class="ms"><i id="chm${i}"></i></div></div>`).join('');
   $('clist').onclick = e => { // 두 번 눌러야 실행 (회차 초기화가 일어나므로)
     const b = e.target.closest('[data-ch]'); if (!b || b.disabled || !cur) return; const id = b.dataset.ch, key = (cur.chal === id ? 'q' : '') + id;
@@ -2769,6 +2824,35 @@ function Social(bus) {
   };
 }
 
+// 안내서 화면: '방송 이야기' / '게임 방법' 두 탭, 항목을 누르면 펼쳐진다. 아직 안 열린 기능은 언제 열리는지 보여 준다
+
+
+
+function GuideUI(bus, getState) {
+  const $g = id => document.getElementById(id);
+  let tab = 'bc';
+  function draw(openId) {
+    document.querySelectorAll('#gdseg [data-g]').forEach(b => b.classList.toggle('on', b.dataset.g === tab));
+    const s = getState(), box = $g('gdlist'); box.replaceChildren();
+    (tab === 'bc' ? GUIDE_BC : GUIDE_GM).forEach(x => {
+      const d = document.createElement('details'), sm = document.createElement('summary'), p = document.createElement('p');
+      d.id = 'gd-' + x.id; sm.textContent = x.t; p.textContent = x.d;
+      if (x.u && s && !isUnlocked(s, x.u)) { const u = UNLOCKS.find(v => v.id === x.u), lk = document.createElement('small'); lk.className = 'gdlock'; lk.textContent = u && u.at ? `누적 ${fmt(u.at)}점에 열려요` : '개편 후 열려요'; sm.append(lk); }
+      if (x.id === openId) d.open = true;
+      d.append(sm, p); box.append(d);
+    });
+    if (openId) setTimeout(() => { const e = $g('gd-' + openId); if (e && e.scrollIntoView) e.scrollIntoView({ block: 'center' }); }, 30);
+  }
+  $g('gdseg').onclick = e => { const b = e.target.closest('[data-g]'); if (b) { tab = b.dataset.g; draw(); $g('gdlist').scrollTop = 0; } };
+  $g('gdok').onclick = () => { $g('guidem').hidden = true; bus.emit('guideclose'); };
+  $g('gdtut').onclick = () => { $g('guidem').hidden = true; bus.emit('tut', 0); };
+  // 층 이름을 누르면 그 부서 설명으로
+  document.addEventListener('click', e => { const b = e.target.closest('.floor .fh b'); if (!b) return; const i = +(b.closest('.floor').id || '').replace('fl', ''); if (i >= 0 && GUIDE_FLOOR[i]) open('bc', GUIDE_FLOOR[i]); });
+  function open(t = 'bc', id) { tab = t; $g('guidem').hidden = false; draw(id); }
+  return { open };
+}
+
+
 
 
 
@@ -2801,7 +2885,7 @@ function Social(bus) {
 
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
-const ui = Hud(bus), branches = Branches(bus), social = Social(bus), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
+const ui = Hud(bus), branches = Branches(bus), social = Social(bus), guide = GuideUI(bus, () => store.getState()), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
 let pending = 0, board = null;
 const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -2824,7 +2908,9 @@ function showIntro() {
 function enter(after) { $i('intro').hidden = true; intro.stop(); Sfx.play('buy'); Music.play(store.getState().ev ? 'breaking' : 'desk'); if (!store.getState().name) ui.askName(); else if (after) after(); }
 $i('istart').onclick = () => enter(() => ui.showTab('desk'));
 $i('irank').onclick = () => enter(() => { ui.showTab('rank'); refresh(); });
-$i('iguide').onclick = () => enter(() => bus.emit('tut', 0));
+$i('iguide').onclick = () => enter(() => guide.open('bc'));
+bus.on('guide', () => guide.open());
+bus.on('guideclose', () => markPop());
 $i('isound').onclick = () => { bus.emit('mute'); $i('isound').textContent = $i('mute').textContent; };
 // 메인 화면으로: 바로 저장하고 타이틀로 나간다 (상단 ⌂ 버튼, 설정의 타이틀 버튼)
 const goHome = () => { if (!restoring) Repo.save(store.getState()); showIntro(); ui.toast('저장했어요.'); };
@@ -3134,7 +3220,7 @@ bus.on('goal', id => {
 });
 bus.on('chal', id => { const c = CHALLENGES.find(x => x.id === id); store.dispatch({ type: 'CHAL', id }); Sfx.play('rank'); ui.toast(`챌린지 시작: ${c.n} · 목표 누적 ${fmt(c.goal)}점`); });
 bus.on('chalquit', () => { store.dispatch({ type: 'CHAL_QUIT' }); Sfx.play('fail'); ui.toast('챌린지를 포기했어요. 회차가 처음부터 다시 시작돼요.'); });
-bus.on('tut', step => { store.dispatch({ type: 'TUT', step }); if (step === 0) ui.showTab('desk'); if (step === -1) ui.toast('가이드를 닫았어요. 위의 ? 버튼으로 다시 볼 수 있어요.'); });
+bus.on('tut', step => { store.dispatch({ type: 'TUT', step }); if (step === 0) ui.showTab('desk'); if (step === -1) ui.toast('안내를 닫았어요. 위의 ? 버튼에서 안내서와 처음 안내를 다시 볼 수 있어요.'); });
 bus.on('mute', () => ui.setMute(Sfx.toggle()));
 
 // 상태 변화 구독: 효과음과 알림
