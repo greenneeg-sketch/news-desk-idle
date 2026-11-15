@@ -1,4 +1,5 @@
-import { RANKS, UPGRADES, MILESTONES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, CARDS, RARITY, WEEKLY, ODDS, PITY, TIERS, CHALLENGES, RIVAL, DILEMMAS, SCOOP_P, RESEARCH, DECOS, JOBS, jobOf, careerOf, CAREER_AT, BAL } from '../data/config.js';
+import { MEET_MEMO, MEET_MAX, MEET_ADJ, MEET_MISS } from '../systems/meeting.js';
+import { RANKS, UPGRADES, MILESTONES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, CARDS, RARITY, WEEKLY, ODDS, PITY, TIERS, CHALLENGES, RIVAL, DILEMMAS, SCOOP_P, RESEARCH, DECOS, JOBS, jobOf, careerOf, CAREER_AT, BAL, EVENTS } from '../data/config.js';
 import { weekEvent, heroCount } from '../systems/weekly.js';
 import { progress, missionText } from '../systems/missions.js';
 import { seasonPts, tierOf, themeOf } from '../systems/season.js';
@@ -54,6 +55,19 @@ export function Hud(bus) {
     if (armedCh !== key) { armedCh = key; clearTimeout(armT); armT = setTimeout(() => { armedCh = ''; }, 3000); return; }
     armedCh = ''; bus.emit(key[0] === 'q' ? 'chalquit' : 'chal', id);
   };
+  // 편집회의 카드: 후보 3개 버튼(하루에 한 번만 다시 그린다)
+  let meetKey = '';
+  $('meeto').onclick = e => { const b = e.target.closest('[data-meet]'); if (b) bus.emit('meet', b.dataset.meet); };
+  function drawMeet(s) {
+    const m = s.meet, on = isUnlocked(s, 'meet') && m && m.opts && m.opts.length; $('meetp').hidden = !on; if (!on) return;
+    const K = id => (EVENTS.find(e => e.id === id) || {}).k || id, key = m.day + ':' + (m.pick || '') + ':' + m.hits;
+    $('meetp').classList.toggle('done', !!m.pick);
+    if (m.pick) { $('meett').textContent = `오늘의 톱: ${K(m.pick)}`; $('meets').textContent = `D+${m.day}`; $('meetn').textContent = m.hits ? `관련 속보 ${m.hits}건 · 점수 x1.5 · 시청률 +${(Math.min(m.hits, MEET_MAX) * MEET_ADJ).toFixed(1)}%p` : `아직 ${K(m.pick)} 속보가 없어요. 오늘 안에 한 건도 없으면 시청률 ${MEET_MISS}%p`; }
+    else { $('meett').textContent = '오늘의 편집회의'; $('meets').textContent = '톱뉴스 분야를 골라 주세요'; $('meetn').textContent = '고른 분야 속보가 터지면 점수 x1.5 · 시청률 상승. ★이 많을수록 유력해요(가끔 틀려요). 안 골라도 손해는 없어요.'; }
+    if (key === meetKey) return; meetKey = key;
+    const box = $('meeto'); box.replaceChildren();
+    if (!m.pick) m.opts.forEach(id => { const b = document.createElement('button'), t = document.createElement('b'), d = document.createElement('small'), st = document.createElement('i'); b.dataset.meet = id; t.textContent = K(id); d.textContent = (MEET_MEMO[id] || ['', ''])[m.memo ? m.memo[id] : (id === m.hot ? 0 : 1)]; st.textContent = '★'.repeat(m.stars[id] || 1); b.append(t, d, st); box.append(b); });
+  }
   $('lbseg').onclick = e => { const b = e.target.closest('[data-v]'); if (b) { view = b.dataset.v; pg = 0; drawBoard(); } };
   const lbList = () => !bd ? [] : view === 'season' ? bd.list.filter(e => e.season === bd.season).sort((a, b) => b.seasonPts - a.seasonPts).slice(0, 100) : [...bd.list].sort((a, b) => b.rankScore - a.rankScore).slice(0, 100);
   $('lbprev').onclick = () => { pg--; drawBoard(); }; $('lbnext').onclick = () => { pg++; drawBoard(); };
@@ -255,8 +269,9 @@ export function Hud(bus) {
         }
         if (step.done && step.done(s, { tab })) bus.emit('tut', ts + 1 >= TUTORIAL.length ? -1 : ts + 1);
       }
+      drawMeet(s);
       $('alert').hidden = !s.ev;
-      if (s.ev) { $('evt').textContent = `속보 · ${s.ev.name}`; $('evd').textContent = `${s.ev.k} · 유입 x${s.ev.inf} · 점수 x${s.ev.sc}${s.ev.boost ? ' (+50%)' : ''} · ${Math.max(0, Math.ceil(s.ev.end - s.clock))}초`; $('evb').disabled = s.ev.boost; $('evb').textContent = s.ev.auto ? '팀장 편집 중' : s.ev.boost ? '편집 중' : '우선 편집'; }
+      if (s.ev) { $('evt').textContent = `속보 · ${s.ev.name}`; $('evd').textContent = `${s.ev.k} · 유입 x${s.ev.inf} · 점수 x${s.ev.sc}${s.ev.boost ? ' (+50%)' : ''}${s.ev.top ? ' · 오늘의 톱 x1.5' : ''} · ${Math.max(0, Math.ceil(s.ev.end - s.clock))}초`; $('evb').disabled = s.ev.boost; $('evb').textContent = s.ev.auto ? '팀장 편집 중' : s.ev.boost ? '편집 중' : '우선 편집'; }
       { const g = prestigeGain(s); $('presd').textContent = `이번 회차 ${fmt(s.run)}점 · 개편하면 포인트 +${fmt(g)} (점수 배율 x${prestigeBonus(s).toFixed(2)} → x${prestigeBonus({ pts: s.pts + g }).toFixed(2)}) · 포인트 1당 +2%, 개편 직후엔 처음부터 다시 시작해요`; }
     },
   };

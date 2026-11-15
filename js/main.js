@@ -327,6 +327,7 @@ bus.on('deco', id => { const p = store.getState(); store.dispatch({ type: 'DECO'
 let paperBonus = 0;
 bus.on('paperad', () => { if (!paperBonus) return; store.dispatch({ type: 'GAIN', n: paperBonus }); paperBonus = 0; ui.paperAdDone(); Sfx.play('buy'); ui.toast('실제 앱에서는 보상형 광고가 나와요. 광고 수입 2배!'); });
 bus.on('judge', pick => { const s = store.getState(); if (!s.ev || !s.ev.dil || s.ev.pick) return; store.dispatch({ type: 'JUDGE', pick, r: Math.random() }); });
+bus.on('meet', id => { const p = store.getState(); store.dispatch({ type: 'MEET', id }); if (store.getState() !== p) { Sfx.play('rank'); ui.toast('편집회의 결정! 오늘은 이 분야를 톱으로 갑니다.'); } });
 bus.on('setn', n => store.dispatch({ type: 'SETN', n }));
 bus.on('boost', () => {
   const s = store.getState();

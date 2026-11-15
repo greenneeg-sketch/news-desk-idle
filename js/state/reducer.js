@@ -1,4 +1,5 @@
 import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES, SCOOP_P, DIL_SEC, RESEARCH, DECOS, jobOf, careerOf, BRANCHES, BR_MAX, brCost, BAL, PERKS, PAY } from '../data/config.js';
+import { newMeet, MEET_MAX, MEET_ADJ, MEET_MISS, MEET_SC } from '../systems/meeting.js';
 import { weekEvent, weekFor } from '../systems/weekly.js';
 import { UNLOCKS, unlockReady } from '../data/tips.js';
 import { newMissions, progress } from '../systems/missions.js';
@@ -52,6 +53,7 @@ export function reducer(st, a) {
       flow(s, a.dt);
       s.dayT += a.dt;
       if (s.dayT >= DAY_SEC) { // 8시 뉴스 시청률 평가
+        if (s.meet && s.meet.pick && !s.meet.hits) s.dAdj = (s.dAdj || 0) + MEET_MISS; // 편집회의에서 고른 톱뉴스가 하루 내내 없었다
         const e = evaluateDay(s, a.rnd, a.r2, a.r3), rec = e.rating > s.bestRating && s.day > 1;
         s.prevRating = s.lastRating; s.lastRating = e.rating; s.bestRating = Math.max(s.bestRating, e.rating); s.views += e.views; s.lastViews = e.views;
         s.hist = [...s.hist, e.rating].slice(-7); s.score += e.bonus; s.run += e.bonus; s.total += e.bonus;
@@ -60,10 +62,11 @@ export function reducer(st, a) {
         { const we = weekEvent(s); if (we && we.k === 'win' && e.won && s.wev && !s.wev.done) s.wev = { ...s.wev, p: s.wev.p + 1 }; }
         const rp = 1 + Math.floor(e.rating / 4) + (e.won ? 1 : 0);
         s.win = e.win; s.bestWin = Math.max(s.bestWin, e.win); s.rp += rp;
-        s.report = { day: s.day, ...e, rp, rec, log: s.dLog, dW: s.dW, dF: s.dF, all: !!(s.mis && s.mis.all), out: Math.floor(s.dOut) };
+        s.report = { day: s.day, ...e, meet: s.meet && s.meet.pick ? { pick: s.meet.pick, hits: s.meet.hits } : null, rp, rec, log: s.dLog, dW: s.dW, dF: s.dF, all: !!(s.mis && s.mis.all), out: Math.floor(s.dOut) };
         s.day += 1; s.dayT -= DAY_SEC; s.dOut = 0; s.dEv = 0; s.dAdj = 0; s.dLog = []; s.dW = 0; s.dF = 0;
       }
       if (!s.mis || s.mis.day !== s.day) s.mis = newMissions(s, a.r2);
+      if (!s.meet || s.meet.day !== s.day) s.meet = newMeet(s, a.r3);
       else if (s.mis.list.some(m => !m.done && progress(s, m) >= m.goal)) { // 미션 달성: 즉시 보상, 3개 모두 달성 시 티켓
         const mis = { ...s.mis, list: s.mis.list.map(m => ({ ...m })) }, gain = Math.max(1000, Math.floor(basePS(s) * BAL.mis));
         mis.list.forEach(m => { if (!m.done && progress(s, m) >= m.goal) { m.done = 1; s.rp += 1; s.score += gain; s.run += gain; s.total += gain; s.misHit = { k: m.k, gain, t: s.clock }; } });
@@ -78,7 +81,9 @@ export function reducer(st, a) {
       return s;
     }
     case 'NAME': return { ...st, name: a.name, uid: st.uid || a.uid, job: a.job || st.job || 'editor' };
-    case 'SPAWN': return { ...st, evCount: st.evCount + 1, dEv: st.dEv + 1, dLog: [...(st.dLog || []), a.ev.name].slice(-3), wev: wevBump(st, 'ev', a.ev.id), week: bump(st.week, 'ev'), ev: { ...a.ev, end: st.clock + a.ev.dur, boost: !!st.chief, auto: !!st.chief, dilEnd: st.clock + DIL_SEC, pick: null } };
+    case 'MEET': return st.meet && !st.meet.pick && st.meet.opts.includes(a.id) ? { ...st, meet: { ...st.meet, pick: a.id } } : st; // 편집회의 결정
+    case 'SPAWN': if (st.meet && st.meet.pick === a.ev.id) { const top = st.meet.hits < MEET_MAX; st = { ...st, meet: { ...st.meet, hits: st.meet.hits + 1 }, dAdj: (st.dAdj || 0) + (top ? MEET_ADJ : 0) }; a = { ...a, ev: { ...a.ev, sc: a.ev.sc * MEET_SC, top: true } }; }
+      return { ...st, evCount: st.evCount + 1, dEv: st.dEv + 1, dLog: [...(st.dLog || []), a.ev.name].slice(-3), wev: wevBump(st, 'ev', a.ev.id), week: bump(st.week, 'ev'), ev: { ...a.ev, end: st.clock + a.ev.dur, boost: !!st.chief, auto: !!st.chief, dilEnd: st.clock + DIL_SEC, pick: null } };
     case 'JUDGE': return st.ev && st.ev.dil && !st.ev.pick ? judge({ ...st, evH: (st.evH || 0) + 1 }, a.pick, a.r) : st; // 데스크 판단도 대응
     case 'BOOST': return st.ev && !st.ev.boost ? { ...st, evH: (st.evH || 0) + 1, ev: { ...st.ev, boost: true } } : st; // 직접 우선 편집 = 속보 대응
     case 'GOLD': {
