@@ -466,7 +466,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-2228</span>
+  <span class="iver">v2026.11.15-2241</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -653,11 +653,11 @@ const JOBS = [
   { id: 'reporter', n: '취재기자', st: 0, d: '현장을 뛰며 단독을 쫓는다', perk: '취재 속도 +50% · 단독 성공률 +10%p', scoop: .1,
     career: [
       { n: '수습기자' },
-      { n: '취재기자', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '사회부 데스크', say: ['수습 끝. 오늘부터 바이라인에 네 이름 나간다.', '기사는 발로 쓰는 거야.'] },
-      { n: '선임기자', need: s => s.total >= CAREER_AT[1], nd: '누적 100만 점', tk: 1, who: '사회부장', say: ['단독 세 건, 다들 봤어.', '후배들 취재 동선도 좀 짜 줘.'] },
-      { n: '사회부 데스크', need: s => s.total >= CAREER_AT[2], nd: '누적 10억 점', tk: 2, who: '보도국장', say: ['이제 기사를 고치는 쪽이야.', '팩트 하나에 방송국 신뢰가 걸려 있어.'] },
-      { n: '사회부장', need: s => s.total >= CAREER_AT[3], nd: '누적 1조 점', tk: 2, who: '보도국장', say: ['사회부를 맡아 줘.', '사건은 끝나도 취재는 끝나지 않아.'] },
-      { n: '보도국장', need: s => s.total >= CAREER_AT[4], nd: '누적 1000조 점', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+      { n: '취재기자', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '뉴스 데스크', say: ['수습 끝. 오늘부터 바이라인에 네 이름 나간다.', '기사는 발로 쓰는 거야.'] },
+      { n: '선임기자', need: s => s.total >= CAREER_AT[1], nd: '누적 100만 점', tk: 1, who: '뉴스 데스크', say: ['단독 세 건, 다들 봤어.', '후배들 취재 동선도 좀 짜 줘.'] },
+      { n: '뉴스 데스크', need: s => s.total >= CAREER_AT[2], nd: '누적 10억 점', tk: 2, who: '보도국장', say: ['이제 기사를 고치는 쪽이야.', '팩트 하나에 방송국 신뢰가 걸려 있어.'] },
+      { n: '보도국장', need: s => s.total >= CAREER_AT[3], nd: '누적 1조 점', tk: 2, who: '보도본부장', say: ['보도국을 맡기겠습니다.', '매일 저녁 8시, 모든 뉴스의 마지막 판단은 이제 당신 몫이에요.'] },
+      { n: '보도본부장', need: s => s.total >= CAREER_AT[4], nd: '누적 1000조 점', tk: 3, who: '사장', say: ['보도본부를 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
     ] },
   { id: 'camera', n: '영상기자', st: 0, d: '카메라 하나로 현장을 전한다', perk: '취재 속도 +50% · 중계 장비 효과 x1.5', live: 1.5,
     career: [
@@ -665,8 +665,8 @@ const JOBS = [
       { n: '영상기자', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '영상취재 데스크', say: ['삼각대 혼자 펼 줄 알면 이제 영상기자다.', '그림 없으면 뉴스도 없어.'] },
       { n: '선임 영상기자', need: s => s.total >= CAREER_AT[1], nd: '누적 100만 점', tk: 1, who: '영상취재부장', say: ['속보 현장마다 네 그림이 제일 먼저 들어왔어.', '후배들 안전도 챙겨 줘.'] },
       { n: '영상취재 데스크', need: s => s.total >= CAREER_AT[2], nd: '누적 10억 점', tk: 2, who: '보도국장', say: ['중계차 배치는 이제 네 판단이야.', '어디에 카메라를 세울지가 뉴스를 정해.'] },
-      { n: '영상취재부장', need: s => s.total >= CAREER_AT[3], nd: '누적 1조 점', tk: 2, who: '보도국장', say: ['영상취재부를 맡아 줘.', '좋은 그림은 좋은 팀에서 나와.'] },
-      { n: '보도국장', need: s => s.total >= CAREER_AT[4], nd: '누적 1000조 점', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+      { n: '영상취재부장', need: s => s.total >= CAREER_AT[3], nd: '누적 1조 점', tk: 2, who: '보도영상본부장', say: ['영상취재부를 맡아 줘.', '좋은 그림은 좋은 팀에서 나와.'] },
+      { n: '보도영상본부장', need: s => s.total >= CAREER_AT[4], nd: '누적 1000조 점', tk: 3, who: '사장', say: ['보도영상본부를 맡기겠습니다.', '오늘도 화면은 계속됩니다.'] },
     ] },
   { id: 'editor', n: '영상편집기자', st: 2, d: '1프레임으로 뉴스를 완성한다', perk: '편집 속도 +50% · 속보 점수 +25%', ev: 1.25,
     career: [
@@ -674,8 +674,8 @@ const JOBS = [
       { n: '영상편집기자', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '영상편집팀장', say: ['수습 딱지 뗐다. 오늘부터 네 이름으로 리포트 붙는다.', '마감 5분 전에 올리는 버릇만 고치자.'] },
       { n: '선임 영상편집기자', need: s => s.total >= CAREER_AT[1], nd: '누적 100만 점', tk: 1, who: '보도국장', say: ['속보 때 손 빠른 거 다들 봤어.', '이제 후배들 편집도 좀 봐 줘.'] },
       { n: '영상편집 데스크', need: s => s.total >= CAREER_AT[2], nd: '누적 10억 점', tk: 2, who: '보도국장', say: ['8시 뉴스 큐시트, 이제 자네가 챙기게.', '데스크는 모든 컷의 마지막 눈이야.'] },
-      { n: '영상편집부장', need: s => s.total >= CAREER_AT[3], nd: '누적 1조 점', tk: 2, who: '보도국장', say: ['영상편집부를 맡아 줘.', '사람이 먼저야. 장비는 그다음이고.'] },
-      { n: '보도국장', need: s => s.total >= CAREER_AT[4], nd: '누적 1000조 점', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+      { n: '영상편집부장', need: s => s.total >= CAREER_AT[3], nd: '누적 1조 점', tk: 2, who: '보도영상본부장', say: ['영상편집부를 맡아 줘.', '사람이 먼저야. 장비는 그다음이고.'] },
+      { n: '보도영상본부장', need: s => s.total >= CAREER_AT[4], nd: '누적 1000조 점', tk: 3, who: '사장', say: ['보도영상본부를 맡기겠습니다.', '오늘도 화면은 계속됩니다.'] },
     ] },
   { id: 'designer', n: '그래픽 디자이너', st: 3, d: '숫자와 지도를 한눈에 보이게', perk: 'CG 속도 +50% · 시청률 +0.5 · 방송 품질 효과 x1.2', rating: .5, qual: 1.2,
     career: [
