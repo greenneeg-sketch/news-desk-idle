@@ -138,7 +138,6 @@ export function Intro(cv, tickerEl, clockEl) {
     [6, 30, 318, 340].forEach(x => tree(x, season));
     R(0, GY, W, H - GY, '#2c3246'); R(0, GY, W, 3, '#8b9bb4'); for (let x = 0; x < W + 50; x += 50) R(x - ((t * 30) % 50), GY + 28, 26, 3, '#ffcd75'); R(0, GY + 56, W, 3, '#8b9bb4'); R(0, GY + 59, W, H - GY - 59, '#23283a');
     if (season === 3) R(0, GY, W, 5, '#ffffff'); if (season === 2) for (let i = 0; i < 14; i++) R((i * 29) % W, GY + 6 + (i * 7) % 40, 4, 2, i % 2 ? '#ef7d57' : '#d8a050'); if (season === 0) for (let i = 0; i < 12; i++) R((i * 31) % W, GY + 8 + (i * 9) % 36, 3, 2, '#ffb7d5');
-    van(226, season);
     if (season === 3) { R(BX, BY - 3, BW, 4, '#ffffff'); R(46, PY - 3, 34, 4, '#ffffff'); R(280, PY - 3, 34, 4, '#ffffff'); R(98, BY - 17, 34, 3, '#ffffff'); }
     // 밤·노을 색 → 그 위에 불 켜진 창문(움직이는 것들은 그 뒤에 그려서 창문에 가리지 않는다)
     if (n > 0) { const y0 = Math.max(60, BY - 70); c.globalAlpha = n * .5; R(0, y0 + 24, W, H - y0 - 24, '#0a1040'); for (let i = 0; i < 6; i++) { c.globalAlpha = n * .5 * (i / 6); R(0, y0 + i * 4, W, 4, '#0a1040'); } c.globalAlpha = 1; }
@@ -148,6 +147,8 @@ export function Intro(cv, tickerEl, clockEl) {
       for (let q = 0; q < 17; q++) if (hash(q, 9) < .8) R(56 + q * 15, PY + 14, 10, 36, '#ffe28a'); R(156, GY - 28, 48, 28, '#fff6c0');
       for (let i = 0; i < 12; i++) for (let j = 0; j < 5; j++) if (hash(i, j + 20) < .4) R(i * 30 + 6 + (j % 2) * 12, GY - 50 - j * 14 - hash(i, 1) * 20, 3, 3, '#ffcd75');
       c.globalAlpha = 1; }
+    // 서 있는 중계차는 불 켜진 창문 위에 그린다(밤엔 차에만 어둡게 톤을 입힘)
+    van(226, season); if (n > 0) { c.globalAlpha = n * .45; R(226, GY - 38, 104, 38, '#0a1040'); R(256, GY - 62, 24, 14, '#0a1040'); R(266, GY - 48, 3, 10, '#0a1040'); c.globalAlpha = 1; }
     R(87, SY + 3, 186, 22, n > .3 ? '#e43b44' : '#b13e53'); T('NEWS DESK', 180, SY + 21, 15, '#ffffff', 'center'); if (bl(t, 1.5)) R(176, BY - 68, 8, 8, '#ff2e4d');
     holes.forEach(h => { const age = t - h.at, rr = h.r * hr(h); if (rr < 1) return; if (age < 9) for (let i = 0; i < 4; i++) { const fh = 4 + hash(i, Math.floor(t * 8)) * 10; R(h.x - rr * .6 + i * rr * .4, h.y + rr * .5 - fh, 5, fh, i % 2 ? '#ffcd75' : '#ef7d57'); }
       for (let i = 0; i < 5; i++) { const f = (t * .5 + i * .2) % 1; c.globalAlpha = (1 - f) * .5 * Math.min(1, rr / 10); R(h.x - 6 + Math.sin(i + t) * 8 + f * 14, h.y - rr - f * 70, 10 + f * 14, 8 + f * 8, '#3a4466'); c.globalAlpha = 1; }
