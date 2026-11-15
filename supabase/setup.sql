@@ -57,6 +57,12 @@ begin
   if found then
     if old_hash <> h then raise exception 'forbidden'; end if;
     select l.rank_score, l.updated_at into old_rank, old_at from public.nd_leaderboard l where l.id = p_id;
+    if not found then                                                   -- 순위 초기화 뒤 첫 기록: 열쇠는 그대로. 이미 있던 기기라 상한을 넉넉히 둔다
+      if r > 1100 then raise exception 'rank score too high for a new entry'; end if;
+      insert into public.nd_leaderboard(id, name, total, max_lv, best_rating, views, rank_score, season, season_pts)
+        values (p_id, p_name, p_total, p_max_lv, least(p_best, 30), p_views, r, left(p_season, 7), p_season_pts);
+      return r;
+    end if;
     mins := greatest(extract(epoch from now() - old_at) / 60, 0);
     if mins < 0.25 then return old_rank; end if;                       -- 15초에 한 번까지만 반영
     if r > old_rank + 60 + 30 * mins then raise exception 'rank score jumped too fast'; end if;
@@ -218,3 +224,6 @@ revoke execute on function public.nd_save_put(uuid, text, jsonb) from public;
 revoke execute on function public.nd_save_restore(text, text) from public;
 grant execute on function public.nd_save_put(uuid, text, jsonb) to anon, authenticated;
 grant execute on function public.nd_save_restore(text, text) to anon, authenticated;
+
+-- 순위 초기화 (2026-11-15): 행을 지우면 기기 열쇠가 함께 지워지므로(cascade) 점수만 0으로 되돌린다. 0점 행은 순위 목록에서 숨긴다
+-- update public.nd_leaderboard set total = 0, max_lv = 0, best_rating = 0, views = 0, rank_score = 0, season_pts = 0, updated_at = now() - interval '1 hour';

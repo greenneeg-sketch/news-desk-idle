@@ -28,7 +28,7 @@ const SupabaseAdapter = ({ url, key }) => {
     async top(n, own) {
       const q = p => fetch(`${url}/rest/v1/nd_leaderboard?select=${COLS}&${p}&limit=${n}`, { headers: H }).then(r => { if (!r.ok) throw new Error('top ' + r.status); return r.json(); });
       const sk = own && own.season ? encodeURIComponent(own.season) : '';
-      const [a, b] = await Promise.all([q('order=rank_score.desc'), sk ? q(`season=eq.${sk}&order=season_pts.desc`) : []]);
+      const [a, b] = await Promise.all([q('rank_score=gt.0&order=rank_score.desc'), sk ? q(`season=eq.${sk}&season_pts=gt.0&order=season_pts.desc`) : []]);
       const m = new Map(); [...a, ...b].forEach(x => m.set(x.id, x)); return [...m.values()].map(row);
     },
     // 내 순위(목록 밖이어도): 나보다 점수가 높은 사람 수 + 1

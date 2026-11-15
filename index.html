@@ -377,7 +377,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-1657</span>
+  <span class="iver">v2026.11.15-1908</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -705,7 +705,12 @@ function rollCard(r, r2, pity, heroBoost = 1) {
 
 // 순위 점수: 누적 점수 + 최대 레벨 + 최고 시청률 + 유튜브 조회수를 종합 (점수와 조회수는 로그 스케일)
 const rankScore = p => Math.round(30 * Math.log10(1 + p.total) + .6 * p.maxLv + 4 * p.bestRating + 10 * Math.log10(1 + p.views));
-const toEntry = s => ({ uid: s.uid, name: s.name, total: Math.floor(s.total), maxLv: s.maxLv, bestRating: s.bestRating, views: Math.floor(s.views), rankScore: rankScore(s), season: s.season.key, seasonPts: Math.floor(seasonPts(s)) });
+// 순위 초기화 회차: 이 숫자를 올리면 모든 기기의 순위용 누적 점수·조회수가 0부터 다시 쌓인다 (게임 진행은 그대로)
+const LB_EP = 2;
+const toEntry = s => {
+  const b = s.lbBase || {}, p = { total: Math.max(0, Math.floor(s.total - (b.total || 0))), maxLv: s.maxLv, bestRating: s.bestRating, views: Math.max(0, Math.floor(s.views - (b.views || 0))) };
+  return { uid: s.uid, name: s.name, ...p, rankScore: rankScore(p), season: s.season.key, seasonPts: Math.floor(seasonPts(s)) };
+};
 
 // 방송국 이름 검증: 허용 문자(한글·영문·숫자·공백·점·&·하이픈) 2~12자 + 비속어/운영자 사칭 차단
 // 주의: 클라이언트 검사는 우회할 수 있으므로 서버에도 같은 검사가 필요하다. 표시할 때도 다시 걸러낸다.
@@ -794,10 +799,10 @@ const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2,
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 },
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -959,7 +964,8 @@ const EventScheduler = store => ({
 
 
 
-const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV'];
+
+const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase'];
 // Repository 패턴: 저장 매체(localStorage)를 이 모듈 안에 가둔다
 const Repo = {
   snapshot: s => ({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() }), // 클라우드 저장에도 같은 모양을 쓴다
@@ -968,7 +974,8 @@ const Repo = {
   load() {
     try {
       const o = JSON.parse(localStorage.getItem(SAVE_KEY)); if (!o || !o.lv) return null;
-      if (!o.presV) { if (o.pts > 0) o.pts = Math.floor(Math.cbrt(o.pts * o.pts / 200)); o.presV = 2; } // 개편 공식 변경 전 기록: 같은 점수를 새 공식으로 받았을 때의 포인트로 변환
+      if (!o.presV) { if (o.pts > 0) o.pts = Math.floor(Math.cbrt(o.pts * o.pts / 200)); o.presV = 2; }
+      if ((o.lbEp || 0) < LB_EP) { o.lbBase = { total: o.total || 0, views: o.views || 0 }; if (o.season) o.season = { ...o.season, base: Math.max(o.season.base || 0, o.total || 0) }; o.lbEp = LB_EP; } // 순위 초기화: 지금까지 쌓인 기록은 순위에서 빼고 새로 센다 // 개편 공식 변경 전 기록: 같은 점수를 새 공식으로 받았을 때의 포인트로 변환
       const nt = (o.res && o.res.night) || 0, sec = Math.min((Date.now() - o.t) / 1000, 28800 + 3600 * nt), { t, ...s } = o;
     const jo = jobOf(o).off || 0; // 방송 엔지니어: 오프라인 수익 +20%p
       const st = reducer(initialState(), { type: 'LOAD', s });
@@ -1009,7 +1016,7 @@ const SupabaseAdapter = ({ url, key }) => {
     async top(n, own) {
       const q = p => fetch(`${url}/rest/v1/nd_leaderboard?select=${COLS}&${p}&limit=${n}`, { headers: H }).then(r => { if (!r.ok) throw new Error('top ' + r.status); return r.json(); });
       const sk = own && own.season ? encodeURIComponent(own.season) : '';
-      const [a, b] = await Promise.all([q('order=rank_score.desc'), sk ? q(`season=eq.${sk}&order=season_pts.desc`) : []]);
+      const [a, b] = await Promise.all([q('rank_score=gt.0&order=rank_score.desc'), sk ? q(`season=eq.${sk}&season_pts=gt.0&order=season_pts.desc`) : []]);
       const m = new Map(); [...a, ...b].forEach(x => m.set(x.id, x)); return [...m.values()].map(row);
     },
     // 내 순위(목록 밖이어도): 나보다 점수가 높은 사람 수 + 1
