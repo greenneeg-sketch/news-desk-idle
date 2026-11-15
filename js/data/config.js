@@ -27,7 +27,7 @@ export const EVENTS = [
   { id: 'robot', k: '특보', names: ['거대 로봇 도심 출현 (가상)'], dur: 40, inf: 3, sc: 4, min: 1e6, w: .35 }, // 히어로 카드 1장당 점수 +50%
 ];
 export const MANAGER = [2000, 8000, 30000, 120000, 500000];
-export const CHIEF = 40000;
+export const CHIEF = 5e11; // 영상편집팀장: 속보 우선 편집 자동. 후반 구매용(5,000억)
 export const ACHIEVEMENTS = [
   { id: 'a1', n: '첫 송출', d: '누적 10점', t: s => s.run >= 10 },
   { id: 'a2', n: '지역 방송 기자', d: '누적 1만 점', t: s => s.run >= 1e4 },

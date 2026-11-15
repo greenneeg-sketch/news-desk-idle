@@ -9,7 +9,7 @@ export const UNLOCKS = [
   { id: 'scout', at: 5000, t: '스카우트', d: '직원 카드를 모으면 층 속도가 영구로 올라가요. 아래 스카우트 탭이 열렸어요.', tab: 'scout', target: 'scout' },
   { id: 'grow', at: 1e4, t: '커리어', d: '승진할 때마다 영구 점수 +5%. 성장 탭에서 다음 승진 조건을 볼 수 있어요.', tab: 'grow', g: 'car', target: 'carp' },
   { id: 'rank', at: 2e4, t: '순위', d: '다른 방송국과 순위와 이번 달 시즌 등급을 겨뤄요.', tab: 'rank', target: 'board' },
-  { id: 'chief', at: 2e4, t: '영상편집팀장', d: '팀장을 고용하면 속보 때 우선 편집을 자동으로 해 줘요.', tab: 'desk', target: 'flc' },
+  { id: 'chief', at: 1e11, t: '영상편집팀장', d: '5,000억 점에 팀장을 고용하면 속보 때 우선 편집을 자동으로 해 줘요. 개편하면 다시 고용해야 해요.', tab: 'desk', target: 'flc' },
   { id: 'br', at: 2e4, t: '지국 확장', d: '아래 "지국" 탭이 열렸어요. 부산 지국부터 해외 특파원까지 열면 점수가 오르고, 담당 분야 속보가 더 커져요.', tab: 'br', target: 'brp' },
   { id: 'deco', at: 3e4, t: '사무실 꾸미기', d: '소품을 사면 장면에 나타나고 하나당 점수 +2%예요.', tab: 'grow', g: 'deco', target: 'decop' },
   { id: 'dil', at: 5e4, t: '데스크 판단', d: '이제 일부 속보는 단독으로 바로 낼지, 확인 후 낼지 골라야 해요. 단독 성공 시 점수 2배!' },
