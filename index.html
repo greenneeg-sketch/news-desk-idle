@@ -414,7 +414,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-2016</span>
+  <span class="iver">v2026.11.15-2027</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -1860,8 +1860,8 @@ const font = (n = 8) => { cx.font = `${n}px "Press Start 2P",monospace`; };
 // ───────── 1. 속보 컷 편집 (영상편집기자) ─────────
 // 플레이바가 타임라인의 컷 지점을 지날 때 탭. 5라운드, 점점 컷이 늘고 빨라진다
 const CUT = (() => {
-  const ROUNDS = [{ n: 4, d: 4.4 }, { n: 5, d: 4.0 }, { n: 6, d: 3.8 }, { n: 7, d: 3.6 }, { n: 8, d: 3.4 }];
-  const WIN = { p: .08, g: .16, near: .32 }, X0 = 12, X1 = 228;   // 판정 범위(초): 아이폰 터치 지연을 감안해 넉넉하게
+  const ROUNDS = [{ n: 5, d: 4.0 }, { n: 6, d: 3.7 }, { n: 7, d: 3.5 }, { n: 8, d: 3.3 }, { n: 9, d: 3.2 }];
+  const WIN = { p: .065, g: .13, near: .3 }, X0 = 12, X1 = 228;   // 판정 범위(초): 아이폰 터치 지연을 감안해 넉넉하게
   let st = null;
   const cutsFor = r => { const R = ROUNDS[r], w = .85 / R.n; return Array.from({ length: R.n }, (_, i) => ({ x: .1 + w * (i + .5 + (Math.random() - .5) * .5), res: '' })); };
   function round(r) { st.r = r; st.cuts = cutsFor(r); st.tot += st.cuts.length; st.t0 = performance.now() + 900; st.phase = 'ready'; st.flash = null; ui.label(`ROUND ${r + 1}/${ROUNDS.length}`, `컷 ${st.cuts.length}개 · 플레이바가 빨간 선에 닿을 때 화면을 탭!`); }
@@ -1932,9 +1932,9 @@ const CUT = (() => {
 
 // ───────── 2. 단독 입수 (취재기자·영상기자) ─────────
 // 뷰파인더 속 피사체가 앞뒤로 움직여 초점이 계속 바뀐다. 화면을 좌우로 문질러 포커스 링을 돌리고, 선명할 때 셔터!
-// 컷마다 제한 시간 6초, 빨리 찍을수록 보너스. 5컷.
+// 컷마다 제한 시간 6초, 컷당 5초, 빨리 찍을수록 보너스.
 const FOCUS = (() => {
-  const SHOTS = 5, LIMIT = 6, WIN = { p: .05, g: .12 };
+  const SHOTS = 5, LIMIT = 5, WIN = { p: .04, g: .1 };
   const SUBJ = [ // 피사체: 이름, 그리기 함수
     ['공항 출국 스타', star], ['도심에 나타난 거대 로봇', robot], ['하늘을 나는 히어로', hero], ['정체불명 UFO', ufo], ['기자회견장 대변인', speaker],
   ];
@@ -1942,7 +1942,7 @@ const FOCUS = (() => {
   const tgt = (t, s) => .5 + .34 * Math.sin(t * s.w + s.ph) + .08 * Math.sin(t * s.w * 2.7 + s.ph2); // 시간에 따른 정답 초점(0~1)
   function shot(i) {
     const order = st.order;
-    st.i = i; st.s = { w: .8 + i * .3, ph: Math.random() * 6.28, ph2: Math.random() * 6.28, k: order[i % order.length], t0: performance.now() + 1100 };
+    st.i = i; st.s = { w: .95 + i * .35, ph: Math.random() * 6.28, ph2: Math.random() * 6.28, k: order[i % order.length], t0: performance.now() + 1100 };
     st.f = Math.random() < .5 ? .05 : .95; st.phase = 'ready'; st.flash = null;
     ui.label(`SHOT ${i + 1}/${SHOTS}`, `${SUBJ[st.s.k][0]} · 화면을 좌우로 문질러 초점을 맞추고 셔터!`);
   }
@@ -2023,10 +2023,10 @@ const FOCUS = (() => {
 // 4단계: 2x3 → 3x4 → 4x4 → 4x5. 단계마다 제한 시간, 시간이 끝나면 게임 끝. 남은 시간만큼 보너스.
 const MATCH = (() => {
   const STAGES = [
-    { c: 3, r: 2, kind: 'icon', show: 2.2, lim: 15 },
-    { c: 4, r: 3, kind: 'mix', show: 3.2, lim: 26 },
-    { c: 4, r: 4, kind: 'word', show: 3.6, lim: 34 },
-    { c: 5, r: 4, kind: 'term', show: 4.5, lim: 48 },
+    { c: 3, r: 2, kind: 'icon', show: 1.8, lim: 12 },
+    { c: 4, r: 3, kind: 'mix', show: 2.6, lim: 21 },
+    { c: 4, r: 4, kind: 'word', show: 3.0, lim: 28 },
+    { c: 5, r: 4, kind: 'term', show: 3.6, lim: 40 },
   ];
   const WORDS = ['속보', '단독', '특종', '생중계', '앵커', '자막', '큐시트', '데스크', '리포트', '현장', '엠바고', '오보'];
   const TERMS = [['엠바고', '보도유예'], ['풀', '공동취재'], ['데스크', '기사검토'], ['큐시트', '방송순서'], ['리드', '첫 문장'], ['인서트', '삽입화면'], ['스탠딩', '기자등장'], ['바이라인', '기자이름'], ['크로마키', '합성배경'], ['클로징', '마무리말'], ['VCR', '녹화영상'], ['슈퍼', '화면자막']];
@@ -2123,12 +2123,12 @@ const MATCH = (() => {
 // 막대가 초록 구간 안에 있으면 '송출 안정' 게이지가 차고, 벗어나면 줄어든다. 게이지를 채우면 복구! 사고 4건, 점점 어려워진다.
 const SIGNAL = (() => {
   const CASES = [
-    { n: '영상 신호 끊김', band: .40, jump: [2.2, 3.2], ease: 1.0 },
-    { n: '오디오 레벨 폭주', band: .36, jump: [1.9, 2.8], ease: 1.2 },
-    { n: '위성 링크 흔들림', band: .32, jump: [1.6, 2.5], ease: 1.4 },
-    { n: '중계차 전송 장애', band: .29, jump: [1.4, 2.2], ease: 1.6 },
+    { n: '영상 신호 끊김', band: .35, jump: [1.8, 2.6], ease: 1.3 },
+    { n: '오디오 레벨 폭주', band: .31, jump: [1.5, 2.3], ease: 1.6 },
+    { n: '위성 링크 흔들림', band: .27, jump: [1.3, 2.0], ease: 1.9 },
+    { n: '중계차 전송 장애', band: .24, jump: [1.1, 1.8], ease: 2.2 },
   ];
-  const LIM = 20, UP = 1.5, DOWN = 1.2, VMAX = .7, FILL = .22, DRAIN = .07; // 감도: 천천히 오르내리고, 게이지는 빨리 차고 천천히 준다
+  const LIM = 18, UP = 1.8, DOWN = 1.5, VMAX = .9, FILL = .19, DRAIN = .09; // 감도: 천천히 오르내리고, 게이지는 빨리 차고 천천히 준다
   const MX = 166, MY = 8, MW = 30, MH = 134, GX = 206, GW = 22;
   let st = null;
   function incident(i) {
@@ -2198,7 +2198,7 @@ const GAMES = { cut: CUT, focus: FOCUS, match: MATCH, signal: SIGNAL };
 return {
   // 게임 목록(메뉴·아이콘용). jobs: 이 직업이면 특기 보상 x1.5, 아이콘도 주로 이 게임
   LIST: [
-    { id: 'cut', n: '속보 컷 편집', icon: '속보', sub: '컷 편집', jobs: ['editor'], d: '플레이바가 타임라인의 컷 지점을 지날 때 탭. 5라운드, 점점 빨라져요.' },
+    { id: 'cut', n: '속보 컷 편집', icon: '속보', sub: '컷 편집', jobs: ['editor'], d: '플레이바가 타임라인의 컷 지점을 지날 때 탭. 5라운드(컷 5~9개), 점점 빨라져요.' },
     { id: 'focus', n: '단독 입수', icon: '단독', sub: '입수', jobs: ['reporter', 'camera'], d: '화면을 좌우로 문질러 초점을 맞추고 셔터! 빨리 찍을수록 보너스. 5컷.' },
     { id: 'match', n: '긴급 수정', icon: '긴급', sub: '수정', jobs: ['designer'], d: '카드를 잠깐 보여 준 뒤 뒤집어요. 같은 그림끼리 짝 맞추기! 4단계, 마지막은 보도 용어 ↔ 뜻.' },
     { id: 'signal', n: '송출 사고', icon: '송출', sub: '사고', jobs: ['engineer'], d: '화면을 누르고 있으면 레벨이 올라가요. 흔들리는 초록 구간 안에 붙잡아 송출을 복구! 사고 4건.' },
