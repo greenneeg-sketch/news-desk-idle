@@ -33,12 +33,23 @@ const shade = (h, a) => '#' + hexn(h).map(v => Math.max(0, Math.min(255, Math.ro
 
 const KOF = '"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif', CW = 80, CH = 112;
 const BUFF = ['취재', '인제스트', '편집', 'CG', '송출'];
+// 도감 배치: 등급별로 묶고(일반 → 희귀 → 영웅 → 전설), 등급마다 새 줄에서 시작하며 위에 등급 머리말을 단다
+const GH = 14; // 머리말 높이(칸)
+export const CARD_LAYOUT = (() => { const items = [], heads = []; let y = 0;
+  RARITY.forEach((r, ri) => { const list = CARDS.map((cd, i) => [cd, i]).filter(([cd]) => cd.rar === ri); if (!list.length) return;
+    heads.push({ ri, y, n: list.length }); y += GH; list.forEach(([, i], j) => items.push({ i, x: j % 4 * CW, y: y + (j / 4 | 0) * CH })); y += Math.ceil(list.length / 4) * CH; });
+  return { items, heads, h: y }; })();
+export const cardAt = (fx, fy) => { const x = fx * CW * 4, y = fy * CARD_LAYOUT.h, it = CARD_LAYOUT.items.find(o => x >= o.x && x < o.x + CW && y >= o.y && y < o.y + CH); return it ? it.i : -1; };
 export function drawCards(c, s, t, sel) { // 도감: 4열 격자, 캔버스 3배
-  const rows = Math.ceil(CARDS.length / 4), W = CW * 4 * 3, H = rows * CH * 3;
+  const W = CW * 4 * 3, H = CARD_LAYOUT.h * 3;
   if (c.canvas.width !== W || c.canvas.height !== H) { c.canvas.width = W; c.canvas.height = H; }
   if (c.canvas.closest('.pane') && c.canvas.closest('.pane').hidden) return;
   c.setTransform(1, 0, 0, 1, 0, 0); c.imageSmoothingEnabled = false; c.fillStyle = '#1a1c2c'; c.fillRect(0, 0, W, H);
-  CARDS.forEach((cd, i) => { drawCard(c, 3, i % 4 * CW * 3, (i / 4 | 0) * CH * 3, cd, s.cards[cd.id] || 0, t, i, i === sel); });
+  CARD_LAYOUT.heads.forEach(h => { const r = RARITY[h.ri], got = CARDS.filter(cd => cd.rar === h.ri && s.cards[cd.id]).length;
+    c.fillStyle = shade(r.c, -.7); c.fillRect(0, h.y * 3 + 6, W, (GH - 4) * 3); c.fillStyle = r.c; c.fillRect(0, h.y * 3 + 6, 9, (GH - 4) * 3);
+    c.font = `bold ${8 * 3}px ${KOF}`; c.fillStyle = r.c; c.fillText(`${r.n}`, 18, h.y * 3 + 33); const w = c.measureText(r.n).width;
+    c.font = `bold ${6.5 * 3}px ${KOF}`; c.fillStyle = '#c2c3c7'; c.fillText(`${got}/${h.n}장 · 1장당 해당 층 속도 +${Math.round(r.b * 100)}%`, 18 + w + 18, h.y * 3 + 32); });
+  CARD_LAYOUT.items.forEach(o => { const cd = CARDS[o.i]; drawCard(c, 3, o.x * 3, o.y * 3, cd, s.cards[cd.id] || 0, t, o.i, o.i === sel); });
   const big = document.getElementById('cbig'); // 크게 보기(선택한 카드)
   if (big) { const g = big.getContext('2d'); if (big.width !== CW * 6) { big.width = CW * 6; big.height = CH * 6; } g.imageSmoothingEnabled = false; g.clearRect(0, 0, big.width, big.height); const cd = CARDS[sel] || CARDS[0]; drawCard(g, 6, 0, 0, cd, s.cards[cd.id] || 0, t, CARDS.indexOf(cd), false, true); }
 }
