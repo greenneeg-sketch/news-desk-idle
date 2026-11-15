@@ -6,11 +6,12 @@ import { TUTORIAL } from './tutorial.js';
 import { rank, perSec, prestigeGain, prestigeBonus, rates, bulk, mult, cardBonus, rl } from '../systems/economy.js';
 import { checkName, isBlocked } from '../systems/nameFilter.js';
 import { scoutCost } from '../systems/cards.js';
+import { UNLOCKS, isUnlocked } from '../data/tips.js';
 const $ = id => document.getElementById(id);
 export const fmt = n => { n = Math.floor(n); return n >= 1e16 ? (n / 1e16).toFixed(1) + '경' : n >= 1e12 ? (n / 1e12).toFixed(1) + '조' : n >= 1e8 ? (n / 1e8).toFixed(1) + '억' : n >= 1e4 ? (n / 1e4).toFixed(1) + '만' : n.toLocaleString('ko-KR'); };
 const FLOORS = [['취재', '카메라 기자 · 취재 기자', 'crew'], ['인제스트', '인제스트실', 'ing'], ['편집', '영상편집기자', 'edit'], ['CG', '그래픽 디자이너', 'cg'], ['송출', '뉴스 스튜디오', 'out'], ['중계 장비', '중계 차량 · 리포터', 'live'], ['방송 품질', '화질 · 시청률', 'qual']];
 const byId = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
-const floorHtml = i => `<section class="panel floor" id="fl${i}"><div class="fh"><div><b>${FLOORS[i][0]}</b><i class="mj" id="mj${i}" hidden>주력</i> <small>${FLOORS[i][1]}</small><div class="cnt" id="c${i}"></div></div><div class="bs"><button class="btn mini" data-id="${FLOORS[i][2]}" id="fb${i}"></button>${i < 5 ? `<button class="btn mini" data-hire="${i}" id="mb${i}"></button>` : ''}</div></div><div class="ms"><i id="m${i}"></i></div><canvas width="320" height="64"></canvas></section>`;
+const floorHtml = i => `<section class="panel floor" id="fl${i}"><div class="fh"><div><b>${FLOORS[i][0]}</b><i class="mj" id="mj${i}" hidden>주력</i><i class="bnb" id="bnb${i}" hidden>병목</i> <small>${FLOORS[i][1]}</small><div class="cnt" id="c${i}"></div></div><div class="bs"><button class="btn mini" data-id="${FLOORS[i][2]}" id="fb${i}"></button>${i < 5 ? `<button class="btn mini" data-hire="${i}" id="mb${i}"></button>` : ''}</div></div><div class="ms"><i id="m${i}"></i></div><canvas width="320" height="64"></canvas></section>`;
 // View: DOM을 만들고 갱신만 한다. 사용자 입력은 버스 이벤트로만 내보낸다
 export function Hud(bus) {
   $('floors').innerHTML = [0, 1, 2, 3, 4].map(floorHtml).join(''); $('hq').innerHTML = [5, 6].map(floorHtml).join('');
@@ -20,7 +21,16 @@ export function Hud(bus) {
   $('ach').innerHTML = ACHIEVEMENTS.map(() => '<i></i>').join(''); $('gold').onclick = () => bus.emit('gold'); $('spdb').onclick = () => bus.emit('spd');
   let selCard = 0, armedCh = '', armT, cur = null, bd = null, view = 'all', tab = 'desk', hiId = null, tutShown = -2;
   // 탭: 보도국 / 스카우트 / 순위 / 성장. 마지막으로 연 탭을 이 브라우저에 기억한다
-  function showTab(t) {
+  // 잠긴 탭: 해당 기능이 해금돼야 열린다
+  const TAB_UNL = { scout: 'scout', grow: 'grow', rank: 'rank' }, need = id => UNLOCKS.find(u => u.id === id);
+  let gsub = 'car';
+  function showSub(g) {
+    gsub = g; document.querySelectorAll('#gsub [data-g]').forEach(b => b.classList.toggle('on', b.dataset.g === g));
+    document.querySelectorAll('.pane[data-tab="grow"] section[data-g]').forEach(p => { p.classList.toggle('gh', p.dataset.g !== g); });
+  }
+  function showTab(t, g) {
+    if (cur && TAB_UNL[t] && !isUnlocked(cur, TAB_UNL[t])) { const u = need(TAB_UNL[t]); toastL(`누적 ${fmt(u.at)}점이 되면 열려요.`); return; }
+    if (g) showSub(g);
     tab = t; document.querySelectorAll('.pane').forEach(p => { p.hidden = p.dataset.tab !== t; });
     document.querySelectorAll('#tabs [data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === t));
     try { localStorage.setItem('newsDesk.tab', t); } catch (e) { }
@@ -28,6 +38,11 @@ export function Hud(bus) {
   }
   try { tab = localStorage.getItem('newsDesk.tab') || 'desk'; } catch (e) { }
   $('tabs').onclick = e => { const b = e.target.closest('[data-t]'); if (b) showTab(b.dataset.t); };
+  $('gsub').onclick = e => { const b = e.target.closest('[data-g]'); if (b && !b.hidden) showSub(b.dataset.g); };
+  let rateOpen = false; try { rateOpen = localStorage.getItem('newsDesk.rateOpen') === '1'; } catch (e) { }
+  const setRate = o => { rateOpen = o; $('ratex').hidden = !o; $('rateh').setAttribute('aria-expanded', o); $('rate').classList.toggle('open', o); try { localStorage.setItem('newsDesk.rateOpen', o ? '1' : '0'); } catch (e) { } };
+  $('rateh').onclick = () => setRate(!rateOpen); setRate(rateOpen);
+  let tt0; const toastL = m => { const e = $('toast'); e.textContent = m; clearTimeout(tt0); tt0 = setTimeout(() => e.textContent = '', 3000); };
   $('tutnext').onclick = () => { if (!cur) return; const n = cur.tut + 1; bus.emit('tut', n >= TUTORIAL.length ? -1 : n); };
   $('tutskip').onclick = () => bus.emit('tut', -1);
   $('helpb').onclick = () => bus.emit('tut', 0);
@@ -73,12 +88,12 @@ export function Hud(bus) {
   $('jobs').onclick = e => { const b = e.target.closest('[data-job]'); if (b) { jobSel = b.dataset.job; showJob(); } };
   $('startb').onclick = () => { const r = checkName($('nameIn').value); if (r.err) { $('nameErr').textContent = r.err; return; } bus.emit('name', { name: r.name, job: jobSel }); };
   $('nameIn').onkeydown = e => { if (e.key === 'Enter') $('startb').click(); };
-  $('cancelb').onclick = () => { $('start').hidden = true; }; $('renameb').onclick = () => bus.emit('rename');
+  $('cancelb').onclick = () => { $('start').hidden = true; }; $('renameb').onclick = () => { $('setm').hidden = true; bus.emit('rename'); };
   $('chiefb').onclick = () => bus.emit('chief'); $('evb').onclick = () => bus.emit('boost'); $('mute').onclick = () => bus.emit('mute');
   $('offOk').onclick = () => bus.emit('claim', 1); $('offAd').onclick = () => bus.emit('claim', 2);
   const armed = (id, label, evt) => { const b = $(id); let t; b.onclick = () => { if (b.dataset.a) { clearTimeout(t); delete b.dataset.a; b.textContent = label; bus.emit(evt); return; } b.dataset.a = 1; b.textContent = '한 번 더'; t = setTimeout(() => { delete b.dataset.a; b.textContent = label; }, 3000); }; };
   armed('presb', '개편', 'prestige'); armed('resetb', 'RESET', 'reset');
-  showTab(tab);
+  showSub(gsub); showTab('desk'); // 항상 보도국에서 시작
   let tt;
   return {
     showTab, canvases: [...document.querySelectorAll('.floor canvas')], cardCanvas: $('cards'), sel: () => selCard,
@@ -93,6 +108,7 @@ export function Hud(bus) {
     hideTip() { $('tip').hidden = true; },
     tipOpen: () => !$('tip').hidden,
     cloud(code, at) { $('cloudc').hidden = !code; $('cloudcp').hidden = !code; if (code) $('cloudc').textContent = code; $('cloudt').textContent = at ? `저장 ${new Date(at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}` : ''; $('cloudn').textContent = code ? '복구 코드는 이 기록의 열쇠예요. 다른 사람에게 알려 주지 마세요.' : '순위 서버에 방송국이 등록되면 2분마다 자동으로 저장돼요.'; },
+    paperReady(on) { $('pnew').hidden = !on; },
     paperAdDone() { $('pad').disabled = true; $('pad').textContent = '받음'; },
     hideOffline() { $('offline').hidden = true; },
     setMute(on) { $('mute').textContent = on ? 'SOUND ON' : 'SOUND OFF'; },
@@ -100,8 +116,13 @@ export function Hud(bus) {
       cur = s;
       const r = rates(s); let w = -1, wv = 4.99;
       $('score').textContent = fmt(s.score); $('ps').textContent = `+${fmt(perSec(s))}/s`;
-      { const rk = rank(s), nx = RANKS[rk + 1]; $('rank').textContent = `${RANKS[rk].n} (x${2 ** rk})` + (nx ? ` → ${nx.n} ${fmt(nx.at - s.run)}점` : ' · 최종 단계'); $('rkb').style.width = (nx ? (s.run - RANKS[rk].at) / (nx.at - RANKS[rk].at) * 100 : 100) + '%'; } $('pt').textContent = `개편 x${prestigeBonus(s).toFixed(2)}`;
+      { const rk = rank(s), nx = RANKS[rk + 1]; $('rank').textContent = `${RANKS[rk].n} (x${2 ** rk})` + (nx ? ` → ${nx.n} ${fmt(nx.at - s.run)}점` : ' · 최종 단계'); $('rkb').style.width = (nx ? (s.run - RANKS[rk].at) / (nx.at - RANKS[rk].at) * 100 : 100) + '%'; } $('pt').textContent = s.pts > 0 ? `개편 x${prestigeBonus(s).toFixed(2)}` : '';
       document.querySelectorAll('#seg [data-n]').forEach(b => b.classList.toggle('on', b.dataset.n === s.buyN));
+      const U_ = id => isUnlocked(s, id);
+      $('spdb').hidden = !U_('spd'); $('misp').hidden = !U_('mis'); $('hqsec').hidden = !U_('hq'); $('flc').hidden = !U_('chief');
+      for (const [t, id] of Object.entries(TAB_UNL)) $('tab-' + t).classList.toggle('lock', !U_(id));
+      document.querySelectorAll('#gsub [data-g]').forEach(b => { const g = b.dataset.g; b.hidden = g === 'res' ? !U_('res') : g === 'deco' ? !U_('deco') : g === 'pres' ? !(U_('pres') || s.pts > 0) : false; });
+      if ($('gsub').querySelector(`[data-g="${gsub}"]`).hidden) showSub('car');
       for (let i = 1; i < 5; i++) if (s.q[i] > wv) { wv = s.q[i]; w = i; }
       FLOORS.forEach(([n, sub, id], i) => {
         const u = byId[id], l = s.lv[id], { k, total } = bulk(s, u, s.buyN), nx = MILESTONES.find(m => m > l) || 100, pv = MILESTONES.filter(m => m <= l).pop() || 0, tier = MILESTONES.filter(m => l >= m).length;
@@ -109,10 +130,17 @@ export function Hud(bus) {
         $('c' + i).textContent = `${info} ${'★'.repeat(tier)}`;
         $('fb' + i).textContent = `Lv.${l} +${k} ${fmt(total)}`; $('fb' + i).classList.toggle('can', s.score >= total);
         $('m' + i).style.width = Math.min(100, (l - pv) / (nx - pv) * 100) + '%'; $('fl' + i).classList.toggle('bn', i === w);
-        if (i < 5) { const b = $('mb' + i); b.textContent = s.mg[i] ? '매니저 ✓' : `매니저 ${fmt(MANAGER[i])}`; b.disabled = !!s.mg[i]; b.classList.toggle('can', !s.mg[i] && s.score >= MANAGER[i]); }
+        if (i < 5) { const b = $('mb' + i); b.hidden = !U_('mg'); b.textContent = s.mg[i] ? '매니저 ✓' : `매니저 ${fmt(MANAGER[i])}`; b.disabled = !!s.mg[i]; b.classList.toggle('can', !s.mg[i] && s.score >= MANAGER[i]); }
+        $('bnb' + i).hidden = i !== w;
       });
+      { // 추천: 병목 층 업그레이드 → 병목 층 매니저 → 살 수 있는 가장 싼 층 순서로 하나만 반짝인다
+        const can = id => { const b = $(id); return b && !b.hidden && !b.disabled && b.classList.contains('can'); };
+        let rec = null;
+        if (w > 0 && can('fb' + w)) rec = 'fb' + w; else if (w > 0 && can('mb' + w)) rec = 'mb' + w;
+        else { let best = Infinity; [0, 1, 2, 3, 4, 5, 6].forEach(i => { if (i >= 5 && !U_('hq')) return; const u = byId[FLOORS[i][2]], c = bulk(s, u, s.buyN).total; if (can('fb' + i) && c < best) { best = c; rec = 'fb' + i; } }); }
+        document.querySelectorAll('.btn.rec').forEach(b => { if (b.id !== rec) b.classList.remove('rec'); }); if (rec) $(rec).classList.add('rec');
+      }
       $('chiefb').textContent = s.chief ? '고용 완료' : `고용 ${fmt(CHIEF)}`; $('chiefb').disabled = !!s.chief; $('chiefb').classList.toggle('can', !s.chief && s.score >= CHIEF);
-      $('note').textContent = w > 0 ? `병목: ${FLOORS[w][0]} 대기 ${Math.floor(s.q[w])}건` : '흐름이 원활해요.';
       const g = $('gold'); g.hidden = !s.gold; if (s.gold) { g.style.left = s.gold.x + '%'; g.style.top = s.gold.y + '%'; }
       const on = s.clock < s.spdEnd, cd = s.clock < s.spdReady;
       $('spdb').textContent = on ? `속도 x2 부스트 ${Math.ceil(s.spdEnd - s.clock)}초` : cd ? `부스트 대기 ${Math.ceil(s.spdReady - s.clock)}초` : '광고 보고 속도 x2 (2분)'; $('spdb').disabled = cd;
@@ -130,7 +158,7 @@ export function Hud(bus) {
         document.querySelectorAll('#carl li').forEach((li, i) => { li.className = i === ci ? 'now' : i < ci ? 'on' : ''; });
       }
       { // 주간 한정 이벤트
-        const we = weekEvent(s), w = s.wev; $('wevp').hidden = !we;
+        const we = weekEvent(s), w = s.wev; $('wevp').hidden = !we || !U_('week');
         if (we) {
           const left = Math.max(1, Math.ceil((Date.parse(w.key + 'T00:00:00') + 7 * 864e5 - Date.now()) / 864e5)), p = Math.min(we.goal, w.p);
           $('wevn').textContent = we.n; $('wevt').textContent = we.d + (we.ev === 'robot' ? ` · 보유 히어로 ${heroCount(s)}명` : ''); $('wevd').textContent = w.done ? '달성 완료!' : `종료까지 ${left}일`;
@@ -138,9 +166,9 @@ export function Hud(bus) {
         }
       }
       const hr = 6 + 14 * s.dayT / DAY_SEC, hh = Math.floor(hr), mm = Math.floor((hr - hh) * 60);
-      $('clock').textContent = `D+${s.day} · ${hh}:${String(mm).padStart(2, '0')} → 8시 뉴스 ${Math.ceil(DAY_SEC - s.dayT)}초`; $('dayb').style.width = s.dayT / DAY_SEC * 100 + '%';
+      { const left = Math.ceil(DAY_SEC - s.dayT); $('clock').textContent = ` ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} 후 방송`; } $('dayb').style.width = s.dayT / DAY_SEC * 100 + '%';
       $('rnow').textContent = s.lastRating ? `${s.lastRating.toFixed(1)}%` : '-';
-      $('rdiff').textContent = s.lastRating && s.prevRating ? ` 전일 ${s.prevRating.toFixed(1)}% ${s.lastRating >= s.prevRating ? '▲' : '▼'}${Math.abs(s.lastRating - s.prevRating).toFixed(1)}` : ' 첫 평가 대기 중';
+      $('rdiff').textContent = s.lastRating && s.prevRating ? ` ${s.lastRating >= s.prevRating ? '▲' : '▼'}${Math.abs(s.lastRating - s.prevRating).toFixed(1)}` : '';
       document.querySelectorAll('#hist i').forEach((b, i) => { const v = s.hist[s.hist.length - 7 + i] || 0; b.style.height = Math.min(100, v / 20 * 100) + '%'; });
       $('rnote').textContent = `최고 시청률 ${s.bestRating.toFixed(1)}% · 유튜브 조회수 ${fmt(s.views)}${s.lastViews ? ` (전일 +${fmt(s.lastViews)})` : ''} · 오늘 송출 ${Math.floor(s.dOut)}건`;
       { // 라이벌 대결
@@ -155,7 +183,10 @@ export function Hud(bus) {
         s.mis.list.forEach((m, i) => { const p = progress(s, m); $('mt' + i).textContent = (m.done ? '✓ ' : '') + missionText(m, fmt); $('mp' + i).textContent = m.done ? '완료' : `${fmt(p)}/${fmt(m.goal)}`; $('mm' + i).style.width = p / m.goal * 100 + '%'; });
         const nd = s.mis.list.filter(m => m.done).length; $('misd').textContent = s.mis.all ? '올클리어! 내일 새 미션' : `${nd}/3 · 모두 달성 시 티켓 +1`;
       }
-      { const d = s.ev && s.ev.dil && !s.ev.pick; $('dilp').hidden = !d; if (d) { $('dilt').textContent = DILEMMAS[s.ev.id] || '확인되지 않은 제보가 들어왔어요.'; $('dils').textContent = `${Math.max(0, Math.ceil(s.ev.dilEnd - s.clock))}초 뒤 자동 확인`; } }
+      { // 데스크 판단: 보도국 탭에서만, 다른 창이 없을 때 작게
+        const d = s.ev && s.ev.dil && !s.ev.pick && tab === 'desk' && $('tut').hidden && $('tip').hidden && !document.querySelector('.modal:not([hidden])'); $('dilp').hidden = !d;
+        if (d) { const pr = Math.round((SCOOP_P + .04 * rl(s, 'scoop') + (jobOf(s).scoop || 0)) * 100); $('dilt').textContent = DILEMMAS[s.ev.id] || '확인되지 않은 제보가 들어왔어요.'; $('dils').textContent = `${Math.max(0, Math.ceil(s.ev.dilEnd - s.clock))}초`; $('dilR').textContent = `단독 송출 (성공 ${pr}%)`; $('dilh').textContent = '단독 성공: 점수 x2 · 시청률 +0.8 / 오보: 시청률 -1.2 · 확인: 점수 x1.2 (시간이 지나면 자동 확인)'; }
+      }
       let resOk = false;
       RESEARCH.forEach((r, i) => {
         const l = rl(s, r.id), c = r.c * (l + 1), lock = r.req && rl(s, r.req[0]) < r.req[1], max = l >= r.max, b = $('rb' + i), ok = !max && !lock && s.rp >= c;
@@ -170,7 +201,7 @@ export function Hud(bus) {
         b.textContent = own ? '✓' : d.need ? (ok ? '받기' : '잠김') : `${fmt(d.at)}점`; b.disabled = !ok; b.classList.toggle('can', ok); if (ok && d.need) decoOk = true;
       });
       $('dcd').textContent = `${Object.keys(s.deco).length}/${DECOS.length} · 점수 +${Object.keys(s.deco).length * 2}%`;
-      $('dot-grow').hidden = !(resOk || decoOk);
+      $('dot-grow').hidden = !(U_('grow') && ((resOk && U_('res')) || (decoOk && U_('deco'))));
       const ncard = Object.keys(s.cards).length, scost = scoutCost(s), adcd = s.clock < s.freeReady;
       $('scd').textContent = `카드 ${ncard}/${CARDS.length} · 티켓 ${s.tickets}장 · 영웅 보장까지 ${Math.max(0, PITY - s.pity)}회`;
       $('scoutb').textContent = `스카우트 ${fmt(scost)}점`; $('scoutb').classList.toggle('can', s.score >= scost);
@@ -197,7 +228,7 @@ export function Hud(bus) {
         $('chp' + i).textContent = done ? '' : on ? `${fmt(s.run)}/${fmt(c.goal)}` : '';
       });
       { const nd = Object.keys(s.chalDone).length; $('chd').textContent = s.chal ? `진행 중: ${CHALLENGES.find(c => c.id === s.chal).n}` : `완료 ${nd}/${CHALLENGES.length} · 점수 +${nd * 10}%`; }
-      $('dot-scout').hidden = !(s.tickets > 0 || s.clock >= s.freeReady || WEEKLY.some(g => !s.week.done[g.id] && (s.week.prog[g.k] || 0) >= g.goal));
+      $('dot-scout').hidden = !U_('scout') || !(s.tickets > 0 || s.clock >= s.freeReady || WEEKLY.some(g => !s.week.done[g.id] && (s.week.prog[g.k] || 0) >= g.goal));
       const ts = s.tut, showT = !!s.name && ts >= 0 && ts < TUTORIAL.length && $('start').hidden, tgt = showT ? TUTORIAL[ts].target : null;
       $('tut').hidden = !showT;
       if (tgt !== hiId) { if (hiId && $(hiId)) $(hiId).classList.remove('tut-hi'); if (tgt && $(tgt)) $(tgt).classList.add('tut-hi'); hiId = tgt; }

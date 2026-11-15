@@ -136,3 +136,47 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
 .jobs button{font:inherit;font-size:13px;min-height:44px;padding:6px 4px;color:var(--tx);background:var(--pn);border:0;box-shadow:inset 0 0 0 2px #566c86;cursor:pointer}
 .jobs button.on{background:#3a4466;box-shadow:inset 0 0 0 3px var(--y);color:var(--y)}.jobs button:last-child:nth-child(odd){grid-column:1/-1}
 #jobd{min-height:2.6em}.mj{display:inline-block;margin-left:4px;padding:1px 5px;font-size:10px;color:var(--ink);background:var(--y);vertical-align:2px}
+/* ===== UI/UX 다듬기: 단계적 공개 · 한눈에 보이는 화면 ===== */
+.app{padding-top:8px}
+.panel{margin:8px 2px 12px}
+/* 상단 HUD는 스크롤해도 따라온다 */
+.hud{position:sticky;top:0;z-index:8;margin-top:0!important;padding:8px 10px 10px}
+.hud strong{font-size:24px;margin:2px 0}
+.hud .px{display:none}
+.chips #ps{font:12px "Press Start 2P",monospace;color:#a7f070}
+.help.gear{font:17px/1 sans-serif}
+/* 속도 부스트 + 구매 수량 한 줄 */
+.ctl{display:flex;gap:8px;align-items:center;margin:4px 2px 2px}.ctl .btn{flex:1;min-height:42px;font-size:9px}.ctl .seg{margin:0;flex:none}
+.ctl .seg .px{display:none}
+/* 8시 뉴스: 접힌 한 줄 */
+.rate{padding:0;overflow:hidden}
+.rh{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:none;border:0;color:var(--tx);font:inherit;cursor:pointer;text-align:left}
+.rh b{color:var(--y);font-size:14px}.rh small{color:var(--sub);font-size:12px}
+.rh .rr{margin-left:auto;text-align:right}.rh strong{font:15px "Press Start 2P",monospace}
+.rh .chev{font-style:normal;color:var(--sub);transition:transform .2s}.rate.open .chev{transform:rotate(180deg)}
+.rate>.ms{margin:0 12px 10px}
+#ratex{padding:0 12px 10px}
+.pill{display:block;width:calc(100% - 24px);margin:0 12px 10px;font:inherit;font-size:13px;padding:8px;color:var(--ink);background:#efe6cc;border:0;cursor:pointer;animation:gb 1.4s ease-in-out infinite}
+/* 층 배지 */
+.bnb{display:inline-block;margin-left:4px;padding:1px 5px;font-size:10px;font-style:normal;color:var(--ink);background:#ef7d57;vertical-align:2px}
+.mj{font-style:normal}
+/* 추천 버튼: 하나만 반짝 */
+.btn.rec{position:relative;background:#a7f070!important;animation:recp 1s ease-in-out infinite}
+.btn.rec::after{content:"추천";position:absolute;top:-9px;right:-6px;font:9px "DotGothic16",sans-serif;padding:1px 4px;color:var(--ink);background:var(--y);box-shadow:0 0 0 2px var(--ink)}
+@keyframes recp{50%{filter:brightness(1.3)}}
+@media (prefers-reduced-motion:reduce){.btn.rec,.pill{animation:none}}
+/* 성장 하위 탭 */
+.sub{display:flex;gap:6px;margin:4px 2px 4px;overflow-x:auto;scrollbar-width:none}.sub::-webkit-scrollbar{display:none}
+.sub button{flex:1 0 auto;font:inherit;font-size:13px;padding:8px 12px;color:var(--sub);background:var(--pn);border:0;cursor:pointer;min-height:38px}
+.sub button.on{background:var(--y);color:var(--ink)}
+section.gh{display:none!important}
+/* 잠긴 탭 */
+.tabs button.lock{opacity:.45}.tabs button.lock::before{content:"🔒";font-size:10px;margin-right:2px}
+/* 데스크 판단: 작게 */
+.dil{padding:8px 10px}.dil p{margin:4px 0 8px;font-size:13px}.dil .btn{font-size:9px;min-height:40px}
+.dilh{margin:6px 0 0!important;font-size:11px!important;color:var(--sub)}
+/* 설정 창 */
+.setp{max-width:420px!important}.setp .fh h1{margin:0}
+.setsec{margin:12px 0 4px;padding-top:10px;border-top:2px solid #566c86}.setsec .row{gap:8px}.setsec .btn{flex:1 1 30%;font-size:9px}
+/* 안내 카드 */
+.tip{animation:tipin .25s ease-out}@keyframes tipin{from{transform:translateY(-10px);opacity:0}to{transform:none;opacity:1}}

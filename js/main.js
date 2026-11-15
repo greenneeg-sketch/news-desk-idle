@@ -14,7 +14,8 @@ import { createBoard } from './services/leaderboard.js';
 import { Sfx } from './services/audio.js';
 import { Music } from './services/music.js';
 import { heroCount } from './systems/weekly.js';
-import { TIPS } from './data/tips.js';
+import { TIPS, UNLOCKS } from './data/tips.js';
+import { TUTORIAL } from './ui/tutorial.js';
 import { Scene } from './ui/scene.js';
 import { Bubbles } from './ui/bubbles.js';
 import { paper } from './ui/paper.js';
@@ -50,7 +51,8 @@ $i('iguide').onclick = () => enter(() => bus.emit('tut', 0));
 $i('isound').onclick = () => { bus.emit('mute'); $i('isound').textContent = $i('mute').textContent; };
 // 메인 화면으로: 바로 저장하고 타이틀로 나간다 (상단 ⌂ 버튼, 설정의 타이틀 버튼)
 const goHome = () => { if (!restoring) Repo.save(store.getState()); showIntro(); ui.toast('저장했어요.'); };
-$i('titleb').onclick = goHome; $i('homeb').onclick = goHome;
+$i('titleb').onclick = () => { $i('setm').hidden = true; goHome(); }; $i('homeb').onclick = goHome;
+$i('gearb').onclick = () => { $i('setm').hidden = false; }; $i('setok').onclick = () => { $i('setm').hidden = true; markPop(); };
 // 홈 화면 앱(PWA): GitHub Pages에서만 서비스 워커를 켠다. 안드로이드 크롬은 설치 창, 아이폰 사파리는 안내 창
 const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 if ('serviceWorker' in navigator && /github\.io$|^localhost$|^127\./.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => { });
@@ -114,19 +116,28 @@ $i('cloudget').onclick = async () => {
 let restoring = false; // 불러온 직후에는 지금 상태로 덮어쓰지 않는다
 setInterval(() => cloudSave(), 120000);
 
-// ---------- 새 기능 안내 팁 ----------
-let tipNow = null;
-const tipBlocked = () => !$i('intro').hidden || !$i('tut').hidden || document.querySelectorAll('.modal:not([hidden])').length > 0; // 다른 창이 떠 있으면 기다린다
-function checkTip(s) {
-  if (tipNow || ui.tipOpen() || !s.name || (s.tut >= 0 && s.tut < 7) || tipBlocked()) return;
-  const t = TIPS.find(x => !(s.tips || {})[x.id] && x.when(s)); if (!t) return;
-  tipNow = t; ui.showTip(t);
+// ---------- 알림 창 대기열: 창은 한 번에 하나, 튜토리얼·다른 창이 끝난 뒤 간격을 두고 ----------
+// 종류: promo(승진 창), tip(해금·상황 안내 카드)
+const popQ = []; let tipNow = null, lastPop = 0;
+const busy = () => !$i('intro').hidden || !$i('tut').hidden || ui.tipOpen() || document.querySelectorAll('.modal:not([hidden])').length > 0;
+const tutOn = s => s.tut >= 0 && s.tut < TUTORIAL.length;
+function pump(s) {
+  if (!s.name || tutOn(s) || busy() || Date.now() - lastPop < 2500) return;
+  if (!popQ.length) { const t = TIPS.find(x => !(s.tips || {})[x.id] && x.when(s)); if (t) popQ.push({ kind: 'tip', t }); }
+  const it = popQ.shift(); if (!it) return;
+  if (it.kind === 'promo') { Sfx.play('rank'); ui.showPromo(it.i, s.name, s); }
+  else { tipNow = it.t; ui.showTip(it.t); }
 }
+const markPop = () => { lastPop = Date.now(); };
+$i('prok').addEventListener('click', markPop);
 const closeTip = go => {
-  if (!tipNow) return; const t = tipNow; tipNow = null; ui.hideTip(); store.dispatch({ type: 'TIP', id: t.id });
-  if (go && t.tab) { ui.showTab(t.tab); const el = $i(t.target); if (el && el.scrollIntoView) setTimeout(() => el.scrollIntoView({ block: 'start', behavior: 'smooth' }), 50); }
+  if (!tipNow) return; const t = tipNow; tipNow = null; ui.hideTip(); markPop(); store.dispatch({ type: 'TIP', id: t.id });
+  if (go && t.tab) { ui.showTab(t.tab, t.g); const el = $i(t.target); if (el && el.scrollIntoView) setTimeout(() => el.scrollIntoView({ block: 'start', behavior: 'smooth' }), 80); }
 };
 $i('tipok').onclick = () => closeTip(false); $i('tipgo').onclick = () => closeTip(true);
+// 신문: 바로 띄우지 않고 '신문 도착' 버튼으로 (원할 때 본다)
+let paperNow = null;
+$i('pnew').onclick = () => { if (paperNow) { ui.showPaper(paperNow); paperNow = null; ui.paperReady(false); } };
 
 const pushSchedule = hidden => { if (!pushSub || !board || !store.getState().name) return; const cap = (8 + ((store.getState().res || {}).night || 0)) * 3600e3; board.pushSet(pushSub, hidden ? new Date(Date.now() + clockOff + cap).toISOString() : null, hidden).catch(() => { }); };
 // 새로 시작: 모든 기록을 지우므로 두 번 눌러야 실행. 이름 변경: 기록은 그대로 두고 방송국 이름만 바꾼다
@@ -153,10 +164,10 @@ addEventListener('keydown', e => { if (!$i('intro').hidden && (e.key === 'Enter'
 showIntro();
 
 // 순위 동기화: 내 기록을 올리고 상위 목록을 받아 그린다
-async function refresh() {
+async function refresh(manual = false) {
   if (!board) return; const s = store.getState();
   if (s.name) try { await board.submit(toEntry(s)); } catch (e) { console.warn('순위 기록 실패', e); } // 기록 실패(검증 거부 등)여도 목록은 불러온다
-  try { ui.board(await board.top(50, toEntry(s)), board.me || s.uid, board.mode, s.season.key); } catch (e) { ui.toast('순위를 불러오지 못했어요.'); }
+  try { ui.board(await board.top(50, toEntry(s)), board.me || s.uid, board.mode, s.season.key); } catch (e) { if (manual) ui.toast('순위를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.'); } // 자동 갱신 실패는 조용히
 }
 // 서버가 있으면 서버 시각으로 출석·주간·시즌을 계산한다(기기 시계 조작 방지)
 const syncClock = () => board && board.now().then(t => { if (t) { clockOff = t - Date.now(); checkDates(); } }).catch(() => { });
@@ -171,7 +182,7 @@ bus.on('name', ({ name, job }) => {
   ui.toast(renamed ? (p.job && p.job !== job ? `${J.n}(으)로 전직했어요! 특기: ${J.perk}` : `방송국 이름을 ${r.name}(으)로 바꿨어요.`) : `${r.name} 방송 시작! ${J.n}의 특기: ${J.perk}`); checkDates(); refresh();
 });
 bus.on('rename', () => ui.askName(store.getState().name, store.getState().job || 'editor'));
-bus.on('board', refresh);
+bus.on('board', () => refresh(true));
 bus.on('buy', id => {
   const u = UPGRADES.find(x => x.id === id), s = store.getState(), { total } = bulk(s, u, s.buyN);
   if (s.chal === 'noQual' && id === 'qual') return ui.toast('저예산 방송 챌린지 중에는 방송 품질을 올릴 수 없어요.');
@@ -237,17 +248,20 @@ bus.on('mute', () => ui.setMute(Sfx.toggle()));
 
 // 상태 변화 구독: 효과음과 알림
 store.subscribe((s, p) => {
-  checkTip(s);
+  pump(s);
   if (s.ev && (!p.ev || p.ev.id !== s.ev.id || p.ev.end !== s.ev.end)) Sfx.play('alert');
   if (!!s.ev !== !!p.ev && $i('intro').hidden) Music.play(s.ev ? 'breaking' : 'desk'); // 속보 중에는 긴박한 곡
   if (s.gold && !p.gold) Sfx.play('alert');
   if (s.chalWin && s.chalWin !== p.chalWin) { const c = CHALLENGES.find(x => x.id === s.chalWin.split(':')[0]); Sfx.play('rank'); ui.toast(`챌린지 완료: ${c.n}! 영구 점수 +10%`); }
   if (s.lastSeason && s.lastSeason !== p.lastSeason) { const l = s.lastSeason; Sfx.play('rank'); ui.toast(`시즌 종료: ${TIERS[l.tier].n} 달성 · 스카우트 티켓 +${l.tk}장`); }
   if (s.daily && s.daily !== p.daily) { const d = s.daily; Sfx.play('rank'); ui.toast(`출석 ${d.streak}일째! 보너스 +${fmt(d.gain)}점${d.tk ? ' · 스카우트 티켓 +1' : ''}`); }
-  if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; if (s.tut < 0 || s.tut >= 7) ui.showPaper(paper(s.name, r)); else ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}% · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
+  if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; paperNow = paper(s.name, r); ui.paperReady(true); ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}%${r.rival != null ? (r.won ? ' · 라이벌에 승리!' : ' · 라이벌에 패배') : ''} · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
   if (s.judge && s.judge !== p.judge) { const j = s.judge.res; Sfx.play(j === 'fail' ? 'fail' : j === 'win' ? 'rank' : 'buy'); ui.toast(j === 'win' ? '단독 성공! 이번 속보 점수 x2 · 오늘 시청률 +0.8' : j === 'fail' ? '오보! 정정 보도 나갑니다... 오늘 시청률 -1.2' : '팩트 체크 완료, 안전하게 송출 (점수 x1.2)'); }
   if (s.misHit && s.misHit !== p.misHit) { const m = s.misHit; Sfx.play('rank'); ui.toast(m.all ? `오늘의 미션 올클리어! +${fmt(m.gain)}점 · 스카우트 티켓 +1` : `미션 달성! +${fmt(m.gain)}점`); }
-  if (s.promo && s.promo !== p.promo) { Sfx.play('rank'); ui.showPromo(s.promo.i, s.name, s); }
+  if (s.promo && s.promo !== p.promo) popQ.push({ kind: 'promo', i: s.promo.i });
+  if (s.unlHit && s.unlHit !== p.unlHit) { // 기능 해금: 하나면 안내 카드, 한꺼번에 여러 개(예전 저장본)면 조용히 표시만
+    const ids = s.unlHit.ids; if (ids.length === 1 && p.name) { const u = UNLOCKS.find(x => x.id === ids[0]); popQ.push({ kind: 'tip', t: { ...u, t: `새 기능: ${u.t}` } }); Sfx.play('rank'); } else ids.forEach(id => store.dispatch({ type: 'TIP', id }));
+  }
   if (s.weHit && s.weHit !== p.weHit) { Sfx.play('rank'); ui.toast('한정 이벤트 달성! 스카우트 티켓 +2 · 한정 배지 획득'); }
   if (s.ev && s.ev.id === 'robot' && (!p.ev || p.ev.id !== 'robot')) ui.toast(heroCount(s) ? `뉴스 디펜더즈 ${heroCount(s)}명 출동! 이번 속보 점수 +${heroCount(s) * 50}%` : '거대 로봇 습격! 히어로 카드가 있으면 점수가 크게 올라요.');
   if (s.ach.length > p.ach.length) { const a = ACHIEVEMENTS.find(x => x.id === s.ach[s.ach.length - 1]); Sfx.play('rank'); ui.toast(`업적 달성: ${a.n} (점수 +2%)`); }

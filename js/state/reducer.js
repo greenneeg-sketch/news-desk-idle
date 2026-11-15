@@ -1,5 +1,6 @@
 import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES, SCOOP_P, DIL_SEC, RESEARCH, DECOS, jobOf, careerOf } from '../data/config.js';
 import { weekEvent, weekFor } from '../systems/weekly.js';
+import { UNLOCKS, unlockReady } from '../data/tips.js';
 import { newMissions, progress } from '../systems/missions.js';
 import { tierOf } from '../systems/season.js';
 import { rates, scoreMul, bulk, prestigeGain, goldReward, perSec, rl, goldGap } from '../systems/economy.js';
@@ -13,10 +14,10 @@ export const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '',
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null,
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -70,6 +71,7 @@ export function reducer(st, a) {
       }
       { const nc = careerOf(s)[(s.career || 0) + 1]; if (nc && nc.need(s)) { s.career = (s.career || 0) + 1; s.tickets += nc.tk; s.promo = { i: s.career, t: s.clock }; } } // 승진
       { const we = weekEvent(s); if (we && s.wev && !s.wev.done && s.wev.p >= we.goal) { s.wev = { ...s.wev, done: 1 }; s.tickets += 2; s.badges = [...(s.badges || []), s.wev.id + ':' + s.wev.key]; s.weHit = { id: we.id, t: s.clock }; } }
+      { const nu = UNLOCKS.filter(u => !(s.unl || {})[u.id] && unlockReady(s, u)); if (nu.length) { s.unl = { ...s.unl }; nu.forEach(u => { s.unl[u.id] = 1; }); s.unlHit = { ids: nu.map(u => u.id), t: s.clock }; } } // 기능 해금
       const hit = ACHIEVEMENTS.filter(x => !s.ach.includes(x.id) && x.t(s)); if (hit.length) s.ach = [...s.ach, ...hit.map(x => x.id)];
       if (s.chal) { const c = CHALLENGES.find(x => x.id === s.chal); if (c && s.run >= c.goal) { s.chalDone = { ...s.chalDone, [c.id]: 1 }; s.chalWin = c.id + ':' + s.clock; s.chal = null; } }
       return s;
@@ -117,7 +119,8 @@ export function reducer(st, a) {
     case 'CHECKIN': { // 일일 출석: 연속일수 x 보너스, 7일마다 티켓
       if (st.login.last === a.day) return st;
       const streak = st.login.last && dn(a.day) - dn(st.login.last) === 1 ? st.login.streak + 1 : 1;
-      const gain = Math.max(500, Math.floor(perSec(st) * 900)) * Math.min(streak, 7), tk = streak % 7 === 0 ? 1 : 0;
+      // 첫 출석(처음 시작한 날)은 작게: 시작하자마자 큰 보상이 들어오면 해금·승진이 한꺼번에 터져 혼란스럽다
+      const gain = !st.login.last ? 300 : Math.max(500, Math.floor(perSec(st) * 600)) * Math.min(streak, 7), tk = streak % 7 === 0 ? 1 : 0;
       return { ...earn(st, gain), tickets: st.tickets + tk, login: { last: a.day, streak }, daily: { streak, gain, tk } };
     }
     case 'RESEARCH': {

@@ -153,13 +153,57 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
 .jobs button{font:inherit;font-size:13px;min-height:44px;padding:6px 4px;color:var(--tx);background:var(--pn);border:0;box-shadow:inset 0 0 0 2px #566c86;cursor:pointer}
 .jobs button.on{background:#3a4466;box-shadow:inset 0 0 0 3px var(--y);color:var(--y)}.jobs button:last-child:nth-child(odd){grid-column:1/-1}
 #jobd{min-height:2.6em}.mj{display:inline-block;margin-left:4px;padding:1px 5px;font-size:10px;color:var(--ink);background:var(--y);vertical-align:2px}
+/* ===== UI/UX 다듬기: 단계적 공개 · 한눈에 보이는 화면 ===== */
+.app{padding-top:8px}
+.panel{margin:8px 2px 12px}
+/* 상단 HUD는 스크롤해도 따라온다 */
+.hud{position:sticky;top:0;z-index:8;margin-top:0!important;padding:8px 10px 10px}
+.hud strong{font-size:24px;margin:2px 0}
+.hud .px{display:none}
+.chips #ps{font:12px "Press Start 2P",monospace;color:#a7f070}
+.help.gear{font:17px/1 sans-serif}
+/* 속도 부스트 + 구매 수량 한 줄 */
+.ctl{display:flex;gap:8px;align-items:center;margin:4px 2px 2px}.ctl .btn{flex:1;min-height:42px;font-size:9px}.ctl .seg{margin:0;flex:none}
+.ctl .seg .px{display:none}
+/* 8시 뉴스: 접힌 한 줄 */
+.rate{padding:0;overflow:hidden}
+.rh{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:none;border:0;color:var(--tx);font:inherit;cursor:pointer;text-align:left}
+.rh b{color:var(--y);font-size:14px}.rh small{color:var(--sub);font-size:12px}
+.rh .rr{margin-left:auto;text-align:right}.rh strong{font:15px "Press Start 2P",monospace}
+.rh .chev{font-style:normal;color:var(--sub);transition:transform .2s}.rate.open .chev{transform:rotate(180deg)}
+.rate>.ms{margin:0 12px 10px}
+#ratex{padding:0 12px 10px}
+.pill{display:block;width:calc(100% - 24px);margin:0 12px 10px;font:inherit;font-size:13px;padding:8px;color:var(--ink);background:#efe6cc;border:0;cursor:pointer;animation:gb 1.4s ease-in-out infinite}
+/* 층 배지 */
+.bnb{display:inline-block;margin-left:4px;padding:1px 5px;font-size:10px;font-style:normal;color:var(--ink);background:#ef7d57;vertical-align:2px}
+.mj{font-style:normal}
+/* 추천 버튼: 하나만 반짝 */
+.btn.rec{position:relative;background:#a7f070!important;animation:recp 1s ease-in-out infinite}
+.btn.rec::after{content:"추천";position:absolute;top:-9px;right:-6px;font:9px "DotGothic16",sans-serif;padding:1px 4px;color:var(--ink);background:var(--y);box-shadow:0 0 0 2px var(--ink)}
+@keyframes recp{50%{filter:brightness(1.3)}}
+@media (prefers-reduced-motion:reduce){.btn.rec,.pill{animation:none}}
+/* 성장 하위 탭 */
+.sub{display:flex;gap:6px;margin:4px 2px 4px;overflow-x:auto;scrollbar-width:none}.sub::-webkit-scrollbar{display:none}
+.sub button{flex:1 0 auto;font:inherit;font-size:13px;padding:8px 12px;color:var(--sub);background:var(--pn);border:0;cursor:pointer;min-height:38px}
+.sub button.on{background:var(--y);color:var(--ink)}
+section.gh{display:none!important}
+/* 잠긴 탭 */
+.tabs button.lock{opacity:.45}.tabs button.lock::before{content:"🔒";font-size:10px;margin-right:2px}
+/* 데스크 판단: 작게 */
+.dil{padding:8px 10px}.dil p{margin:4px 0 8px;font-size:13px}.dil .btn{font-size:9px;min-height:40px}
+.dilh{margin:6px 0 0!important;font-size:11px!important;color:var(--sub)}
+/* 설정 창 */
+.setp{max-width:420px!important}.setp .fh h1{margin:0}
+.setsec{margin:12px 0 4px;padding-top:10px;border-top:2px solid #566c86}.setsec .row{gap:8px}.setsec .btn{flex:1 1 30%;font-size:9px}
+/* 안내 카드 */
+.tip{animation:tipin .25s ease-out}@keyframes tipin{from{transform:translateY(-10px);opacity:0}to{transform:none;opacity:1}}
 </style>
 </head>
 <body>
 <main class="app">
   <header class="panel hud">
     <div><div class="sname" id="sname"></div><span class="px">SCORE</span><strong id="score">0</strong><small id="rank"></small><div class="ms"><i id="rkb"></i></div></div>
-    <div class="chips"><div class="hbtns"><button class="help home" id="homeb" aria-label="메인 화면으로">⌂</button><button class="help" id="helpb" aria-label="튜토리얼 다시 보기">?</button></div><span id="ps"></span><span id="pt"></span></div>
+    <div class="chips"><div class="hbtns"><button class="help home" id="homeb" aria-label="메인 화면으로">⌂</button><button class="help" id="helpb" aria-label="튜토리얼 다시 보기">?</button><button class="help gear" id="gearb" aria-label="설정">⚙</button></div><span id="ps"></span><span id="pt"></span></div>
   </header>
   <section class="panel offline" id="offline" hidden>
     <p id="offd"></p>
@@ -172,20 +216,22 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
   <section class="panel dil" id="dilp" hidden>
     <div class="fh"><b>데스크 판단</b><span class="cnt" id="dils"></span></div>
     <p id="dilt"></p>
-    <div class="row"><button class="btn warn" id="dilR">바로 단독 송출</button><button class="btn" id="dilS">확인 후 송출</button></div>
-    <p class="note">단독: 성공 65% 점수 x2·오늘 시청률 +0.8 / 오보 시 속보 종료·시청률 -1.2 · 확인: 점수 x1.2</p>
+    <div class="row"><button class="btn warn" id="dilR">단독 송출</button><button class="btn" id="dilS">확인 후 송출</button></div>
+    <p class="dilh" id="dilh"></p>
   </section>
 
   <div class="pane" data-tab="desk">
-    <section class="panel" id="rate">
-      <div class="fh"><b>8시 뉴스 시청률</b><span class="cnt" id="clock"></span></div>
+    <section class="panel rate" id="rate">
+      <button class="rh" id="rateh" aria-expanded="false"><span><b>8시 뉴스</b><small id="clock"></small></span><span class="rr"><strong id="rnow">-</strong><small id="rdiff"></small></span><i class="chev">▾</i></button>
       <div class="ms"><i id="dayb"></i></div>
-      <div class="rt"><strong id="rnow">-</strong><small id="rdiff"></small></div>
-      <div class="vs" id="vs"></div>
-      <div class="bars" id="hist"></div>
-      <p class="note" id="rnote"></p>
+      <button class="pill" id="pnew" hidden>오늘의 신문 도착! 보기</button>
+      <div id="ratex" hidden>
+        <div class="vs" id="vs"></div>
+        <div class="bars" id="hist"></div>
+        <p class="note" id="rnote"></p>
+      </div>
     </section>
-    <section class="panel" id="misp">
+    <section class="panel" id="misp" hidden>
       <div class="fh"><b>오늘의 미션</b><span class="cnt" id="misd"></span></div>
       <div id="mlist"></div>
     </section>
@@ -193,15 +239,12 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
       <div class="fh"><b>이번 주 한정 이벤트</b><span class="cnt" id="wevd"></span></div>
       <p class="wevn" id="wevn"></p><p class="note" id="wevt"></p>
       <div class="row2"><span id="wevg"></span><span id="wevp2"></span></div><div class="ms"><i id="wevm"></i></div>
-      <p class="note">보상: 스카우트 티켓 2장 + 한정 배지</p>
+      <p class="note">보상: 티켓 2장 + 한정 배지</p>
     </section>
-    <button class="btn warn wide" id="spdb"></button>
-    <div class="seg" id="seg"><span class="px">BUY</span><button data-n="1">x1</button><button data-n="10">x10</button><button data-n="max">MAX</button></div>
-    <p class="note" id="note"></p>
+    <div class="ctl"><button class="btn warn" id="spdb" hidden></button><div class="seg" id="seg"><span class="px">BUY</span><button data-n="1">x1</button><button data-n="10">x10</button><button data-n="max">MAX</button></div></div>
     <div id="floors"></div>
-    <h2 class="px">HQ</h2>
-    <div id="hq"></div>
-    <section class="panel floor" id="flc"><div class="fh"><div><b>영상편집팀장</b> <small>실시간 편집 모니터링 · 속보 우선 편집 자동</small></div><button class="btn mini" id="chiefb"></button></div><canvas width="320" height="64"></canvas></section>
+    <div id="hqsec" hidden><h2 class="px">HQ</h2><div id="hq"></div></div>
+    <section class="panel floor" id="flc" hidden><div class="fh"><div><b>영상편집팀장</b> <small>실시간 편집 모니터링 · 속보 우선 편집 자동</small></div><button class="btn mini" id="chiefb"></button></div><canvas width="320" height="64"></canvas></section>
   </div>
 
   <div class="pane" data-tab="scout" hidden>
@@ -236,45 +279,34 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
   </div>
 
   <div class="pane" data-tab="grow" hidden>
-    <section class="panel" id="carp">
+    <div class="sub" id="gsub"><button data-g="car">커리어</button><button data-g="res">연구</button><button data-g="deco">꾸미기</button><button data-g="pres">개편</button><button data-g="ach">업적</button></div>
+    <section class="panel" id="carp" data-g="car">
       <div class="fh"><b>커리어</b><span class="cnt" id="card"></span></div>
       <div class="rt"><strong id="carn"></strong></div>
       <p class="note" id="carx"></p>
       <ol class="carl" id="carl"></ol>
     </section>
-    <section class="panel" id="resp">
+    <section class="panel" id="resp" data-g="res">
       <div class="fh"><b>방송 기술 연구소</b><span class="cnt" id="rpd"></span></div>
       <div id="rlist"></div>
       <p class="note">연구 포인트는 8시 뉴스 평가, 미션 달성, 단독 성공, 라이벌 승리로 얻어요. 개편해도 유지돼요.</p>
     </section>
-    <section class="panel" id="decop">
+    <section class="panel" id="decop" data-g="deco">
       <div class="fh"><b>사무실 꾸미기</b><span class="cnt" id="dcd"></span></div>
       <div id="dlist"></div>
       <p class="note">꾸민 물건은 보도국 장면에 나타나고 하나당 점수 +2%. 개편해도 유지돼요.</p>
     </section>
-    <section class="panel" id="presp">
+    <section class="panel" id="presp" data-g="pres">
       <div class="fh"><b>개편</b></div>
       <p class="note" id="presd"></p>
       <div class="row"><button class="btn" id="presb">개편</button></div>
     </section>
-    <section class="panel" id="chalp">
+    <section class="panel" id="chalp" data-g="pres">
       <div class="fh"><b>챌린지</b><span class="cnt" id="chd"></span></div>
       <div id="clist"></div>
       <p class="note">시작하면 이번 회차가 초기화돼요(개편 포인트·카드·업적은 유지). 제약 속에서 목표를 달성하면 영구 점수 +10%. 버튼은 두 번 눌러야 실행돼요.</p>
     </section>
-    <section class="panel"><div class="fh"><b>업적</b><span class="cnt" id="achd"></span></div><div class="ach" id="ach"></div><p class="note" id="achn"></p></section>
-    <section class="panel" id="cloudp">
-      <div class="fh"><b>클라우드 저장</b><span class="cnt" id="cloudt"></span></div>
-      <p class="note" id="cloudn">순위 서버에 방송국이 등록되면 2분마다 자동으로 저장돼요.</p>
-      <div class="code" id="cloudc" hidden></div>
-      <div class="row"><button class="btn alt" id="cloudcp" hidden>코드 복사</button><button class="btn alt" id="cloudnow">지금 저장</button></div>
-      <p class="note">다른 기기에서 이어 하기: 그 기기에서 게임을 열고 아래에 복구 코드를 넣으세요. 지금 기기의 기록은 불러온 기록으로 바뀌어요.</p>
-      <div class="row"><input id="cloudin" maxlength="16" placeholder="복구 코드 12자리" autocomplete="off" autocapitalize="characters"><button class="btn warn" id="cloudget">불러오기</button></div>
-    </section>
-    <section class="panel">
-      <div class="fh"><b>설정</b></div>
-      <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="bgmb">BGM ON</button><button class="btn alt" id="pushb">알림 켜기</button><button class="btn alt" id="renameb">이름·직업</button><button class="btn alt" id="titleb">타이틀</button><button class="btn alt" id="resetb">RESET</button></div>
-    </section>
+    <section class="panel" id="achp" data-g="ach"><div class="fh"><b>업적</b><span class="cnt" id="achd"></span></div><div class="ach" id="ach"></div><p class="note" id="achn"></p></section>
   </div>
 </main>
 <p class="toast" id="toast"></p>
@@ -299,6 +331,23 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
   <input id="nameIn" maxlength="12" placeholder="예: 한강뉴스" autocomplete="off"><p class="note" id="nameErr"></p>
   <p class="jobq">나의 직업</p><div class="jobs" id="jobs"></div><p class="note" id="jobd"></p>
   <div class="row"><button class="btn" id="startb">방송 시작</button><button class="btn alt" id="cancelb" hidden>취소</button></div></div>
+</div>
+<div class="modal" id="setm" hidden>
+  <div class="panel setp">
+    <div class="fh"><h1>설정</h1><button class="btn mini" id="setok">닫기</button></div>
+    <section class="setsec" id="cloudp">
+      <div class="fh"><b>클라우드 저장</b><span class="cnt" id="cloudt"></span></div>
+      <p class="note" id="cloudn">순위 서버에 방송국이 등록되면 2분마다 자동으로 저장돼요.</p>
+      <div class="code" id="cloudc" hidden></div>
+      <div class="row"><button class="btn alt" id="cloudcp" hidden>코드 복사</button><button class="btn alt" id="cloudnow">지금 저장</button></div>
+      <p class="note">다른 기기에서 이어 하기: 그 기기에서 게임을 열고 아래에 복구 코드를 넣으세요. 지금 기기의 기록은 불러온 기록으로 바뀌어요.</p>
+      <div class="row"><input id="cloudin" maxlength="16" placeholder="복구 코드 12자리" autocomplete="off" autocapitalize="characters"><button class="btn warn" id="cloudget">불러오기</button></div>
+    </section>
+    <section class="setsec">
+      <div class="fh"><b>소리 · 알림 · 방송국</b></div>
+      <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="bgmb">BGM ON</button><button class="btn alt" id="pushb">알림 켜기</button><button class="btn alt" id="renameb">이름·직업</button><button class="btn alt" id="titleb">타이틀</button><button class="btn alt" id="resetb">RESET</button></div>
+    </section>
+  </div>
 </div>
 <div class="modal" id="promo" hidden>
   <div class="panel promo">
@@ -325,7 +374,7 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-1006</span>
+  <span class="iver">v2026.11.15-1146</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -540,18 +589,30 @@ const QUOTES = [
 // 속보 발생 중 우선 사용되는 긴박한 대사
 const URGENT = ['속보입니다!', '지금 바로 올려요!', '일단 나갑시다!', '확인 확인!', '시간 없어요!', '큐 빨리요!'];
 
-
-// 새 기능 안내: 기능이 처음 열릴 때 한 번씩 보여 준다 (처음 가이드가 끝난 뒤, 다른 창이 없을 때)
+// 기능 해금(단계적 공개): 처음엔 핵심만 보이고, 누적 점수가 오르면 기능이 하나씩 열린다. 열릴 때 안내 카드가 한 번 뜬다
+// tab/g/target: '보러 가기'를 누르면 이동할 탭·성장 하위 탭·요소
+const UNLOCKS = [
+  { id: 'spd', at: 300, t: '속도 부스트', d: '광고를 보면 2분 동안 모든 층이 2배로 빨라져요.', tab: 'desk', target: 'spdb' },
+  { id: 'mg', at: 1000, t: '매니저', d: '층마다 매니저를 고용하면 그 층이 자동으로 2배 빨라져요.', tab: 'desk', target: 'floors' },
+  { id: 'mis', at: 2000, t: '오늘의 미션', d: '게임 속 하루(5분)마다 미션 3개. 모두 달성하면 스카우트 티켓!', tab: 'desk', target: 'misp' },
+  { id: 'hq', at: 3000, t: '본사(HQ) 업그레이드', d: '중계 장비는 속보 보상을, 방송 품질은 모든 점수를 올려요.', tab: 'desk', target: 'hqsec' },
+  { id: 'scout', at: 5000, t: '스카우트', d: '직원 카드를 모으면 층 속도가 영구로 올라가요. 아래 스카우트 탭이 열렸어요.', tab: 'scout', target: 'scout' },
+  { id: 'grow', at: 1e4, t: '커리어', d: '승진할 때마다 영구 점수 +5%. 성장 탭에서 다음 승진 조건을 볼 수 있어요.', tab: 'grow', g: 'car', target: 'carp' },
+  { id: 'rank', at: 2e4, t: '순위', d: '다른 방송국과 순위와 이번 달 시즌 등급을 겨뤄요.', tab: 'rank', target: 'board' },
+  { id: 'chief', at: 2e4, t: '영상편집팀장', d: '팀장을 고용하면 속보 때 우선 편집을 자동으로 해 줘요.', tab: 'desk', target: 'flc' },
+  { id: 'deco', at: 3e4, t: '사무실 꾸미기', d: '소품을 사면 장면에 나타나고 하나당 점수 +2%예요.', tab: 'grow', g: 'deco', target: 'decop' },
+  { id: 'dil', at: 5e4, t: '데스크 판단', d: '이제 일부 속보는 단독으로 바로 낼지, 확인 후 낼지 골라야 해요. 단독 성공 시 점수 2배!' },
+  { id: 'res', at: 1e5, t: '방송 기술 연구소', d: '8시 뉴스·미션·단독으로 모은 연구 포인트로 영구 강화를 해요.', tab: 'grow', g: 'res', target: 'resp' },
+  { id: 'week', at: 1e5, t: '주간 한정 이벤트', d: '매주 월요일 바뀌는 이벤트. 목표를 채우면 티켓 2장과 한정 배지!', tab: 'desk', target: 'wevp' },
+  { id: 'pres', at: 5e5, t: '개편', d: '진행이 느려지면 개편하세요. 처음부터 다시 시작하지만 점수가 영구히 올라가요.', tab: 'grow', g: 'pres', target: 'presp' },
+  { id: 'chal', when: s => s.pts > 0, t: '챌린지', d: '제약 속에서 목표를 달성하면 영구 점수 +10%.', tab: 'grow', g: 'pres', target: 'chalp' },
+];
+const isUnlocked = (s, id) => !!(s.unl && s.unl[id]);
+const unlockReady = (s, u) => u.when ? u.when(s) : s.total >= u.at;
+// 상황 안내: 해당 상황을 처음 만났을 때 한 번
 const TIPS = [
-  { id: 'mis', when: s => !!s.mis, t: '오늘의 미션', d: '게임 속 하루(5분)마다 미션 3개가 나와요. 하나 달성할 때마다 점수, 3개 모두 달성하면 스카우트 티켓을 받아요.', tab: 'desk', target: 'misp' },
-  { id: 'dil', when: s => !!(s.ev && s.ev.dil && !s.ev.pick), t: '데스크 판단', d: '아래 카드에서 단독으로 바로 내보낼지, 확인 후 내보낼지 골라요. 단독이 성공하면 점수 2배, 오보면 오늘 시청률이 떨어져요.' },
-  { id: 'week', when: s => !!s.wev, t: '이번 주 한정 이벤트', d: '매주 월요일마다 이벤트가 바뀌어요. 목표를 채우면 티켓 2장과 한정 배지를 받아요.', tab: 'desk', target: 'wevp' },
-  { id: 'rival', when: s => !!s.report, t: '라이벌 한누리방송', d: '매일 8시 뉴스에서 시청률 대결을 해요. 이기면 광고 수입이 1.5배, 연승할수록 더 늘어나요.', tab: 'desk', target: 'rate' },
-  { id: 'res', when: s => s.rp > 0, t: '방송 기술 연구소', d: '8시 뉴스·미션·단독·라이벌 승리로 연구 포인트가 쌓여요. 성장 탭에서 영구 강화를 해 보세요.', tab: 'grow', target: 'resp' },
-  { id: 'deco', when: s => s.score >= 2e4, t: '사무실 꾸미기', d: '점수로 사무실 소품을 살 수 있어요. 소품은 장면에 나타나고 하나당 점수 +2%예요.', tab: 'grow', target: 'decop' },
-  { id: 'pres', when: s => prestigeGain(s) >= 3, t: '개편', d: '개편하면 이번 회차가 처음부터 시작되지만, 개편 포인트로 점수가 영구히 올라가요. 진행이 느려질 때 해 보세요.', tab: 'grow', target: 'presp' },
-  { id: 'robot', when: s => !!(s.ev && s.ev.id === 'robot'), t: '거대 로봇 속보', d: '뉴스 디펜더즈 히어로 카드가 있으면 로봇 속보 점수가 1장당 +50%예요. 스카우트에서 모아 보세요.', tab: 'scout', target: 'scout' },
-  { id: 'cloud', when: s => s.total >= 1e5, t: '클라우드 저장', d: '기록이 서버에 자동 저장돼요. 성장 탭의 복구 코드를 적어 두면 휴대폰을 바꿔도 이어서 할 수 있어요.', tab: 'grow', target: 'cloudp' },
+  { id: 'robot', when: s => !!(s.ev && s.ev.id === 'robot'), t: '거대 로봇 속보', d: '뉴스 디펜더즈 히어로 카드 1장당 이번 속보 점수 +50%. 스카우트에서 모아 보세요.', tab: 'scout', target: 'scout' },
+  { id: 'cloud', when: s => s.total >= 1e5, t: '클라우드 저장', d: '기록이 서버에 자동 저장돼요. 오른쪽 위 ⚙ 설정에서 복구 코드를 적어 두면 폰을 바꿔도 이어 할 수 있어요.' },
 ];
 
 
@@ -708,6 +769,7 @@ function GameLoop({ step, render, dt = .05 }) {
 
 
 
+
 const initialState = () => ({
   score: 0, run: 0, pts: 0, clock: 0, nextEv: 15, ev: null, q: [0, 0, 0, 0, 0], buyN: '1', mg: [0, 0, 0, 0, 0], chief: 0,
   ach: [], evCount: 0, goldCount: 0, gold: null, nextGold: 60, gbEnd: 0, spdEnd: 0, spdReady: 0,
@@ -716,10 +778,10 @@ const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '',
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null,
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -773,6 +835,7 @@ function reducer(st, a) {
       }
       { const nc = careerOf(s)[(s.career || 0) + 1]; if (nc && nc.need(s)) { s.career = (s.career || 0) + 1; s.tickets += nc.tk; s.promo = { i: s.career, t: s.clock }; } } // 승진
       { const we = weekEvent(s); if (we && s.wev && !s.wev.done && s.wev.p >= we.goal) { s.wev = { ...s.wev, done: 1 }; s.tickets += 2; s.badges = [...(s.badges || []), s.wev.id + ':' + s.wev.key]; s.weHit = { id: we.id, t: s.clock }; } }
+      { const nu = UNLOCKS.filter(u => !(s.unl || {})[u.id] && unlockReady(s, u)); if (nu.length) { s.unl = { ...s.unl }; nu.forEach(u => { s.unl[u.id] = 1; }); s.unlHit = { ids: nu.map(u => u.id), t: s.clock }; } } // 기능 해금
       const hit = ACHIEVEMENTS.filter(x => !s.ach.includes(x.id) && x.t(s)); if (hit.length) s.ach = [...s.ach, ...hit.map(x => x.id)];
       if (s.chal) { const c = CHALLENGES.find(x => x.id === s.chal); if (c && s.run >= c.goal) { s.chalDone = { ...s.chalDone, [c.id]: 1 }; s.chalWin = c.id + ':' + s.clock; s.chal = null; } }
       return s;
@@ -820,7 +883,8 @@ function reducer(st, a) {
     case 'CHECKIN': { // 일일 출석: 연속일수 x 보너스, 7일마다 티켓
       if (st.login.last === a.day) return st;
       const streak = st.login.last && dn(a.day) - dn(st.login.last) === 1 ? st.login.streak + 1 : 1;
-      const gain = Math.max(500, Math.floor(perSec(st) * 900)) * Math.min(streak, 7), tk = streak % 7 === 0 ? 1 : 0;
+      // 첫 출석(처음 시작한 날)은 작게: 시작하자마자 큰 보상이 들어오면 해금·승진이 한꺼번에 터져 혼란스럽다
+      const gain = !st.login.last ? 300 : Math.max(500, Math.floor(perSec(st) * 600)) * Math.min(streak, 7), tk = streak % 7 === 0 ? 1 : 0;
       return { ...earn(st, gain), tickets: st.tickets + tk, login: { last: a.day, streak }, daily: { streak, gain, tk } };
     }
     case 'RESEARCH': {
@@ -870,7 +934,7 @@ const EventScheduler = store => ({
   update() {
     const s = store.getState(); if (s.chal === 'calm' || s.ev || s.clock < s.nextEv) return;
     const ev = pickEvent(s, Math.random(), Math.random()); lastEvent = ev.id;
-    ev.dil = Math.random() < .45; // 45%는 '단독이냐 확인이냐' 판단이 걸린 속보
+    ev.dil = !!(s.unl && s.unl.dil) && Math.random() < .45; // 데스크 판단(해금 후): 45%는 '단독이냐 확인이냐' 판단이 걸린 속보
     store.dispatch({ type: 'SPAWN', ev });
   },
 });
@@ -878,7 +942,7 @@ const EventScheduler = store => ({
 
 
 
-const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job'];
+const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl'];
 // Repository 패턴: 저장 매체(localStorage)를 이 모듈 안에 가둔다
 const Repo = {
   snapshot: s => ({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() }), // 클라우드 저장에도 같은 모양을 쓴다
@@ -1693,15 +1757,15 @@ function Intro(cv, tickerEl, clockEl) {
 }
 
 // 튜토리얼 단계: tab은 그 단계에서 열 탭, target은 강조할 요소 id, done(s, ui)가 참이면 자동으로 다음 단계로 넘어간다
+// 짧게 5단계. 나머지 기능은 점수가 오를 때 하나씩 해금되며 그때 안내한다(js/data/tips.js)
 const TUTORIAL = [
-  { t: '방송국 개국을 축하해요! 취재 → 인제스트 → 편집 → CG → 송출 순서로 영상이 자동으로 흘러가고, 송출될 때마다 점수가 쌓여요.', tab: 'desk', target: 'floors' },
-  { t: '점수로 층을 업그레이드해요. 편집 층의 UP 버튼을 눌러 영상편집기자를 늘려 보세요. (점수 200이 모이면 눌러져요)', tab: 'desk', target: 'fb2', done: s => s.lv.edit >= 1 },
-  { t: '노란 테두리가 둘러진 층이 병목이에요. 병목 층을 올려야 점수 속도가 빨라져요. BUY에서 x10이나 MAX로 한 번에 살 수도 있어요.', tab: 'desk', target: 'seg' },
-  { t: '속보가 터지면 화면 위에 경보가 떠요. 우선 편집을 누르면 그 속보 동안 점수 +50%! 가끔 튀어나오는 특종 버튼도 놓치지 마세요.', tab: 'desk', target: 'spdb' },
-  { t: '매일 8시 뉴스에서 시청률이 평가돼요(게임 속 하루 = 5분). 시청률이 높을수록 광고 수입과 유튜브 조회수가 늘어요.', tab: 'desk', target: 'rate' },
-  { t: '아래 스카우트 탭을 눌러 보세요. 직원 카드를 모으면 층 속도가 영구로 올라가고, 주간 목표를 달성하면 스카우트 티켓을 받아요.', target: 'tab-scout', done: (s, ui) => ui.tab === 'scout' },
-  { t: '순위 탭에서는 다른 방송국과 시즌 순위를 겨루고, 성장 탭에서는 개편과 챌린지로 더 강해질 수 있어요. 막히면 위의 ? 버튼으로 이 가이드를 다시 볼 수 있어요.', target: 'tabs' },
+  { t: '방송국 개국을 축하해요! 영상이 취재 → 편집 → 송출 순서로 자동으로 흘러가고, 송출될 때마다 점수가 쌓여요.', tab: 'desk', target: 'floors' },
+  { t: '편집 층의 버튼을 눌러 영상편집기자를 늘려 보세요.', tab: 'desk', target: 'fb2', done: s => s.lv.edit >= 1 },
+  { t: '반짝이는 "추천" 버튼이 지금 올리면 가장 좋은 업그레이드예요. 노란 테두리 층은 일이 밀린 병목이에요.', tab: 'desk', target: 'floors' },
+  { t: '게임 속 하루(5분)마다 8시 뉴스 시청률이 평가돼요. 속보 경보가 뜨면 "우선 편집"을 눌러 점수 +50%!', tab: 'desk', target: 'rate' },
+  { t: '새 기능은 점수가 오를수록 하나씩 열려요. 열릴 때마다 알려 드릴게요. 막히면 위의 ? 버튼!', tab: 'desk', target: 'tabs' },
 ];
+
 
 
 
@@ -1715,7 +1779,7 @@ const $ = id => document.getElementById(id);
 const fmt = n => { n = Math.floor(n); return n >= 1e16 ? (n / 1e16).toFixed(1) + '경' : n >= 1e12 ? (n / 1e12).toFixed(1) + '조' : n >= 1e8 ? (n / 1e8).toFixed(1) + '억' : n >= 1e4 ? (n / 1e4).toFixed(1) + '만' : n.toLocaleString('ko-KR'); };
 const FLOORS = [['취재', '카메라 기자 · 취재 기자', 'crew'], ['인제스트', '인제스트실', 'ing'], ['편집', '영상편집기자', 'edit'], ['CG', '그래픽 디자이너', 'cg'], ['송출', '뉴스 스튜디오', 'out'], ['중계 장비', '중계 차량 · 리포터', 'live'], ['방송 품질', '화질 · 시청률', 'qual']];
 const byId = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
-const floorHtml = i => `<section class="panel floor" id="fl${i}"><div class="fh"><div><b>${FLOORS[i][0]}</b><i class="mj" id="mj${i}" hidden>주력</i> <small>${FLOORS[i][1]}</small><div class="cnt" id="c${i}"></div></div><div class="bs"><button class="btn mini" data-id="${FLOORS[i][2]}" id="fb${i}"></button>${i < 5 ? `<button class="btn mini" data-hire="${i}" id="mb${i}"></button>` : ''}</div></div><div class="ms"><i id="m${i}"></i></div><canvas width="320" height="64"></canvas></section>`;
+const floorHtml = i => `<section class="panel floor" id="fl${i}"><div class="fh"><div><b>${FLOORS[i][0]}</b><i class="mj" id="mj${i}" hidden>주력</i><i class="bnb" id="bnb${i}" hidden>병목</i> <small>${FLOORS[i][1]}</small><div class="cnt" id="c${i}"></div></div><div class="bs"><button class="btn mini" data-id="${FLOORS[i][2]}" id="fb${i}"></button>${i < 5 ? `<button class="btn mini" data-hire="${i}" id="mb${i}"></button>` : ''}</div></div><div class="ms"><i id="m${i}"></i></div><canvas width="320" height="64"></canvas></section>`;
 // View: DOM을 만들고 갱신만 한다. 사용자 입력은 버스 이벤트로만 내보낸다
 function Hud(bus) {
   $('floors').innerHTML = [0, 1, 2, 3, 4].map(floorHtml).join(''); $('hq').innerHTML = [5, 6].map(floorHtml).join('');
@@ -1725,7 +1789,16 @@ function Hud(bus) {
   $('ach').innerHTML = ACHIEVEMENTS.map(() => '<i></i>').join(''); $('gold').onclick = () => bus.emit('gold'); $('spdb').onclick = () => bus.emit('spd');
   let selCard = 0, armedCh = '', armT, cur = null, bd = null, view = 'all', tab = 'desk', hiId = null, tutShown = -2;
   // 탭: 보도국 / 스카우트 / 순위 / 성장. 마지막으로 연 탭을 이 브라우저에 기억한다
-  function showTab(t) {
+  // 잠긴 탭: 해당 기능이 해금돼야 열린다
+  const TAB_UNL = { scout: 'scout', grow: 'grow', rank: 'rank' }, need = id => UNLOCKS.find(u => u.id === id);
+  let gsub = 'car';
+  function showSub(g) {
+    gsub = g; document.querySelectorAll('#gsub [data-g]').forEach(b => b.classList.toggle('on', b.dataset.g === g));
+    document.querySelectorAll('.pane[data-tab="grow"] section[data-g]').forEach(p => { p.classList.toggle('gh', p.dataset.g !== g); });
+  }
+  function showTab(t, g) {
+    if (cur && TAB_UNL[t] && !isUnlocked(cur, TAB_UNL[t])) { const u = need(TAB_UNL[t]); toastL(`누적 ${fmt(u.at)}점이 되면 열려요.`); return; }
+    if (g) showSub(g);
     tab = t; document.querySelectorAll('.pane').forEach(p => { p.hidden = p.dataset.tab !== t; });
     document.querySelectorAll('#tabs [data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === t));
     try { localStorage.setItem('newsDesk.tab', t); } catch (e) { }
@@ -1733,6 +1806,11 @@ function Hud(bus) {
   }
   try { tab = localStorage.getItem('newsDesk.tab') || 'desk'; } catch (e) { }
   $('tabs').onclick = e => { const b = e.target.closest('[data-t]'); if (b) showTab(b.dataset.t); };
+  $('gsub').onclick = e => { const b = e.target.closest('[data-g]'); if (b && !b.hidden) showSub(b.dataset.g); };
+  let rateOpen = false; try { rateOpen = localStorage.getItem('newsDesk.rateOpen') === '1'; } catch (e) { }
+  const setRate = o => { rateOpen = o; $('ratex').hidden = !o; $('rateh').setAttribute('aria-expanded', o); $('rate').classList.toggle('open', o); try { localStorage.setItem('newsDesk.rateOpen', o ? '1' : '0'); } catch (e) { } };
+  $('rateh').onclick = () => setRate(!rateOpen); setRate(rateOpen);
+  let tt0; const toastL = m => { const e = $('toast'); e.textContent = m; clearTimeout(tt0); tt0 = setTimeout(() => e.textContent = '', 3000); };
   $('tutnext').onclick = () => { if (!cur) return; const n = cur.tut + 1; bus.emit('tut', n >= TUTORIAL.length ? -1 : n); };
   $('tutskip').onclick = () => bus.emit('tut', -1);
   $('helpb').onclick = () => bus.emit('tut', 0);
@@ -1778,12 +1856,12 @@ function Hud(bus) {
   $('jobs').onclick = e => { const b = e.target.closest('[data-job]'); if (b) { jobSel = b.dataset.job; showJob(); } };
   $('startb').onclick = () => { const r = checkName($('nameIn').value); if (r.err) { $('nameErr').textContent = r.err; return; } bus.emit('name', { name: r.name, job: jobSel }); };
   $('nameIn').onkeydown = e => { if (e.key === 'Enter') $('startb').click(); };
-  $('cancelb').onclick = () => { $('start').hidden = true; }; $('renameb').onclick = () => bus.emit('rename');
+  $('cancelb').onclick = () => { $('start').hidden = true; }; $('renameb').onclick = () => { $('setm').hidden = true; bus.emit('rename'); };
   $('chiefb').onclick = () => bus.emit('chief'); $('evb').onclick = () => bus.emit('boost'); $('mute').onclick = () => bus.emit('mute');
   $('offOk').onclick = () => bus.emit('claim', 1); $('offAd').onclick = () => bus.emit('claim', 2);
   const armed = (id, label, evt) => { const b = $(id); let t; b.onclick = () => { if (b.dataset.a) { clearTimeout(t); delete b.dataset.a; b.textContent = label; bus.emit(evt); return; } b.dataset.a = 1; b.textContent = '한 번 더'; t = setTimeout(() => { delete b.dataset.a; b.textContent = label; }, 3000); }; };
   armed('presb', '개편', 'prestige'); armed('resetb', 'RESET', 'reset');
-  showTab(tab);
+  showSub(gsub); showTab('desk'); // 항상 보도국에서 시작
   let tt;
   return {
     showTab, canvases: [...document.querySelectorAll('.floor canvas')], cardCanvas: $('cards'), sel: () => selCard,
@@ -1798,6 +1876,7 @@ function Hud(bus) {
     hideTip() { $('tip').hidden = true; },
     tipOpen: () => !$('tip').hidden,
     cloud(code, at) { $('cloudc').hidden = !code; $('cloudcp').hidden = !code; if (code) $('cloudc').textContent = code; $('cloudt').textContent = at ? `저장 ${new Date(at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}` : ''; $('cloudn').textContent = code ? '복구 코드는 이 기록의 열쇠예요. 다른 사람에게 알려 주지 마세요.' : '순위 서버에 방송국이 등록되면 2분마다 자동으로 저장돼요.'; },
+    paperReady(on) { $('pnew').hidden = !on; },
     paperAdDone() { $('pad').disabled = true; $('pad').textContent = '받음'; },
     hideOffline() { $('offline').hidden = true; },
     setMute(on) { $('mute').textContent = on ? 'SOUND ON' : 'SOUND OFF'; },
@@ -1805,8 +1884,13 @@ function Hud(bus) {
       cur = s;
       const r = rates(s); let w = -1, wv = 4.99;
       $('score').textContent = fmt(s.score); $('ps').textContent = `+${fmt(perSec(s))}/s`;
-      { const rk = rank(s), nx = RANKS[rk + 1]; $('rank').textContent = `${RANKS[rk].n} (x${2 ** rk})` + (nx ? ` → ${nx.n} ${fmt(nx.at - s.run)}점` : ' · 최종 단계'); $('rkb').style.width = (nx ? (s.run - RANKS[rk].at) / (nx.at - RANKS[rk].at) * 100 : 100) + '%'; } $('pt').textContent = `개편 x${prestigeBonus(s).toFixed(2)}`;
+      { const rk = rank(s), nx = RANKS[rk + 1]; $('rank').textContent = `${RANKS[rk].n} (x${2 ** rk})` + (nx ? ` → ${nx.n} ${fmt(nx.at - s.run)}점` : ' · 최종 단계'); $('rkb').style.width = (nx ? (s.run - RANKS[rk].at) / (nx.at - RANKS[rk].at) * 100 : 100) + '%'; } $('pt').textContent = s.pts > 0 ? `개편 x${prestigeBonus(s).toFixed(2)}` : '';
       document.querySelectorAll('#seg [data-n]').forEach(b => b.classList.toggle('on', b.dataset.n === s.buyN));
+      const U_ = id => isUnlocked(s, id);
+      $('spdb').hidden = !U_('spd'); $('misp').hidden = !U_('mis'); $('hqsec').hidden = !U_('hq'); $('flc').hidden = !U_('chief');
+      for (const [t, id] of Object.entries(TAB_UNL)) $('tab-' + t).classList.toggle('lock', !U_(id));
+      document.querySelectorAll('#gsub [data-g]').forEach(b => { const g = b.dataset.g; b.hidden = g === 'res' ? !U_('res') : g === 'deco' ? !U_('deco') : g === 'pres' ? !(U_('pres') || s.pts > 0) : false; });
+      if ($('gsub').querySelector(`[data-g="${gsub}"]`).hidden) showSub('car');
       for (let i = 1; i < 5; i++) if (s.q[i] > wv) { wv = s.q[i]; w = i; }
       FLOORS.forEach(([n, sub, id], i) => {
         const u = byId[id], l = s.lv[id], { k, total } = bulk(s, u, s.buyN), nx = MILESTONES.find(m => m > l) || 100, pv = MILESTONES.filter(m => m <= l).pop() || 0, tier = MILESTONES.filter(m => l >= m).length;
@@ -1814,10 +1898,17 @@ function Hud(bus) {
         $('c' + i).textContent = `${info} ${'★'.repeat(tier)}`;
         $('fb' + i).textContent = `Lv.${l} +${k} ${fmt(total)}`; $('fb' + i).classList.toggle('can', s.score >= total);
         $('m' + i).style.width = Math.min(100, (l - pv) / (nx - pv) * 100) + '%'; $('fl' + i).classList.toggle('bn', i === w);
-        if (i < 5) { const b = $('mb' + i); b.textContent = s.mg[i] ? '매니저 ✓' : `매니저 ${fmt(MANAGER[i])}`; b.disabled = !!s.mg[i]; b.classList.toggle('can', !s.mg[i] && s.score >= MANAGER[i]); }
+        if (i < 5) { const b = $('mb' + i); b.hidden = !U_('mg'); b.textContent = s.mg[i] ? '매니저 ✓' : `매니저 ${fmt(MANAGER[i])}`; b.disabled = !!s.mg[i]; b.classList.toggle('can', !s.mg[i] && s.score >= MANAGER[i]); }
+        $('bnb' + i).hidden = i !== w;
       });
+      { // 추천: 병목 층 업그레이드 → 병목 층 매니저 → 살 수 있는 가장 싼 층 순서로 하나만 반짝인다
+        const can = id => { const b = $(id); return b && !b.hidden && !b.disabled && b.classList.contains('can'); };
+        let rec = null;
+        if (w > 0 && can('fb' + w)) rec = 'fb' + w; else if (w > 0 && can('mb' + w)) rec = 'mb' + w;
+        else { let best = Infinity; [0, 1, 2, 3, 4, 5, 6].forEach(i => { if (i >= 5 && !U_('hq')) return; const u = byId[FLOORS[i][2]], c = bulk(s, u, s.buyN).total; if (can('fb' + i) && c < best) { best = c; rec = 'fb' + i; } }); }
+        document.querySelectorAll('.btn.rec').forEach(b => { if (b.id !== rec) b.classList.remove('rec'); }); if (rec) $(rec).classList.add('rec');
+      }
       $('chiefb').textContent = s.chief ? '고용 완료' : `고용 ${fmt(CHIEF)}`; $('chiefb').disabled = !!s.chief; $('chiefb').classList.toggle('can', !s.chief && s.score >= CHIEF);
-      $('note').textContent = w > 0 ? `병목: ${FLOORS[w][0]} 대기 ${Math.floor(s.q[w])}건` : '흐름이 원활해요.';
       const g = $('gold'); g.hidden = !s.gold; if (s.gold) { g.style.left = s.gold.x + '%'; g.style.top = s.gold.y + '%'; }
       const on = s.clock < s.spdEnd, cd = s.clock < s.spdReady;
       $('spdb').textContent = on ? `속도 x2 부스트 ${Math.ceil(s.spdEnd - s.clock)}초` : cd ? `부스트 대기 ${Math.ceil(s.spdReady - s.clock)}초` : '광고 보고 속도 x2 (2분)'; $('spdb').disabled = cd;
@@ -1835,7 +1926,7 @@ function Hud(bus) {
         document.querySelectorAll('#carl li').forEach((li, i) => { li.className = i === ci ? 'now' : i < ci ? 'on' : ''; });
       }
       { // 주간 한정 이벤트
-        const we = weekEvent(s), w = s.wev; $('wevp').hidden = !we;
+        const we = weekEvent(s), w = s.wev; $('wevp').hidden = !we || !U_('week');
         if (we) {
           const left = Math.max(1, Math.ceil((Date.parse(w.key + 'T00:00:00') + 7 * 864e5 - Date.now()) / 864e5)), p = Math.min(we.goal, w.p);
           $('wevn').textContent = we.n; $('wevt').textContent = we.d + (we.ev === 'robot' ? ` · 보유 히어로 ${heroCount(s)}명` : ''); $('wevd').textContent = w.done ? '달성 완료!' : `종료까지 ${left}일`;
@@ -1843,9 +1934,9 @@ function Hud(bus) {
         }
       }
       const hr = 6 + 14 * s.dayT / DAY_SEC, hh = Math.floor(hr), mm = Math.floor((hr - hh) * 60);
-      $('clock').textContent = `D+${s.day} · ${hh}:${String(mm).padStart(2, '0')} → 8시 뉴스 ${Math.ceil(DAY_SEC - s.dayT)}초`; $('dayb').style.width = s.dayT / DAY_SEC * 100 + '%';
+      { const left = Math.ceil(DAY_SEC - s.dayT); $('clock').textContent = ` ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} 후 방송`; } $('dayb').style.width = s.dayT / DAY_SEC * 100 + '%';
       $('rnow').textContent = s.lastRating ? `${s.lastRating.toFixed(1)}%` : '-';
-      $('rdiff').textContent = s.lastRating && s.prevRating ? ` 전일 ${s.prevRating.toFixed(1)}% ${s.lastRating >= s.prevRating ? '▲' : '▼'}${Math.abs(s.lastRating - s.prevRating).toFixed(1)}` : ' 첫 평가 대기 중';
+      $('rdiff').textContent = s.lastRating && s.prevRating ? ` ${s.lastRating >= s.prevRating ? '▲' : '▼'}${Math.abs(s.lastRating - s.prevRating).toFixed(1)}` : '';
       document.querySelectorAll('#hist i').forEach((b, i) => { const v = s.hist[s.hist.length - 7 + i] || 0; b.style.height = Math.min(100, v / 20 * 100) + '%'; });
       $('rnote').textContent = `최고 시청률 ${s.bestRating.toFixed(1)}% · 유튜브 조회수 ${fmt(s.views)}${s.lastViews ? ` (전일 +${fmt(s.lastViews)})` : ''} · 오늘 송출 ${Math.floor(s.dOut)}건`;
       { // 라이벌 대결
@@ -1860,7 +1951,10 @@ function Hud(bus) {
         s.mis.list.forEach((m, i) => { const p = progress(s, m); $('mt' + i).textContent = (m.done ? '✓ ' : '') + missionText(m, fmt); $('mp' + i).textContent = m.done ? '완료' : `${fmt(p)}/${fmt(m.goal)}`; $('mm' + i).style.width = p / m.goal * 100 + '%'; });
         const nd = s.mis.list.filter(m => m.done).length; $('misd').textContent = s.mis.all ? '올클리어! 내일 새 미션' : `${nd}/3 · 모두 달성 시 티켓 +1`;
       }
-      { const d = s.ev && s.ev.dil && !s.ev.pick; $('dilp').hidden = !d; if (d) { $('dilt').textContent = DILEMMAS[s.ev.id] || '확인되지 않은 제보가 들어왔어요.'; $('dils').textContent = `${Math.max(0, Math.ceil(s.ev.dilEnd - s.clock))}초 뒤 자동 확인`; } }
+      { // 데스크 판단: 보도국 탭에서만, 다른 창이 없을 때 작게
+        const d = s.ev && s.ev.dil && !s.ev.pick && tab === 'desk' && $('tut').hidden && $('tip').hidden && !document.querySelector('.modal:not([hidden])'); $('dilp').hidden = !d;
+        if (d) { const pr = Math.round((SCOOP_P + .04 * rl(s, 'scoop') + (jobOf(s).scoop || 0)) * 100); $('dilt').textContent = DILEMMAS[s.ev.id] || '확인되지 않은 제보가 들어왔어요.'; $('dils').textContent = `${Math.max(0, Math.ceil(s.ev.dilEnd - s.clock))}초`; $('dilR').textContent = `단독 송출 (성공 ${pr}%)`; $('dilh').textContent = '단독 성공: 점수 x2 · 시청률 +0.8 / 오보: 시청률 -1.2 · 확인: 점수 x1.2 (시간이 지나면 자동 확인)'; }
+      }
       let resOk = false;
       RESEARCH.forEach((r, i) => {
         const l = rl(s, r.id), c = r.c * (l + 1), lock = r.req && rl(s, r.req[0]) < r.req[1], max = l >= r.max, b = $('rb' + i), ok = !max && !lock && s.rp >= c;
@@ -1875,7 +1969,7 @@ function Hud(bus) {
         b.textContent = own ? '✓' : d.need ? (ok ? '받기' : '잠김') : `${fmt(d.at)}점`; b.disabled = !ok; b.classList.toggle('can', ok); if (ok && d.need) decoOk = true;
       });
       $('dcd').textContent = `${Object.keys(s.deco).length}/${DECOS.length} · 점수 +${Object.keys(s.deco).length * 2}%`;
-      $('dot-grow').hidden = !(resOk || decoOk);
+      $('dot-grow').hidden = !(U_('grow') && ((resOk && U_('res')) || (decoOk && U_('deco'))));
       const ncard = Object.keys(s.cards).length, scost = scoutCost(s), adcd = s.clock < s.freeReady;
       $('scd').textContent = `카드 ${ncard}/${CARDS.length} · 티켓 ${s.tickets}장 · 영웅 보장까지 ${Math.max(0, PITY - s.pity)}회`;
       $('scoutb').textContent = `스카우트 ${fmt(scost)}점`; $('scoutb').classList.toggle('can', s.score >= scost);
@@ -1902,7 +1996,7 @@ function Hud(bus) {
         $('chp' + i).textContent = done ? '' : on ? `${fmt(s.run)}/${fmt(c.goal)}` : '';
       });
       { const nd = Object.keys(s.chalDone).length; $('chd').textContent = s.chal ? `진행 중: ${CHALLENGES.find(c => c.id === s.chal).n}` : `완료 ${nd}/${CHALLENGES.length} · 점수 +${nd * 10}%`; }
-      $('dot-scout').hidden = !(s.tickets > 0 || s.clock >= s.freeReady || WEEKLY.some(g => !s.week.done[g.id] && (s.week.prog[g.k] || 0) >= g.goal));
+      $('dot-scout').hidden = !U_('scout') || !(s.tickets > 0 || s.clock >= s.freeReady || WEEKLY.some(g => !s.week.done[g.id] && (s.week.prog[g.k] || 0) >= g.goal));
       const ts = s.tut, showT = !!s.name && ts >= 0 && ts < TUTORIAL.length && $('start').hidden, tgt = showT ? TUTORIAL[ts].target : null;
       $('tut').hidden = !showT;
       if (tgt !== hiId) { if (hiId && $(hiId)) $(hiId).classList.remove('tut-hi'); if (tgt && $(tgt)) $(tgt).classList.add('tut-hi'); hiId = tgt; }
@@ -1922,6 +2016,7 @@ function Hud(bus) {
     },
   };
 }
+
 
 
 
@@ -1975,7 +2070,8 @@ $i('iguide').onclick = () => enter(() => bus.emit('tut', 0));
 $i('isound').onclick = () => { bus.emit('mute'); $i('isound').textContent = $i('mute').textContent; };
 // 메인 화면으로: 바로 저장하고 타이틀로 나간다 (상단 ⌂ 버튼, 설정의 타이틀 버튼)
 const goHome = () => { if (!restoring) Repo.save(store.getState()); showIntro(); ui.toast('저장했어요.'); };
-$i('titleb').onclick = goHome; $i('homeb').onclick = goHome;
+$i('titleb').onclick = () => { $i('setm').hidden = true; goHome(); }; $i('homeb').onclick = goHome;
+$i('gearb').onclick = () => { $i('setm').hidden = false; }; $i('setok').onclick = () => { $i('setm').hidden = true; markPop(); };
 // 홈 화면 앱(PWA): GitHub Pages에서만 서비스 워커를 켠다. 안드로이드 크롬은 설치 창, 아이폰 사파리는 안내 창
 const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 if ('serviceWorker' in navigator && /github\.io$|^localhost$|^127\./.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => { });
@@ -2039,19 +2135,28 @@ $i('cloudget').onclick = async () => {
 let restoring = false; // 불러온 직후에는 지금 상태로 덮어쓰지 않는다
 setInterval(() => cloudSave(), 120000);
 
-// ---------- 새 기능 안내 팁 ----------
-let tipNow = null;
-const tipBlocked = () => !$i('intro').hidden || !$i('tut').hidden || document.querySelectorAll('.modal:not([hidden])').length > 0; // 다른 창이 떠 있으면 기다린다
-function checkTip(s) {
-  if (tipNow || ui.tipOpen() || !s.name || (s.tut >= 0 && s.tut < 7) || tipBlocked()) return;
-  const t = TIPS.find(x => !(s.tips || {})[x.id] && x.when(s)); if (!t) return;
-  tipNow = t; ui.showTip(t);
+// ---------- 알림 창 대기열: 창은 한 번에 하나, 튜토리얼·다른 창이 끝난 뒤 간격을 두고 ----------
+// 종류: promo(승진 창), tip(해금·상황 안내 카드)
+const popQ = []; let tipNow = null, lastPop = 0;
+const busy = () => !$i('intro').hidden || !$i('tut').hidden || ui.tipOpen() || document.querySelectorAll('.modal:not([hidden])').length > 0;
+const tutOn = s => s.tut >= 0 && s.tut < TUTORIAL.length;
+function pump(s) {
+  if (!s.name || tutOn(s) || busy() || Date.now() - lastPop < 2500) return;
+  if (!popQ.length) { const t = TIPS.find(x => !(s.tips || {})[x.id] && x.when(s)); if (t) popQ.push({ kind: 'tip', t }); }
+  const it = popQ.shift(); if (!it) return;
+  if (it.kind === 'promo') { Sfx.play('rank'); ui.showPromo(it.i, s.name, s); }
+  else { tipNow = it.t; ui.showTip(it.t); }
 }
+const markPop = () => { lastPop = Date.now(); };
+$i('prok').addEventListener('click', markPop);
 const closeTip = go => {
-  if (!tipNow) return; const t = tipNow; tipNow = null; ui.hideTip(); store.dispatch({ type: 'TIP', id: t.id });
-  if (go && t.tab) { ui.showTab(t.tab); const el = $i(t.target); if (el && el.scrollIntoView) setTimeout(() => el.scrollIntoView({ block: 'start', behavior: 'smooth' }), 50); }
+  if (!tipNow) return; const t = tipNow; tipNow = null; ui.hideTip(); markPop(); store.dispatch({ type: 'TIP', id: t.id });
+  if (go && t.tab) { ui.showTab(t.tab, t.g); const el = $i(t.target); if (el && el.scrollIntoView) setTimeout(() => el.scrollIntoView({ block: 'start', behavior: 'smooth' }), 80); }
 };
 $i('tipok').onclick = () => closeTip(false); $i('tipgo').onclick = () => closeTip(true);
+// 신문: 바로 띄우지 않고 '신문 도착' 버튼으로 (원할 때 본다)
+let paperNow = null;
+$i('pnew').onclick = () => { if (paperNow) { ui.showPaper(paperNow); paperNow = null; ui.paperReady(false); } };
 
 const pushSchedule = hidden => { if (!pushSub || !board || !store.getState().name) return; const cap = (8 + ((store.getState().res || {}).night || 0)) * 3600e3; board.pushSet(pushSub, hidden ? new Date(Date.now() + clockOff + cap).toISOString() : null, hidden).catch(() => { }); };
 // 새로 시작: 모든 기록을 지우므로 두 번 눌러야 실행. 이름 변경: 기록은 그대로 두고 방송국 이름만 바꾼다
@@ -2078,10 +2183,10 @@ addEventListener('keydown', e => { if (!$i('intro').hidden && (e.key === 'Enter'
 showIntro();
 
 // 순위 동기화: 내 기록을 올리고 상위 목록을 받아 그린다
-async function refresh() {
+async function refresh(manual = false) {
   if (!board) return; const s = store.getState();
   if (s.name) try { await board.submit(toEntry(s)); } catch (e) { console.warn('순위 기록 실패', e); } // 기록 실패(검증 거부 등)여도 목록은 불러온다
-  try { ui.board(await board.top(50, toEntry(s)), board.me || s.uid, board.mode, s.season.key); } catch (e) { ui.toast('순위를 불러오지 못했어요.'); }
+  try { ui.board(await board.top(50, toEntry(s)), board.me || s.uid, board.mode, s.season.key); } catch (e) { if (manual) ui.toast('순위를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.'); } // 자동 갱신 실패는 조용히
 }
 // 서버가 있으면 서버 시각으로 출석·주간·시즌을 계산한다(기기 시계 조작 방지)
 const syncClock = () => board && board.now().then(t => { if (t) { clockOff = t - Date.now(); checkDates(); } }).catch(() => { });
@@ -2096,7 +2201,7 @@ bus.on('name', ({ name, job }) => {
   ui.toast(renamed ? (p.job && p.job !== job ? `${J.n}(으)로 전직했어요! 특기: ${J.perk}` : `방송국 이름을 ${r.name}(으)로 바꿨어요.`) : `${r.name} 방송 시작! ${J.n}의 특기: ${J.perk}`); checkDates(); refresh();
 });
 bus.on('rename', () => ui.askName(store.getState().name, store.getState().job || 'editor'));
-bus.on('board', refresh);
+bus.on('board', () => refresh(true));
 bus.on('buy', id => {
   const u = UPGRADES.find(x => x.id === id), s = store.getState(), { total } = bulk(s, u, s.buyN);
   if (s.chal === 'noQual' && id === 'qual') return ui.toast('저예산 방송 챌린지 중에는 방송 품질을 올릴 수 없어요.');
@@ -2162,17 +2267,20 @@ bus.on('mute', () => ui.setMute(Sfx.toggle()));
 
 // 상태 변화 구독: 효과음과 알림
 store.subscribe((s, p) => {
-  checkTip(s);
+  pump(s);
   if (s.ev && (!p.ev || p.ev.id !== s.ev.id || p.ev.end !== s.ev.end)) Sfx.play('alert');
   if (!!s.ev !== !!p.ev && $i('intro').hidden) Music.play(s.ev ? 'breaking' : 'desk'); // 속보 중에는 긴박한 곡
   if (s.gold && !p.gold) Sfx.play('alert');
   if (s.chalWin && s.chalWin !== p.chalWin) { const c = CHALLENGES.find(x => x.id === s.chalWin.split(':')[0]); Sfx.play('rank'); ui.toast(`챌린지 완료: ${c.n}! 영구 점수 +10%`); }
   if (s.lastSeason && s.lastSeason !== p.lastSeason) { const l = s.lastSeason; Sfx.play('rank'); ui.toast(`시즌 종료: ${TIERS[l.tier].n} 달성 · 스카우트 티켓 +${l.tk}장`); }
   if (s.daily && s.daily !== p.daily) { const d = s.daily; Sfx.play('rank'); ui.toast(`출석 ${d.streak}일째! 보너스 +${fmt(d.gain)}점${d.tk ? ' · 스카우트 티켓 +1' : ''}`); }
-  if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; if (s.tut < 0 || s.tut >= 7) ui.showPaper(paper(s.name, r)); else ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}% · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
+  if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; paperNow = paper(s.name, r); ui.paperReady(true); ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}%${r.rival != null ? (r.won ? ' · 라이벌에 승리!' : ' · 라이벌에 패배') : ''} · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
   if (s.judge && s.judge !== p.judge) { const j = s.judge.res; Sfx.play(j === 'fail' ? 'fail' : j === 'win' ? 'rank' : 'buy'); ui.toast(j === 'win' ? '단독 성공! 이번 속보 점수 x2 · 오늘 시청률 +0.8' : j === 'fail' ? '오보! 정정 보도 나갑니다... 오늘 시청률 -1.2' : '팩트 체크 완료, 안전하게 송출 (점수 x1.2)'); }
   if (s.misHit && s.misHit !== p.misHit) { const m = s.misHit; Sfx.play('rank'); ui.toast(m.all ? `오늘의 미션 올클리어! +${fmt(m.gain)}점 · 스카우트 티켓 +1` : `미션 달성! +${fmt(m.gain)}점`); }
-  if (s.promo && s.promo !== p.promo) { Sfx.play('rank'); ui.showPromo(s.promo.i, s.name, s); }
+  if (s.promo && s.promo !== p.promo) popQ.push({ kind: 'promo', i: s.promo.i });
+  if (s.unlHit && s.unlHit !== p.unlHit) { // 기능 해금: 하나면 안내 카드, 한꺼번에 여러 개(예전 저장본)면 조용히 표시만
+    const ids = s.unlHit.ids; if (ids.length === 1 && p.name) { const u = UNLOCKS.find(x => x.id === ids[0]); popQ.push({ kind: 'tip', t: { ...u, t: `새 기능: ${u.t}` } }); Sfx.play('rank'); } else ids.forEach(id => store.dispatch({ type: 'TIP', id }));
+  }
   if (s.weHit && s.weHit !== p.weHit) { Sfx.play('rank'); ui.toast('한정 이벤트 달성! 스카우트 티켓 +2 · 한정 배지 획득'); }
   if (s.ev && s.ev.id === 'robot' && (!p.ev || p.ev.id !== 'robot')) ui.toast(heroCount(s) ? `뉴스 디펜더즈 ${heroCount(s)}명 출동! 이번 속보 점수 +${heroCount(s) * 50}%` : '거대 로봇 습격! 히어로 카드가 있으면 점수가 크게 올라요.');
   if (s.ach.length > p.ach.length) { const a = ACHIEVEMENTS.find(x => x.id === s.ach[s.ach.length - 1]); Sfx.play('rank'); ui.toast(`업적 달성: ${a.n} (점수 +2%)`); }
