@@ -21,6 +21,10 @@ import { Bubbles } from './ui/bubbles.js';
 import { paper } from './ui/paper.js';
 import { Intro } from './ui/intro.js';
 import { Hud, fmt } from './ui/hud.js';
+import { MiniCut } from './ui/minigame.js';
+import { perSec } from './systems/economy.js';
+import { jobOf } from './data/config.js';
+import { isUnlocked } from './data/tips.js';
 
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
@@ -135,6 +139,39 @@ const closeTip = go => {
   if (go && t.tab) { ui.showTab(t.tab, t.g); const el = $i(t.target); if (el && el.scrollIntoView) setTimeout(() => el.scrollIntoView({ block: 'start', behavior: 'smooth' }), 80); }
 };
 $i('tipok').onclick = () => closeTip(false); $i('tipgo').onclick = () => closeTip(true);
+// 미니게임 아이콘: 해금 뒤 3~5분마다 오른쪽 아래에 20초 동안 뜬다. 놓쳐도 손해는 없다(방치형이므로)
+const MG_LIFE = 20000; let mgNext = 0, mgUntil = 0, mgReward = 0, mgGrade = '';
+const mgSchedule = (ms = (180 + Math.random() * 120) * 1000) => { mgNext = Date.now() + ms; };
+const mgHide = () => { $i('mgicon').hidden = true; mgUntil = 0; };
+function mgTick() {
+  const s = store.getState(), now = Date.now();
+  if (!s.name || !isUnlocked(s, 'mini')) return;
+  if (!mgNext) mgSchedule(s.tips && s.tips.mini1 ? undefined : 6000); // 처음 해금되면 곧바로 한 번
+  if (mgUntil) { if (now > mgUntil) { mgHide(); mgSchedule(); } else $i('mgbar').style.transform = `scaleX(${(mgUntil - now) / MG_LIFE})`; return; }
+  if (now >= mgNext && !busy() && !tutOn(s) && !document.hidden) { $i('mgicon').hidden = false; mgUntil = now + MG_LIFE; Sfx.play('alert'); }
+}
+setInterval(mgTick, 250);
+if (location.hash === '#mini') mgSchedule(1500); // 테스트용: 주소 끝에 #mini
+$i('mgicon').onclick = () => {
+  mgHide(); mgSchedule(); $i('mcres').hidden = true; $i('mcquit').hidden = false; $i('mcut').hidden = false;
+  store.dispatch({ type: 'TIP', id: 'mini1' }); Music.play('breaking'); MiniCut.start();
+};
+const mgClose = () => { MiniCut.stop(); $i('mcut').hidden = true; markPop(); Music.play(store.getState().ev ? 'breaking' : 'desk'); };
+window.__mc = MiniCut; // 테스트용
+MiniCut.init({
+  sfx: k => Sfx.play(k),
+  onDone(r) {
+    const s = store.getState(), MIN = { S: 4, A: 3, B: 2, C: 1 }[r.grade], job = jobOf(s).id === 'editor' ? 1.5 : 1, per = Math.max(perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0 }), 5); // 속보·부스트·특종 배수는 빼고 평소 생산량 기준
+    mgReward = Math.floor(per * 60 * MIN * job * (r.perfect ? 1.5 : 1)); mgGrade = r.grade;
+    $i('mcgr').textContent = r.grade; $i('mcst').textContent = `PERFECT ${r.perf} · GOOD ${r.good} · MISS ${r.miss} · 최대 ${r.best}콤보`;
+    $i('mcrw').textContent = `보상 ${fmt(mgReward)}점 (생산량 ${MIN}분치${job > 1 ? ' · 편집기자 특기 x1.5' : ''}${r.perfect ? ' · 완벽 편집 x1.5' : ''})`;
+    $i('mcl').textContent = r.perfect ? '완벽 편집!' : '편집 완료'; $i('mcs').textContent = ''; $i('mcres').hidden = false; $i('mcquit').hidden = true; $i('mcad').disabled = false;
+    Sfx.play(r.grade === 'C' ? 'fail' : 'rank');
+  },
+});
+$i('mcok').onclick = () => { if (mgReward) store.dispatch({ type: 'GAIN', n: mgReward }); ui.toast(`${mgGrade}등급! ${fmt(mgReward)}점 획득`); mgReward = 0; mgClose(); };
+$i('mcad').onclick = () => { if (!mgReward) return; store.dispatch({ type: 'GAIN', n: mgReward * 2 }); ui.toast(`실제 앱에서는 보상형 광고가 나와요. ${fmt(mgReward * 2)}점 획득!`); mgReward = 0; Sfx.play('buy'); mgClose(); };
+$i('mcquit').onclick = () => mgClose();
 // 신문: 바로 띄우지 않고 '신문 도착' 버튼으로 (원할 때 본다)
 let paperNow = null;
 $i('pnew').onclick = () => { if (paperNow) { ui.showPaper(paperNow); paperNow = null; ui.paperReady(false); } };

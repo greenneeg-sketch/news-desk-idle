@@ -61,6 +61,14 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .rt{display:flex;align-items:baseline;gap:8px}.rt strong{font:18px "Press Start 2P",monospace}.rt small{color:var(--sub)}
 .bars{display:flex;align-items:flex-end;gap:4px;height:36px;margin:6px 0}.bars i{flex:1;background:var(--b);min-height:2px;height:0}
 .lb{list-style:none;margin:8px 0;padding:0}.lb li{padding:6px 4px;border-bottom:1px solid var(--ink)}.lb li.me{background:#41507a}.lb b{display:block}.lb small{color:var(--sub);font-size:12px}
+.mgicon{position:fixed;left:max(14px,calc(50% - 226px));bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:12;border:0;cursor:pointer;background:var(--r);color:#fff;padding:8px 10px;font:inherit;box-shadow:0 -3px 0 var(--ink),0 3px 0 var(--ink),-3px 0 0 var(--ink),3px 0 0 var(--ink),inset 0 -4px #5d275d;animation:mgb 1s steps(2) infinite}
+.mgicon b{display:block;font:12px "Press Start 2P","DotGothic16",monospace;color:var(--y)}.mgicon small{font-size:11px}.mgicon i{display:block;height:3px;margin-top:4px;background:var(--y);transform-origin:left}
+@keyframes mgb{50%{transform:translateY(-4px)}}
+.mcstage{position:relative;margin:8px 0;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}.mcstage canvas{display:block;width:100%;image-rendering:pixelated;box-shadow:0 0 0 3px var(--ink),0 0 0 6px #566c86}
+.mcj{position:absolute;left:0;right:0;top:40%;text-align:center;font:14px "Press Start 2P",monospace;text-shadow:2px 2px 0 var(--ink);pointer-events:none}.mcj.p{color:#a7f070}.mcj.g{color:var(--g)}.mcj.miss{color:#ff5050}
+.mcc{position:absolute;right:6px;top:6px;font:9px "Press Start 2P",monospace;color:var(--y);text-shadow:1px 1px 0 var(--ink);pointer-events:none}
+.mcg{display:flex;align-items:center;gap:12px;margin:6px 0}.mcg strong{font:28px "Press Start 2P",monospace;color:var(--y)}.mcg span{font-size:13px;color:var(--sub)}
+.mcrw{font-size:15px;margin:4px 0 10px}.mcx{width:100%;margin-top:8px;min-height:34px}
 .lbpg{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0}.lbpg span{min-width:56px;text-align:center;font-size:13px}.lbpg .btn:disabled{opacity:.4}
 #cards{cursor:pointer}
 .wg{margin:10px 0}.row2{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}.row2 span:first-child{flex:1}
