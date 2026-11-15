@@ -476,7 +476,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.16-0752</span>
+  <span class="iver">v2026.11.16-0757</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -2080,7 +2080,7 @@ function Intro(cv, tickerEl, clockEl) {
   const c = cv.getContext('2d'), W = 360, PX = '"Press Start 2P", monospace';
   const HERO = { cap: '캡틴 큐시트', ninja: '프레임 닌자', mecha: '메카 앵커', night: '나이트 에디터' }, SEASONS = ['봄', '여름', '가을', '겨울'];
   const DAY = 36, SKY = [[0, '#3a4a8a', '#ffb37a'], [.12, '#4aa0e8', '#bfe4ff'], [.40, '#4aa0e8', '#bfe4ff'], [.50, '#5a3a7a', '#ff8a4a'], [.60, '#0a1040', '#232a6a'], [.92, '#0a1040', '#232a6a'], [1, '#3a4a8a', '#ffb37a']];
-  let H = 640, GY = 500, BY = 190, ROWS = 20, on = false, raf = 0, last = 0, clock = 4, ev = null, evNext = 3, lastType = '', holes = [], parts = [], shake = 0, lastSeason = -1;
+  let H = 640, GY = 500, BY = 190, ROWS = 20, on = false, raf = 0, last = 0, clock = 4, ev = null, evNext = 3, lastType = '', holes = [], parts = [], shake = 0, lastSeason = -1, lastDay = -1, rainy = false, cars = [], nextCar = 2, crew = { x: -70, dir: 1, wait: 0 };
   const BX = 80, BW = 200, COLS = 13;
   const R = (x, y, w, h, k) => { c.fillStyle = k; c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
   const T = (s, x, y, n, k, al) => { c.fillStyle = k; c.font = `bold ${n}px ${PX}`; c.textAlign = al || 'left'; c.fillText(s, x, y); c.textAlign = 'left'; };
@@ -2119,8 +2119,9 @@ function Intro(cv, tickerEl, clockEl) {
     c.restore();
   }
   // ── 달리는 취재진(옆모습 32x46): 취재기자(마이크·수첩) / 영상기자(어깨 카메라·모자). 팔다리가 번갈아 움직인다
-  function runner(x, t, kind) {
-    const ph = Math.floor(t * 8) % 4, y = GY - 46 + (ph % 2 ? -2 : 0), top = kind ? '#41a6f6' : '#a05ae0', td = kind ? '#2f7fc8' : '#7a3ab8', sk = kind ? '#e0ac7e' : '#f2c9a0', hair = kind ? '#3b2a20' : '#14141f';
+  function runner(x, t, kind, dir = 1, still = false) {
+    c.save(); if (dir < 0) { c.translate(x + 16, 0); c.scale(-1, 1); c.translate(-(x + 16), 0); }
+    const ph = still ? 1 : Math.floor(t * 8) % 4, y = GY - 46 + (ph % 2 && !still ? -2 : 0), top = kind ? '#41a6f6' : '#a05ae0', td = kind ? '#2f7fc8' : '#7a3ab8', sk = kind ? '#e0ac7e' : '#f2c9a0', hair = kind ? '#3b2a20' : '#14141f';
     const la = [[-6, 0], [-2, 3], [5, 0], [1, 3]][ph], lb = [[5, 0], [1, 3], [-6, 0], [-2, 3]][ph];
     R(x + 12 + lb[0], y + 32, 6, 9 - lb[1], '#222633'); R(x + 11 + lb[0] + (lb[0] > 0 ? 2 : -2), y + 40 - lb[1], 8, 3, '#14141f'); // 뒷다리
     R(x + 9, y + 16, 15, 17, top); R(x + 9, y + 16, 15, 2, mix(top, '#ffffff', .3)); R(x + 21, y + 16, 3, 17, td); R(x + 11, y + 22, 9, 3, '#f4f4f4'); R(x + 12, y + 23, 7, 1, '#b13e53'); // 몸통 + PRESS 띠
@@ -2132,6 +2133,7 @@ function Intro(cv, tickerEl, clockEl) {
       R(x + 18, y + 16, 12, 5, top); R(x + 28, y + 14, 5, 5, sk); }
     else { const sw = ph % 2 ? 2 : 0; R(x + 19, y + 18, 10, 5, top); R(x + 27, y + 16 - sw, 5, 5, sk); R(x + 30, y + 8 - sw, 3, 10, '#333c57'); R(x + 28, y + 2 - sw, 7, 7, '#14141f'); R(x + 27, y + 7 - sw, 9, 5, '#b13e53'); R(x + 29, y + 8 - sw, 5, 2, '#ffffff'); // 마이크
       R(x + 4 - sw, y + 20, 7, 4, td); R(x + 1 - sw, y + 21, 6, 8, '#f4f4f4'); R(x + 2 - sw, y + 23, 4, 1, '#9aaabd'); R(x + 2 - sw, y + 25, 4, 1, '#9aaabd'); } // 수첩
+    c.restore();
   }
   function ufoSpr(x, y, t, smoke) { R(x - 14, y - 12, 28, 10, '#a7f070'); R(x - 10, y - 15, 20, 4, '#d9ffb0'); R(x - 5, y - 10, 10, 7, '#3a8f5a'); R(x - 3, y - 9, 2, 2, '#14141f'); R(x + 1, y - 9, 2, 2, '#14141f'); R(x - 34, y - 4, 68, 9, '#94b0c2'); R(x - 34, y - 4, 68, 2, '#c8d4e2'); R(x - 24, y + 5, 48, 4, '#566c86'); for (let i = 0; i < 6; i++) R(x - 29 + i * 11, y - 1, 4, 3, (Math.floor(t * 6) + i) % 2 ? '#ffcd75' : '#ef7d57'); if (smoke) for (let i = 0; i < 4; i++) { c.globalAlpha = .5 - i * .1; R(x + 10 + i * 6, y - 18 - i * 9 - (t * 20 % 8), 8 + i * 2, 6 + i, '#566c86'); c.globalAlpha = 1; } }
   function jetSpr(x, y, t) { R(x - 16, y - 2, 30, 5, '#c2c3c7'); R(x - 16, y + 2, 30, 1, '#8b9bb4'); R(x + 12, y - 1, 8, 3, '#8b9bb4'); R(x - 6, y - 7, 10, 5, '#94b0c2'); R(x - 16, y - 6, 6, 4, '#94b0c2'); R(x - 2, y + 3, 12, 3, '#8b9bb4'); R(x + 3, y - 4, 8, 3, '#73eff7'); R(x + 5, y - 3, 3, 2, '#f2c9a0'); R(x - 10, y - 1, 4, 2, '#b13e53'); R(x - 22 - bl(t, 14) * 4, y - 1, 7 + bl(t, 14) * 4, 3, bl(t, 20) ? '#ffcd75' : '#ef7d57'); }
@@ -2149,11 +2151,21 @@ function Intro(cv, tickerEl, clockEl) {
     if (s === 3) { R(x, GY - 30, 3, 14, k[0]); R(x + 12, GY - 34, 3, 16, k[0]); R(x + 2, GY - 32, 12, 3, k[0]); R(x, GY - 32, 16, 3, '#f4f4f4'); R(x + 4, GY - 38, 10, 3, '#f4f4f4'); }
     else { R(x - 4, GY - 38, 26, 18, k[0]); R(x, GY - 46, 18, 10, k[0]); R(x - 4, GY - 26, 26, 6, k[1]); R(x + 2, GY - 42, 6, 4, mix(k[0], '#ffffff', .4)); } }
   function van(x, s) { R(x, GY - 36, 104, 34, '#f4f4f4'); R(x, GY - 16, 104, 5, '#b13e53'); R(x + 82, GY - 30, 16, 12, '#73b6ef'); R(x + 86, GY - 27, 5, 6, '#f2c9a0'); R(x + 10, GY - 30, 44, 10, '#1d3a6b'); T('NEWS', x + 14, GY - 22, 7, '#ffcd75'); R(x + 12, GY - 4, 16, 9, '#14141f'); R(x + 76, GY - 4, 16, 9, '#14141f'); R(x + 40, GY - 50, 3, 14, '#566c86'); R(x + 30, GY - 60, 24, 12, '#c2c3c7'); if (s === 3) { R(x, GY - 38, 104, 3, '#ffffff'); R(x + 30, GY - 62, 24, 3, '#ffffff'); } }
+  // 지나가는 자동차: 위 차로는 왼쪽으로, 아래 차로는 오른쪽으로
+  function carSpr(k, n) { const y = GY + (k.d > 0 ? 50 : 24), x = k.x; c.save(); if (k.d < 0) { c.translate(x + 20, 0); c.scale(-1, 1); c.translate(-(x + 20), 0); }
+    R(x, y - 12, 40, 10, k.col); R(x, y - 4, 40, 2, mix(k.col, '#000000', .3)); R(x + 8, y - 19, 22, 8, k.col); R(x + 11, y - 17, 7, 5, '#b8dcff'); R(x + 20, y - 17, 8, 5, '#b8dcff'); R(x + 5, y - 4, 8, 6, '#14141f'); R(x + 27, y - 4, 8, 6, '#14141f'); R(x + 7, y - 2, 4, 2, '#8b9bb4'); R(x + 29, y - 2, 4, 2, '#8b9bb4'); R(x + 37, y - 10, 3, 3, n > .4 ? '#fff6c0' : '#f4f4f4'); R(x, y - 10, 2, 3, '#e43b44');
+    if (k.taxi) { R(x + 15, y - 22, 8, 3, '#ffcd75'); } if (n > .4) { c.globalAlpha = .25; R(x + 40, y - 11, 22, 6, '#fff6c0'); c.globalAlpha = 1; } c.restore(); }
   // ── 이벤트: 한 번에 하나, 무작위(같은 것이 연달아 나오지 않게)
-  function startEv() { const type = pick(['heli', 'hero', 'hero', 'ufo', 'robot'].filter(k => k !== lastType || k === 'hero')); lastType = type; ev = { type, t0: clock, f: {}, hk: pick(Object.keys(HERO)), dir: Math.random() < .5 ? 1 : -1 };
-    say(type === 'heli' ? pick(['[현장] 중계 헬기, 보도국 상공에서 생중계 중', '[LIVE] 항공 촬영팀 출동']) : type === 'hero' ? `[화제] 뉴스 디펜더즈 '${HERO[ev.hk]}', 방송국 상공 포착` : type === 'ufo' ? '[속보] 방송국 상공에 정체불명 UFO 출현… 공군 전투기 긴급 출격' : '[속보] 거대 로봇, 보도국 습격! 뉴스 디펜더즈 출동'); }
+  function startEv() { const type = pick(['heli', 'hero', 'hero', 'ufo', 'robot', 'live'].filter(k => k !== lastType || k === 'hero')); lastType = type; ev = { type, t0: clock, f: {}, hk: pick(Object.keys(HERO)), dir: Math.random() < .5 ? 1 : -1 };
+    say(type === 'heli' ? pick(['[현장] 중계 헬기, 보도국 상공에서 생중계 중', '[LIVE] 항공 촬영팀 출동']) : type === 'hero' ? `[화제] 뉴스 디펜더즈 '${HERO[ev.hk]}', 방송국 상공 포착` : type === 'live' ? pick(['[현장] 중계차 긴급 출동… 잠시 후 연결합니다', '[현장] 취재진 현장 급파']) : type === 'ufo' ? '[속보] 방송국 상공에 정체불명 UFO 출현… 공군 전투기 긴급 출격' : '[속보] 거대 로봇, 보도국 습격! 뉴스 디펜더즈 출동'); }
   function drawEv(t, n) { if (!ev) return; const u = clock - ev.t0, once = (k, fn) => { if (!ev.f[k]) { ev.f[k] = 1; fn(); } };
     if (ev.type === 'heli') { const x = ev.dir > 0 ? -70 + u * 40 : W + 10 - u * 40; c.save(); if (ev.dir < 0) { c.translate(x + 29, 0); c.scale(-1, 1); c.translate(-(x + 29), 0); } heliSpr(x, BY - 34 + Math.sin(u * 1.4) * 8, t, n); c.restore(); if (u > 11.5) ev = null; }
+    else if (ev.type === 'live') { // 중계차가 달려와 서고, 취재진이 내려 생중계한 뒤 떠난다
+      const vx = u < 3 ? -120 + u * 46 : u < 11 ? 18 : 18 + (u - 11) * 150;
+      c.save(); c.translate(0, 30); van(vx, -1);
+      if (u > 3.6 && u < 10.6) { once('l', () => say('[LIVE] 현장 연결합니다. 보도국 앞에서 전해 드립니다')); runner(134, t, 0, 1, true); runner(186, t, 1, -1, true);
+        R(140, GY - 70, 44, 15, '#0b0b14'); R(142, GY - 68, 40, 11, bl(t, 2) ? '#e43b44' : '#8a1e2a'); T('LIVE', 162, GY - 59, 8, '#ffffff', 'center'); }
+      c.restore(); if (vx > W + 10) ev = null; }
     else if (ev.type === 'hero') { const k = ev.hk, dir = ev.dir, f = u / 5, x = dir > 0 ? -50 + f * 470 : 410 - f * 470, mid = BY + (GY - BY) * .35, y = k === 'ninja' ? mid + Math.sin(u * 6) * 40 : k === 'night' ? BY - 20 + Math.sin(f * Math.PI) * 150 : mid - 30 + Math.sin(u * 2) * 26; heroSpr(x, y, k, dir, t); if (f > 1) ev = null; }
     else if (ev.type === 'ufo') { const hy = BY - 34, ux = u < 2 ? 420 - u * 80 : u < 7 ? 260 + Math.sin(u * 2) * 10 : 260 + (u - 7) * 90, uy = u < 7 ? hy + Math.sin(u * 3) * 4 : hy - (u - 7) * 30;
       if (u > 2.4 && u < 3.6) { c.globalAlpha = .7; R(ux - 5, uy + 8, 10, BY + 60 - uy, bl(t, 16) ? '#a7f070' : '#d9ffb0'); c.globalAlpha = 1; once('h', () => addHole(246, BY + 60, 22)); }
@@ -2175,6 +2187,10 @@ function Intro(cv, tickerEl, clockEl) {
     const t = clock, dayT = t / DAY, p = dayT % 1, n = night(p), season = Math.floor(dayT) % 4, sunset = Math.max(0, 1 - Math.abs(p - .5) / .09), dawn = Math.max(0, 1 - Math.abs(p < .5 ? p : p - 1) / .07);
     if (!ev && t > evNext) startEv(); if (ev) evNext = t + 2.5; shake = Math.max(0, shake - dt);
     if (season !== lastSeason) { if (lastSeason >= 0) say(['[날씨] 벚꽃 만개… 보도국 앞 꽃길', '[날씨] 본격 무더위 시작', '[날씨] 단풍 절정… 낙엽 지는 보도국', '[날씨] 첫눈 내린 보도국'][season]); lastSeason = season; }
+    if (Math.floor(dayT) !== lastDay) { lastDay = Math.floor(dayT); const was = rainy; rainy = Math.random() < [.25, .6, .25, 0][season]; if (rainy && !was) say(season === 1 ? '[날씨] 장맛비 시작… 우산 챙기세요' : '[날씨] 곳곳에 비 소식'); }
+    nextCar -= dt; if (nextCar <= 0) { nextCar = 2.5 + Math.random() * 4; const d = Math.random() < .5 ? 1 : -1; cars.push({ x: d > 0 ? -50 : W + 10, d, v: 70 + Math.random() * 50, col: pick(['#e43b44', '#41a6f6', '#f4f4f4', '#ffcd75', '#38b764', '#566c86']), taxi: Math.random() < .2 }); }
+    cars.forEach(k => { k.x += k.d * k.v * dt; }); cars = cars.filter(k => k.x > -70 && k.x < W + 30);
+    if (crew.wait > 0) crew.wait -= dt; else { crew.x += crew.dir * 46 * dt; if ((crew.dir > 0 && crew.x > W + 60) || (crew.dir < 0 && crew.x < -100)) { crew.dir *= -1; crew.wait = 1.5 + Math.random() * 3; } } // 취재진: 좌우로 왔다 갔다
     c.save(); if (shake > 0) c.translate((Math.random() - .5) * shake * 12, (Math.random() - .5) * shake * 12);
     const [top, bot] = sky(p); for (let y = 0; y < H; y += 6) R(0, y, W, 6, mix(top, bot, Math.min(1, y / (GY - 20))));
     if (n > .2) { c.globalAlpha = Math.min(1, (n - .2) * 1.6); for (let i = 0; i < 80; i++) if ((i + Math.floor(t * 1.5)) % 6) R((i * 67) % W, (i * 41) % (GY - 140), i % 7 ? 1 : 2, i % 7 ? 1 : 2, '#f4f4f4'); c.globalAlpha = 1; }
@@ -2211,21 +2227,24 @@ function Intro(cv, tickerEl, clockEl) {
     holes.forEach(h => { const age = t - h.at, rr = h.r * hr(h); if (rr < 1) return; if (age < 9) for (let i = 0; i < 4; i++) { const fh = 4 + hash(i, Math.floor(t * 8)) * 10; R(h.x - rr * .6 + i * rr * .4, h.y + rr * .5 - fh, 5, fh, i % 2 ? '#ffcd75' : '#ef7d57'); }
       for (let i = 0; i < 5; i++) { const f = (t * .5 + i * .2) % 1; c.globalAlpha = (1 - f) * .5 * Math.min(1, rr / 10); R(h.x - 6 + Math.sin(i + t) * 8 + f * 14, h.y - rr - f * 70, 10 + f * 14, 8 + f * 8, '#3a4466'); c.globalAlpha = 1; }
       if (age > 11) for (let i = 0; i < 6; i++) if (bl(t + i * .3, 6)) R(h.x + Math.cos(i * 1.1 + t * 3) * rr, h.y + Math.sin(i * 1.1 + t * 3) * rr, 3, 3, '#ffcd75'); });
-    const rx = ((t * 42) % 480) - 70; runner(rx, t, 0); runner(rx - 44, t + .2, 1);
+    cars.filter(k => k.d < 0).forEach(k => carSpr(k, n));
+    runner(crew.x, t, 0, crew.dir); runner(crew.x - crew.dir * 44, t + .2, 1, crew.dir);
+    cars.filter(k => k.d > 0).forEach(k => carSpr(k, n));
     drawEv(t, n);
     parts.forEach(q => { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += (q.g === 0 ? 0 : 320) * dt; q.life -= dt; c.globalAlpha = Math.max(0, Math.min(1, q.life * 2)); R(q.x, q.y, q.s, q.s, q.col); c.globalAlpha = 1; }); parts = parts.filter(q => q.life > 0 && q.y < GY + 40);
-    if (season !== 1) for (let i = 0; i < 50; i++) { const sp = season === 3 ? 34 : 46, x = (hash(i, 3) * W + Math.sin(t * 1.3 + i) * 14 + t * (season === 3 ? 6 : 22)) % W, y = (hash(i, 4) * (GY + 20) + t * sp * (.6 + hash(i, 5) * .7)) % (GY + 20); R(x, y, season === 3 ? 2 + (i % 2) : 3, season === 3 ? 2 + (i % 2) : 2, season === 0 ? (i % 2 ? '#ffb7d5' : '#ffd6e8') : season === 2 ? (i % 2 ? '#ef7d57' : '#d8a050') : '#ffffff'); }
+    if (season !== 1 && !(rainy && season !== 3)) for (let i = 0; i < 50; i++) { const sp = season === 3 ? 34 : 46, x = (hash(i, 3) * W + Math.sin(t * 1.3 + i) * 14 + t * (season === 3 ? 6 : 22)) % W, y = (hash(i, 4) * (GY + 20) + t * sp * (.6 + hash(i, 5) * .7)) % (GY + 20); R(x, y, season === 3 ? 2 + (i % 2) : 3, season === 3 ? 2 + (i % 2) : 2, season === 0 ? (i % 2 ? '#ffb7d5' : '#ffd6e8') : season === 2 ? (i % 2 ? '#ef7d57' : '#d8a050') : '#ffffff'); }
     else if (n > .5) for (let i = 0; i < 10; i++) if (bl(t + i * .37, 1.2)) R(20 + hash(i, 6) * 320 + Math.sin(t + i) * 8, GY - 60 + hash(i, 7) * 50, 2, 2, '#d9ffb0');
+    if (rainy && season !== 3) { c.globalAlpha = .18; R(0, 0, W, H, '#2a3a5a'); c.globalAlpha = .55; for (let i = 0; i < 90; i++) { const x = (hash(i, 11) * (W + 60) + t * -60) % (W + 60) - 10, y = (hash(i, 12) * H + t * 520 * (.8 + hash(i, 13) * .4)) % H; R((x + W + 60) % (W + 60) - 10, y, 1, 9, '#c8dcff'); } for (let i = 0; i < 14; i++) if (bl(t + i * .13, 6)) R(hash(i, 14) * W, GY + 4 + hash(i, 15) * 50, 4, 1, '#c8dcff'); c.globalAlpha = 1; }
     c.restore();
     holes = holes.filter(h => t - h.at < 16);
-    if (clockEl) { const hrs = (6 + p * 24) % 24; clockEl.textContent = `${SEASONS[season]} · ${String(hrs | 0).padStart(2, '0')}:${String((hrs % 1) * 60 | 0).padStart(2, '0')}`; }
+    if (clockEl) { const hrs = (6 + p * 24) % 24; clockEl.textContent = `${SEASONS[season]} · ${String(hrs | 0).padStart(2, '0')}:${String((hrs % 1) * 60 | 0).padStart(2, '0')}${rainy && season !== 3 ? ' · 비' : ''}`; }
   }
   addEventListener('resize', () => { if (on) resize(); });
   const it = +(new URLSearchParams(location.search).get('it')); if (it) clock = it; // 테스트용: ?it=초
   return {
     start() { if (on) return; on = true; last = 0; resize(); say('[LIVE] 오늘도 보도국은 쉬지 않습니다'); raf = requestAnimationFrame(frame); },
     stop() { on = false; cancelAnimationFrame(raf); },
-    debug: { ev(type, hk) { lastType = type; ev = { type, t0: clock, f: {}, hk: hk || 'cap', dir: 1 }; }, time(v) { clock = v; ev = null; evNext = v + 99; } },
+    debug: { rain(v) { rainy = v; }, ev(type, hk) { lastType = type; ev = { type, t0: clock, f: {}, hk: hk || 'cap', dir: 1 }; }, time(v) { clock = v; ev = null; evNext = v + 99; } },
   };
 }
 
