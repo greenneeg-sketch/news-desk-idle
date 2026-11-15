@@ -116,7 +116,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .pfoot{font-size:11px;color:#5a5040;margin:6px 0 10px}
 /* 인트로 타이틀 */
 .intro{position:fixed;inset:0;z-index:30;background:#070a1f;overflow:hidden}
-.intro canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;background:#070a1f}
+.intro canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;background:#070a1f;object-fit:cover}
 .ihead{position:absolute;left:0;right:0;top:calc(18px + env(safe-area-inset-top,0px));text-align:center;pointer-events:none;transform:translateY(-180%);transition:transform .7s cubic-bezier(.2,1.4,.4,1)}
 .intro.open .ihead{transform:none}
 .ititle{margin:0;font:34px/1.15 "Press Start 2P",monospace;color:#ffd24a;text-shadow:3px 3px 0 #b13e53,6px 6px 0 #14141f;letter-spacing:2px}
