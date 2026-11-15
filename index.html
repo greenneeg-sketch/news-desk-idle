@@ -302,7 +302,7 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-0923</span>
+  <span class="iver">v2026.11.15-0933</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -917,9 +917,7 @@ function parse(bars) {
 }
 const PARSED = Object.fromEntries(Object.entries(SONGS).map(([k, s]) => [k, { bpm: s.bpm, lead: parse(s.lead), bass: parse(s.bass), drum: s.drum.join(' ').split(/\s+/) }]));
 
-// 아이폰 대책: 무음 스위치가 켜져 있으면 Web Audio가 꺼진다 → 미디어 재생 모드로 바꾸기(audioSession) + 무음 <audio> 재생
-const SILENT = 'data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
-let unlocked = false, el = null;
+let unlocked = false;
 let ac = null, master = null, noise = null, on = true, cur = null, want = null, step = 0, nextT = 0, timer = 0;
 try { on = localStorage.getItem('newsDeskBgm') !== 'off'; } catch (e) { }
 function init() {
@@ -967,22 +965,17 @@ return {
   },
   toggle() {
     on = !on; try { localStorage.setItem('newsDeskBgm', on ? 'on' : 'off'); } catch (e) { }
-    if (on) { const w = want || 'title'; cur = null; this.unlock(); this.play(w); } else { clearInterval(timer); timer = 0; cur = null; if (el) el.pause(); }
+    if (on) { const w = want || 'title'; cur = null; this.unlock(); this.play(w); } else { clearInterval(timer); timer = 0; cur = null; }
     return on;
   },
-  // 화면을 '누르고 뗄 때'(touchend/click) 불러야 한다. 아이폰은 그때만 소리를 허락한다
+  // 화면을 누를 때 불러서 오디오를 깨운다(아이폰은 사용자가 화면을 눌러야 소리를 허락한다). 무음 모드에서는 소리가 나지 않는다
   unlock() {
-    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { } // iOS 17+: 무음 스위치와 무관하게 재생
     if (!init()) return;
     if (ac.state !== 'running') ac.resume().catch(() => { });
     if (!unlocked) { try { const b = ac.createBuffer(1, 1, 22050), s = ac.createBufferSource(); s.buffer = b; s.connect(ac.destination); s.start(0); } catch (e) { } unlocked = true; }
-    if (!navigator.audioSession && on) { // 옛 iOS: 무음 오디오를 함께 틀면 무음 스위치를 무시하고 소리가 난다
-      if (!el) { el = new Audio(SILENT); el.loop = true; el.setAttribute('playsinline', ''); }
-      el.play().catch(() => { });
-    }
   },
-  pause() { if (ac && ac.state === 'running') ac.suspend().catch(() => { }); if (el) el.pause(); },
-  resume() { if (ac && on && cur && ac.state === 'suspended') ac.resume().catch(() => { }); },
+  pause() { if (ac && ac.state === 'running') ac.suspend().catch(() => { }); },
+  resume() { if (ac && on && cur && ac.state !== 'running') ac.resume().catch(() => { }); }, // 아이폰은 전화 등으로 'interrupted' 상태가 되기도 한다
 };
 })();
 
@@ -1831,7 +1824,7 @@ $i('intro').addEventListener('pointerdown', openMenu);
 // 소리 켜기: 브라우저(특히 아이폰)는 화면을 누르고 뗄 때만 소리를 허락한다 → 그때마다 오디오를 깨우고 지금 화면에 맞는 곡을 튼다
 const songNow = () => !$i('intro').hidden ? 'title' : store.getState().ev ? 'breaking' : 'desk';
 const wakeAudio = () => { Music.unlock(); Sfx.unlock(); if (Music.on) Music.play(songNow()); };
-['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, wakeAudio, { capture: true, passive: true }));
+['pointerdown', 'touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, wakeAudio, { capture: true, passive: true }));
 // 배경음악 켜기·끄기 (타이틀 메뉴, 성장 탭 설정)
 const bgmLabel = () => { const t = Music.on ? 'BGM ON' : 'BGM OFF'; $i('ibgm').textContent = t; $i('bgmb').textContent = t; };
 $i('ibgm').onclick = $i('bgmb').onclick = () => { Music.toggle(); if (Music.on) Music.play($i('intro').hidden ? (store.getState().ev ? 'breaking' : 'desk') : 'title'); bgmLabel(); };
