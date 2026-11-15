@@ -69,7 +69,7 @@ export function reducer(st, a) {
         if (!mis.all && mis.list.every(m => m.done)) { mis.all = 1; s.tickets += 1; s.misAll += 1; s.misHit = { ...s.misHit, all: 1 }; }
         s.mis = mis;
       }
-      { const nc = careerOf(s)[(s.career || 0) + 1]; if (nc && nc.need(s)) { s.career = (s.career || 0) + 1; s.tickets += nc.tk; s.promo = { i: s.career, t: s.clock }; } } // 승진
+      { const C = careerOf(s); let c = s.career || 0, tk = 0; while (C[c + 1] && C[c + 1].need(s)) { c++; tk += C[c].tk; } if (c > (s.career || 0)) { s.career = c; s.tickets += tk; s.promo = { i: c, t: s.clock, tk }; } } // 승진: 여러 단계를 한 번에 넘으면 마지막 직급 창 하나만
       { const we = weekEvent(s); if (we && s.wev && !s.wev.done && s.wev.p >= we.goal) { s.wev = { ...s.wev, done: 1 }; s.tickets += 2; s.badges = [...(s.badges || []), s.wev.id + ':' + s.wev.key]; s.weHit = { id: we.id, t: s.clock }; } }
       { const nu = UNLOCKS.filter(u => !(s.unl || {})[u.id] && unlockReady(s, u)); if (nu.length) { s.unl = { ...s.unl }; nu.forEach(u => { s.unl[u.id] = 1; }); s.unlHit = { ids: nu.map(u => u.id), t: s.clock }; } } // 기능 해금
       const hit = ACHIEVEMENTS.filter(x => !s.ach.includes(x.id) && x.t(s)); if (hit.length) s.ach = [...s.ach, ...hit.map(x => x.id)];

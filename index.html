@@ -197,6 +197,7 @@ section.gh{display:none!important}
 .setsec{margin:12px 0 4px;padding-top:10px;border-top:2px solid #566c86}.setsec .row{gap:8px}.setsec .btn{flex:1 1 30%;font-size:9px}
 /* 안내 카드 */
 .tip{animation:tipin .25s ease-out}@keyframes tipin{from{transform:translateY(-10px);opacity:0}to{transform:none;opacity:1}}
+.carb{height:6px;margin:6px 0 2px}.carb i{background:#a7f070}
 </style>
 </head>
 <body>
@@ -283,6 +284,7 @@ section.gh{display:none!important}
     <section class="panel" id="carp" data-g="car">
       <div class="fh"><b>커리어</b><span class="cnt" id="card"></span></div>
       <div class="rt"><strong id="carn"></strong></div>
+      <div class="ms carb"><i id="carb"></i></div>
       <p class="note" id="carx"></p>
       <ol class="carl" id="carl"></ol>
     </section>
@@ -374,7 +376,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-1304</span>
+  <span class="iver">v2026.11.15-1313</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -514,53 +516,53 @@ const DECOS = [
   { id: 'mic', n: '황금 마이크', fl: 0, need: s => s.bestRating >= 10, nt: '시청률 10% 돌파' },
 ];
 // 직업: 처음에 고른다. 주력 층(st) 처리 속도 +50%·그 층 업그레이드 비용 -20%, 직업마다 특기와 커리어(직급·조건·대사)가 다르다
-// 커리어는 조건을 채우면 승진(개편해도 유지). 승진마다 영구 점수 +5%와 스카우트 티켓. 단계 조건의 누적 점수는 모든 직업이 같다
-const CAREER_AT = [1e4, 1e7, 1e10, 1e13, 1e16];
+// 커리어는 누적 점수가 기준을 넘으면 승진(개편해도 유지). 승진마다 영구 점수 +5%와 스카우트 티켓. 기준은 모든 직업이 같고 직급 이름·대사만 다르다
+const CAREER_AT = [1e4, 1e6, 1e9, 1e12, 1e15]; // 직급은 누적 점수만으로 오른다
 const JOBS = [
   { id: 'reporter', n: '취재기자', st: 0, d: '현장을 뛰며 단독을 쫓는다', perk: '취재 속도 +50% · 단독 성공률 +10%p', scoop: .1,
     career: [
       { n: '수습기자' },
       { n: '취재기자', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '사회부 데스크', say: ['수습 끝. 오늘부터 바이라인에 네 이름 나간다.', '기사는 발로 쓰는 거야.'] },
-      { n: '선임기자', need: s => s.total >= CAREER_AT[1] && (s.scoopT || 0) >= 5 && s.day >= 10, nd: '누적 1천만 점 · 단독 5회 · 게임 속 10일째', tk: 1, who: '사회부장', say: ['단독 세 건, 다들 봤어.', '후배들 취재 동선도 좀 짜 줘.'] },
-      { n: '사회부 데스크', need: s => s.total >= CAREER_AT[2] && (s.scoopT || 0) >= 25 && s.day >= 30, nd: '누적 100억 점 · 단독 25회 · 게임 속 30일째', tk: 2, who: '보도국장', say: ['이제 기사를 고치는 쪽이야.', '팩트 하나에 방송국 신뢰가 걸려 있어.'] },
-      { n: '사회부장', need: s => s.total >= CAREER_AT[3] && s.pts >= 10 && (s.scoopT || 0) >= 40, nd: '누적 10조 점 · 개편 포인트 10 · 단독 40회', tk: 2, who: '보도국장', say: ['사회부를 맡아 줘.', '사건은 끝나도 취재는 끝나지 않아.'] },
-      { n: '보도국장', need: s => s.total >= CAREER_AT[4] && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+      { n: '선임기자', need: s => s.total >= CAREER_AT[1], nd: '누적 100만 점', tk: 1, who: '사회부장', say: ['단독 세 건, 다들 봤어.', '후배들 취재 동선도 좀 짜 줘.'] },
+      { n: '사회부 데스크', need: s => s.total >= CAREER_AT[2], nd: '누적 10억 점', tk: 2, who: '보도국장', say: ['이제 기사를 고치는 쪽이야.', '팩트 하나에 방송국 신뢰가 걸려 있어.'] },
+      { n: '사회부장', need: s => s.total >= CAREER_AT[3], nd: '누적 1조 점', tk: 2, who: '보도국장', say: ['사회부를 맡아 줘.', '사건은 끝나도 취재는 끝나지 않아.'] },
+      { n: '보도국장', need: s => s.total >= CAREER_AT[4], nd: '누적 1000조 점', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
     ] },
   { id: 'camera', n: '영상기자', st: 0, d: '카메라 하나로 현장을 전한다', perk: '취재 속도 +50% · 중계 장비 효과 x1.5', live: 1.5,
     career: [
       { n: '수습 영상기자' },
       { n: '영상기자', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '영상취재 데스크', say: ['삼각대 혼자 펼 줄 알면 이제 영상기자다.', '그림 없으면 뉴스도 없어.'] },
-      { n: '선임 영상기자', need: s => s.total >= CAREER_AT[1] && s.evCount >= 30, nd: '누적 1천만 점 · 속보 30회 대응', tk: 1, who: '영상취재부장', say: ['속보 현장마다 네 그림이 제일 먼저 들어왔어.', '후배들 안전도 챙겨 줘.'] },
-      { n: '영상취재 데스크', need: s => s.total >= CAREER_AT[2] && s.lv.live >= 25 && s.evCount >= 80, nd: '누적 100억 점 · 중계 장비 Lv.25 · 속보 80회', tk: 2, who: '보도국장', say: ['중계차 배치는 이제 네 판단이야.', '어디에 카메라를 세울지가 뉴스를 정해.'] },
-      { n: '영상취재부장', need: s => s.total >= CAREER_AT[3] && s.pts >= 10 && s.lv.live >= 50, nd: '누적 10조 점 · 개편 포인트 10 · 중계 장비 Lv.50', tk: 2, who: '보도국장', say: ['영상취재부를 맡아 줘.', '좋은 그림은 좋은 팀에서 나와.'] },
-      { n: '보도국장', need: s => s.total >= CAREER_AT[4] && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+      { n: '선임 영상기자', need: s => s.total >= CAREER_AT[1], nd: '누적 100만 점', tk: 1, who: '영상취재부장', say: ['속보 현장마다 네 그림이 제일 먼저 들어왔어.', '후배들 안전도 챙겨 줘.'] },
+      { n: '영상취재 데스크', need: s => s.total >= CAREER_AT[2], nd: '누적 10억 점', tk: 2, who: '보도국장', say: ['중계차 배치는 이제 네 판단이야.', '어디에 카메라를 세울지가 뉴스를 정해.'] },
+      { n: '영상취재부장', need: s => s.total >= CAREER_AT[3], nd: '누적 1조 점', tk: 2, who: '보도국장', say: ['영상취재부를 맡아 줘.', '좋은 그림은 좋은 팀에서 나와.'] },
+      { n: '보도국장', need: s => s.total >= CAREER_AT[4], nd: '누적 1000조 점', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
     ] },
   { id: 'editor', n: '영상편집기자', st: 2, d: '1프레임으로 뉴스를 완성한다', perk: '편집 속도 +50% · 속보 점수 +25%', ev: 1.25,
     career: [
       { n: '수습 영상편집기자' },
       { n: '영상편집기자', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '영상편집팀장', say: ['수습 딱지 뗐다. 오늘부터 네 이름으로 리포트 붙는다.', '마감 5분 전에 올리는 버릇만 고치자.'] },
-      { n: '선임 영상편집기자', need: s => s.total >= CAREER_AT[1] && s.evCount >= 30, nd: '누적 1천만 점 · 속보 30회 대응', tk: 1, who: '보도국장', say: ['속보 때 손 빠른 거 다들 봤어.', '이제 후배들 편집도 좀 봐 줘.'] },
-      { n: '영상편집 데스크', need: s => s.total >= CAREER_AT[2] && s.bestRating >= 12 && s.evCount >= 80, nd: '누적 100억 점 · 최고 시청률 12% · 속보 80회', tk: 2, who: '보도국장', say: ['8시 뉴스 큐시트, 이제 자네가 챙기게.', '데스크는 모든 컷의 마지막 눈이야.'] },
-      { n: '영상편집부장', need: s => s.total >= CAREER_AT[3] && s.pts >= 10, nd: '누적 10조 점 · 개편 포인트 10', tk: 2, who: '보도국장', say: ['영상편집부를 맡아 줘.', '사람이 먼저야. 장비는 그다음이고.'] },
-      { n: '보도국장', need: s => s.total >= CAREER_AT[4] && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+      { n: '선임 영상편집기자', need: s => s.total >= CAREER_AT[1], nd: '누적 100만 점', tk: 1, who: '보도국장', say: ['속보 때 손 빠른 거 다들 봤어.', '이제 후배들 편집도 좀 봐 줘.'] },
+      { n: '영상편집 데스크', need: s => s.total >= CAREER_AT[2], nd: '누적 10억 점', tk: 2, who: '보도국장', say: ['8시 뉴스 큐시트, 이제 자네가 챙기게.', '데스크는 모든 컷의 마지막 눈이야.'] },
+      { n: '영상편집부장', need: s => s.total >= CAREER_AT[3], nd: '누적 1조 점', tk: 2, who: '보도국장', say: ['영상편집부를 맡아 줘.', '사람이 먼저야. 장비는 그다음이고.'] },
+      { n: '보도국장', need: s => s.total >= CAREER_AT[4], nd: '누적 1000조 점', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
     ] },
   { id: 'designer', n: '그래픽 디자이너', st: 3, d: '숫자와 지도를 한눈에 보이게', perk: 'CG 속도 +50% · 시청률 +0.5 · 방송 품질 효과 x1.2', rating: .5, qual: 1.2,
     career: [
       { n: '인턴 디자이너' },
       { n: '그래픽 디자이너', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '뉴스그래픽팀장', say: ['인턴 끝. 오늘부터 8시 뉴스 자막도 맡아.', '폰트 하나도 뉴스야.'] },
-      { n: '선임 디자이너', need: s => s.total >= CAREER_AT[1] && s.lv.cg >= 25 && s.day >= 10, nd: '누적 1천만 점 · CG 템플릿 Lv.25 · 게임 속 10일째', tk: 1, who: '뉴스그래픽팀장', say: ['개표 그래픽 반응 좋더라.', '템플릿 정리 좀 부탁해.'] },
-      { n: '아트 디렉터', need: s => s.total >= CAREER_AT[2] && s.lv.qual >= 25 && s.bestRating >= 12 && s.day >= 30, nd: '누적 100억 점 · 방송 품질 Lv.25 · 최고 시청률 12% · 게임 속 30일째', tk: 2, who: '보도국장', say: ['화면 전체의 톤은 이제 자네 몫이야.', '시청자는 3초 안에 이해해야 해.'] },
-      { n: '뉴스그래픽팀장', need: s => s.total >= CAREER_AT[3] && s.pts >= 10 && s.lv.cg >= 100, nd: '누적 10조 점 · 개편 포인트 10 · CG 템플릿 Lv.100', tk: 2, who: '보도국장', say: ['그래픽팀을 맡아 줘.', '수정 요청은 이제 네가 정리하는 거야.'] },
-      { n: '디자인센터장', need: s => s.total >= CAREER_AT[4] && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['방송국의 얼굴을 맡기겠습니다.', '오늘도 화면은 계속됩니다.'] },
+      { n: '선임 디자이너', need: s => s.total >= CAREER_AT[1], nd: '누적 100만 점', tk: 1, who: '뉴스그래픽팀장', say: ['개표 그래픽 반응 좋더라.', '템플릿 정리 좀 부탁해.'] },
+      { n: '아트 디렉터', need: s => s.total >= CAREER_AT[2], nd: '누적 10억 점', tk: 2, who: '보도국장', say: ['화면 전체의 톤은 이제 자네 몫이야.', '시청자는 3초 안에 이해해야 해.'] },
+      { n: '뉴스그래픽팀장', need: s => s.total >= CAREER_AT[3], nd: '누적 1조 점', tk: 2, who: '보도국장', say: ['그래픽팀을 맡아 줘.', '수정 요청은 이제 네가 정리하는 거야.'] },
+      { n: '디자인센터장', need: s => s.total >= CAREER_AT[4], nd: '누적 1000조 점', tk: 3, who: '사장', say: ['방송국의 얼굴을 맡기겠습니다.', '오늘도 화면은 계속됩니다.'] },
     ] },
   { id: 'engineer', n: '방송 엔지니어', st: 4, d: '방송사고 없는 송출을 책임진다', perk: '송출 속도 +50% · 오프라인 수익 +20%p · 8시 뉴스 광고 수입 x1.3', off: .2, ad: 1.3,
     career: [
       { n: '수습 엔지니어' },
       { n: '방송 엔지니어', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '주조정실 선배', say: ['첫 송출 무사고. 오늘부터 콘솔 하나 맡아.', '이상하면 일단 백업 라인부터 확인해.'] },
-      { n: '선임 엔지니어', need: s => s.total >= CAREER_AT[1] && s.lv.out >= 25 && s.day >= 10, nd: '누적 1천만 점 · 송출 장비 Lv.25 · 게임 속 10일째', tk: 1, who: '방송기술부장', say: ['야간 근무 때 장비 다 살려 놨더라.', '후배들 장애 대응 훈련 좀 맡아 줘.'] },
-      { n: '주조정실 기술감독', need: s => s.total >= CAREER_AT[2] && s.lv.out >= 100 && s.bestRating >= 12 && s.day >= 30, nd: '누적 100억 점 · 송출 장비 Lv.100 · 최고 시청률 12% · 게임 속 30일째', tk: 2, who: '보도국장', say: ['8시 뉴스 주조정실, 이제 자네가 지휘해.', '큐는 1초도 늦으면 안 돼.'] },
-      { n: '방송기술부장', need: s => s.total >= CAREER_AT[3] && s.pts >= 10 && s.lv.ing >= 100, nd: '누적 10조 점 · 개편 포인트 10 · 인제스트 서버 Lv.100', tk: 2, who: '기술본부장', say: ['방송기술부를 맡아 줘.', '장비는 바뀌어도 원칙은 같아. 무사고.'] },
-      { n: '기술본부장', need: s => s.total >= CAREER_AT[4] && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['방송국의 심장을 맡기겠습니다.', '오늘도 전파는 멈추지 않습니다.'] },
+      { n: '선임 엔지니어', need: s => s.total >= CAREER_AT[1], nd: '누적 100만 점', tk: 1, who: '방송기술부장', say: ['야간 근무 때 장비 다 살려 놨더라.', '후배들 장애 대응 훈련 좀 맡아 줘.'] },
+      { n: '주조정실 기술감독', need: s => s.total >= CAREER_AT[2], nd: '누적 10억 점', tk: 2, who: '보도국장', say: ['8시 뉴스 주조정실, 이제 자네가 지휘해.', '큐는 1초도 늦으면 안 돼.'] },
+      { n: '방송기술부장', need: s => s.total >= CAREER_AT[3], nd: '누적 1조 점', tk: 2, who: '기술본부장', say: ['방송기술부를 맡아 줘.', '장비는 바뀌어도 원칙은 같아. 무사고.'] },
+      { n: '기술본부장', need: s => s.total >= CAREER_AT[4], nd: '누적 1000조 점', tk: 3, who: '사장', say: ['방송국의 심장을 맡기겠습니다.', '오늘도 전파는 멈추지 않습니다.'] },
     ] },
 ];
 const jobOf = s => { const id = s && s.job === 'anchor' ? 'engineer' : s && s.job; return JOBS.find(j => j.id === id) || JOBS[2]; }; // 고르기 전 저장본은 영상편집기자, 예전 '앵커'는 방송 엔지니어로 본다
@@ -833,7 +835,7 @@ function reducer(st, a) {
         if (!mis.all && mis.list.every(m => m.done)) { mis.all = 1; s.tickets += 1; s.misAll += 1; s.misHit = { ...s.misHit, all: 1 }; }
         s.mis = mis;
       }
-      { const nc = careerOf(s)[(s.career || 0) + 1]; if (nc && nc.need(s)) { s.career = (s.career || 0) + 1; s.tickets += nc.tk; s.promo = { i: s.career, t: s.clock }; } } // 승진
+      { const C = careerOf(s); let c = s.career || 0, tk = 0; while (C[c + 1] && C[c + 1].need(s)) { c++; tk += C[c].tk; } if (c > (s.career || 0)) { s.career = c; s.tickets += tk; s.promo = { i: c, t: s.clock, tk }; } } // 승진: 여러 단계를 한 번에 넘으면 마지막 직급 창 하나만
       { const we = weekEvent(s); if (we && s.wev && !s.wev.done && s.wev.p >= we.goal) { s.wev = { ...s.wev, done: 1 }; s.tickets += 2; s.badges = [...(s.badges || []), s.wev.id + ':' + s.wev.key]; s.weHit = { id: we.id, t: s.clock }; } }
       { const nu = UNLOCKS.filter(u => !(s.unl || {})[u.id] && unlockReady(s, u)); if (nu.length) { s.unl = { ...s.unl }; nu.forEach(u => { s.unl[u.id] = 1; }); s.unlHit = { ids: nu.map(u => u.id), t: s.clock }; } } // 기능 해금
       const hit = ACHIEVEMENTS.filter(x => !s.ach.includes(x.id) && x.t(s)); if (hit.length) s.ach = [...s.ach, ...hit.map(x => x.id)];
@@ -1778,7 +1780,9 @@ const TUTORIAL = [
 
 
 const $ = id => document.getElementById(id);
-const fmt = n => { n = Math.floor(n); return n >= 1e16 ? (n / 1e16).toFixed(1) + '경' : n >= 1e12 ? (n / 1e12).toFixed(1) + '조' : n >= 1e8 ? (n / 1e8).toFixed(1) + '억' : n >= 1e4 ? (n / 1e4).toFixed(1) + '만' : n.toLocaleString('ko-KR'); };
+// 큰 수 표기: 만·억·조·경·해, 100 이상이면 소수점 없이 (예: 1000조, 12.5억)
+const UNITS = [[1e20, '해'], [1e16, '경'], [1e12, '조'], [1e8, '억'], [1e4, '만']];
+const fmt = n => { n = Math.floor(n); for (const [v, u] of UNITS) if (n >= v) { const x = n / v; return (x >= 100 ? Math.floor(x).toLocaleString('ko-KR') : x.toFixed(1).replace(/\.0$/, '')) + u; } return n.toLocaleString('ko-KR'); };
 const FLOORS = [['취재', '카메라 기자 · 취재 기자', 'crew'], ['인제스트', '인제스트실', 'ing'], ['편집', '영상편집기자', 'edit'], ['CG', '그래픽 디자이너', 'cg'], ['송출', '뉴스 스튜디오', 'out'], ['중계 장비', '중계 차량 · 리포터', 'live'], ['방송 품질', '화질 · 시청률', 'qual']];
 const byId = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
 const floorHtml = i => `<section class="panel floor" id="fl${i}"><div class="fh"><div><b>${FLOORS[i][0]}</b><i class="mj" id="mj${i}" hidden>주력</i><i class="bnb" id="bnb${i}" hidden>병목</i> <small>${FLOORS[i][1]}</small><div class="cnt" id="c${i}"></div></div><div class="bs"><button class="btn mini" data-id="${FLOORS[i][2]}" id="fb${i}"></button>${i < 5 ? `<button class="btn mini" data-hire="${i}" id="mb${i}"></button>` : ''}</div></div><div class="ms"><i id="m${i}"></i></div><canvas width="320" height="64"></canvas></section>`;
@@ -1873,7 +1877,7 @@ function Hud(bus) {
     toast(m) { const e = $('toast'); e.textContent = m; clearTimeout(tt); tt = setTimeout(() => e.textContent = '', 3500); },
     offline(o) { $('offd').textContent = `${o.min}분 동안 야간 근무로 ${fmt(o.n)}점을 벌었어요.`; $('offline').hidden = false; },
     showPaper(p) { $('pmast').textContent = p.mast; $('pno').textContent = p.no; $('phead').textContent = p.head; $('pfoot').textContent = p.foot; $('psubs').innerHTML = ''; p.subs.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('psubs').appendChild(li); }); $('pad').disabled = false; $('pad').textContent = '광고 보고 수입 2배'; $('paper').hidden = false; },
-    showPromo(i, name, s) { const c = careerOf(s)[i]; $('prt').textContent = `${name}님을 ${c.n}(으)로 임명합니다.`; $('prwho').textContent = c.who; $('prsay').textContent = c.say.join(' '); $('prrew').textContent = `보상: 영구 점수 +5% · 스카우트 티켓 ${c.tk}장`; $('promo').hidden = false; },
+    showPromo(i, name, s, tk) { const c = careerOf(s)[i]; tk = tk || c.tk; $('prt').textContent = `${name}님을 ${c.n}(으)로 임명합니다.`; $('prwho').textContent = c.who; $('prsay').textContent = c.say.join(' '); $('prrew').textContent = `보상: 영구 점수 +5%/직급 · 스카우트 티켓 ${tk}장`; $('promo').hidden = false; },
     showTip(t) { $('tipt').textContent = t.t; $('tipd').textContent = t.d; $('tipgo').hidden = !t.tab; $('tip').hidden = false; },
     hideTip() { $('tip').hidden = true; },
     tipOpen: () => !$('tip').hidden,
@@ -1924,7 +1928,10 @@ function Hud(bus) {
       { // 커리어
         const ci = s.career || 0, nx = CR[ci + 1];
         $('carn').textContent = CR[ci].n; $('card').textContent = `${JB.n} · 영구 점수 +${ci * 5}%`;
-        $('carx').textContent = (nx ? `다음 승진: ${nx.n} · 조건 ${nx.nd}` : '최고 직급에 올랐어요!') + ` · 특기: ${JB.perk}`;
+        // 다음 승진까지: 이전 기준~다음 기준 사이를 로그 눈금으로 (점수는 몇 배씩 오르므로)
+        const lo = ci ? CAREER_AT[ci - 1] : 1, hi = CAREER_AT[ci], pr = nx ? Math.max(0, Math.min(1, Math.log(Math.max(1, s.total) / lo) / Math.log(hi / lo))) : 1;
+        $('carb').style.width = pr * 100 + '%';
+        $('carx').textContent = (nx ? `다음: ${nx.n} · 누적 ${fmt(s.total)} / ${fmt(hi)}점 (${Math.floor(pr * 100)}%)` : '최고 직급에 올랐어요!') + ` · 특기: ${JB.perk}`;
         document.querySelectorAll('#carl li').forEach((li, i) => { li.className = i === ci ? 'now' : i < ci ? 'on' : ''; });
       }
       { // 주간 한정 이벤트
@@ -2146,7 +2153,7 @@ function pump(s) {
   if (!s.name || tutOn(s) || busy() || Date.now() - lastPop < 2500) return;
   if (!popQ.length) { const t = TIPS.find(x => !(s.tips || {})[x.id] && x.when(s)); if (t) popQ.push({ kind: 'tip', t }); }
   const it = popQ.shift(); if (!it) return;
-  if (it.kind === 'promo') { Sfx.play('rank'); ui.showPromo(it.i, s.name, s); }
+  if (it.kind === 'promo') { Sfx.play('rank'); ui.showPromo(it.i, s.name, s, it.tk); }
   else { tipNow = it.t; ui.showTip(it.t); }
 }
 const markPop = () => { lastPop = Date.now(); };
@@ -2279,7 +2286,7 @@ store.subscribe((s, p) => {
   if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; paperNow = paper(s.name, r); ui.paperReady(true); ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}%${r.rival != null ? (r.won ? ' · 라이벌에 승리!' : ' · 라이벌에 패배') : ''} · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
   if (s.judge && s.judge !== p.judge) { const j = s.judge.res; Sfx.play(j === 'fail' ? 'fail' : j === 'win' ? 'rank' : 'buy'); ui.toast(j === 'win' ? '단독 성공! 이번 속보 점수 x2 · 오늘 시청률 +0.8' : j === 'fail' ? '오보! 정정 보도 나갑니다... 오늘 시청률 -1.2' : '팩트 체크 완료, 안전하게 송출 (점수 x1.2)'); }
   if (s.misHit && s.misHit !== p.misHit) { const m = s.misHit; Sfx.play('rank'); ui.toast(m.all ? `오늘의 미션 올클리어! +${fmt(m.gain)}점 · 스카우트 티켓 +1` : `미션 달성! +${fmt(m.gain)}점`); }
-  if (s.promo && s.promo !== p.promo) popQ.push({ kind: 'promo', i: s.promo.i });
+  if (s.promo && s.promo !== p.promo) { for (let k = popQ.length - 1; k >= 0; k--) if (popQ[k].kind === 'promo') popQ.splice(k, 1); popQ.push({ kind: 'promo', i: s.promo.i, tk: s.promo.tk }); } // 대기 중인 승진 창은 최신 것 하나만
   if (s.unlHit && s.unlHit !== p.unlHit) { // 기능 해금: 하나면 안내 카드, 한꺼번에 여러 개(예전 저장본)면 조용히 표시만
     const ids = s.unlHit.ids; if (ids.length === 1 && p.name) { const u = UNLOCKS.find(x => x.id === ids[0]); popQ.push({ kind: 'tip', t: { ...u, t: `새 기능: ${u.t}` } }); Sfx.play('rank'); } else ids.forEach(id => store.dispatch({ type: 'TIP', id }));
   }
