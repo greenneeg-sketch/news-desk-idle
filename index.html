@@ -3,7 +3,7 @@
 <head>
 <!-- 자동 생성 파일: 직접 고치지 말고 dev.html·js·css를 고친 뒤 python3 build.py -->
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>NEWS DESK</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#1a1c2c">
@@ -141,6 +141,9 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .carl{margin:6px 0 0;padding-left:20px;font-size:12px;color:var(--sub);line-height:1.7}.carl li.on{color:var(--y)}.carl li.now{color:#a7f070;font-weight:700}
 .promo h1{color:#a7f070}.prt{font-size:16px;line-height:1.5;margin:6px 0 10px}.say{background:#14141f;padding:10px;box-shadow:inset 0 0 0 2px #566c86}
 .say b{color:var(--y);font-size:13px}.say p{margin:6px 0 0;line-height:1.6;font-size:14px}
+/* 두 번 탭 확대 막기(아이폰 사파리): 빠른 연타가 확대 대신 버튼 입력으로 들어가게 */
+html,body,button,canvas,.intro{touch-action:manipulation}
+button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
 </style>
 </head>
 <body>
@@ -299,7 +302,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-0920</span>
+  <span class="iver">v2026.11.15-0923</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
