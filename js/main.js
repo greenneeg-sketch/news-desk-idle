@@ -21,7 +21,7 @@ import { Bubbles } from './ui/bubbles.js';
 import { paper } from './ui/paper.js';
 import { Intro } from './ui/intro.js';
 import { Hud, fmt } from './ui/hud.js';
-import { MiniCut } from './ui/minigame.js';
+import { MINI } from './ui/minigame.js';
 import { perSec } from './systems/economy.js';
 import { jobOf } from './data/config.js';
 import { isUnlocked } from './data/tips.js';
@@ -139,39 +139,79 @@ const closeTip = go => {
   if (go && t.tab) { ui.showTab(t.tab, t.g); const el = $i(t.target); if (el && el.scrollIntoView) setTimeout(() => el.scrollIntoView({ block: 'start', behavior: 'smooth' }), 80); }
 };
 $i('tipok').onclick = () => closeTip(false); $i('tipgo').onclick = () => closeTip(true);
-// 미니게임 아이콘: 해금 뒤 3~5분마다 오른쪽 아래에 20초 동안 뜬다. 놓쳐도 손해는 없다(방치형이므로)
-const MG_LIFE = 20000; let mgNext = 0, mgUntil = 0, mgReward = 0, mgGrade = '';
+// 미니게임: 해금 뒤 3~5분마다 왼쪽 아래 아이콘이 20초 동안 뜬다(놓쳐도 손해 없음). 70%는 내 직업 게임, 나머지는 다른 게임
+// 메뉴(🎮)에서는 보상 없이 연습. 공통 화면은 여기서, 게임 그리기·판정은 ui/minigame.js
+const MG_LIFE = 20000, MG_ON = MINI.LIST.filter(g => !g.soon);
+let mgNext = 0, mgUntil = 0, mgIcon = null, mgPlay = null, mgReward = 0, mgGrade = '';
 const mgSchedule = (ms = (180 + Math.random() * 120) * 1000) => { mgNext = Date.now() + ms; };
 const mgHide = () => { $i('mgicon').hidden = true; mgUntil = 0; };
+const mgMine = (s, g) => g.jobs.includes(jobOf(s).id);
+function mgPick(s) { const mine = MG_ON.filter(g => mgMine(s, g)); return mine.length && Math.random() < .7 ? mine[Math.floor(Math.random() * mine.length)] : MG_ON[Math.floor(Math.random() * MG_ON.length)]; }
 function mgTick() {
-  const s = store.getState(), now = Date.now();
-  if (!s.name || !isUnlocked(s, 'mini')) return;
+  const s = store.getState(), now = Date.now(), on = !!s.name && isUnlocked(s, 'mini');
+  $i('mgmb').hidden = $i('imini').hidden = !on; if (!on) return;
   if (!mgNext) mgSchedule(s.tips && s.tips.mini1 ? undefined : 6000); // 처음 해금되면 곧바로 한 번
   if (mgUntil) { if (now > mgUntil) { mgHide(); mgSchedule(); } else $i('mgbar').style.transform = `scaleX(${(mgUntil - now) / MG_LIFE})`; return; }
-  if (now >= mgNext && !busy() && !tutOn(s) && !document.hidden) { $i('mgicon').hidden = false; mgUntil = now + MG_LIFE; Sfx.play('alert'); }
+  if (now >= mgNext && !busy() && !tutOn(s) && !document.hidden) {
+    mgIcon = mgPick(s); $i('mgicon').querySelector('b').textContent = mgIcon.icon; $i('mgicon').querySelector('small').textContent = mgIcon.sub;
+    $i('mgicon').hidden = false; mgUntil = now + MG_LIFE; Sfx.play('alert');
+  }
 }
 setInterval(mgTick, 250);
 if (location.hash === '#mini') mgSchedule(1500); // 테스트용: 주소 끝에 #mini
-$i('mgicon').onclick = () => {
-  mgHide(); mgSchedule(); $i('mcres').hidden = true; $i('mcquit').hidden = false; $i('mcut').hidden = false;
-  store.dispatch({ type: 'TIP', id: 'mini1' }); Music.play('breaking'); MiniCut.start();
-};
-const mgClose = () => { MiniCut.stop(); $i('mcut').hidden = true; markPop(); Music.play(store.getState().ev ? 'breaking' : 'desk'); };
-window.__mc = MiniCut; // 테스트용
-MiniCut.init({
-  sfx: k => Sfx.play(k),
-  onDone(r) {
-    const s = store.getState(), MIN = { S: 4, A: 3, B: 2, C: 1 }[r.grade], job = jobOf(s).id === 'editor' ? 1.5 : 1, per = Math.max(perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0 }), 5); // 속보·부스트·특종 배수는 빼고 평소 생산량 기준
-    mgReward = Math.floor(per * 60 * MIN * job * (r.perfect ? 1.5 : 1)); mgGrade = r.grade;
-    $i('mcgr').textContent = r.grade; $i('mcst').textContent = `PERFECT ${r.perf} · GOOD ${r.good} · MISS ${r.miss} · 최대 ${r.best}콤보`;
-    $i('mcrw').textContent = `보상 ${fmt(mgReward)}점 (생산량 ${MIN}분치${job > 1 ? ' · 편집기자 특기 x1.5' : ''}${r.perfect ? ' · 완벽 편집 x1.5' : ''})`;
-    $i('mcl').textContent = r.perfect ? '완벽 편집!' : '편집 완료'; $i('mcs').textContent = ''; $i('mcres').hidden = false; $i('mcquit').hidden = true; $i('mcad').disabled = false;
-    Sfx.play(r.grade === 'C' ? 'fail' : 'rank');
+function mgOpen(g, practice) {
+  mgPlay = { g, practice }; mgReward = 0;
+  $i('mctitle').textContent = g.n + (practice ? ' · 연습' : ''); $i('mcres').hidden = true; $i('mcquit').hidden = false; $i('mgmenu').hidden = true; $i('mcut').hidden = false;
+  $i('mcj').textContent = ''; $i('mcc').textContent = '';
+  const game = MINI.start(g.id); $i('mcshot').hidden = !game.shutter; Music.play('breaking');
+}
+const mgClose = () => { MINI.stop(); mgPlay = null; $i('mcut').hidden = true; markPop(); Music.play(store.getState().ev ? 'breaking' : 'desk'); };
+$i('mgicon').onclick = () => { mgHide(); mgSchedule(); store.dispatch({ type: 'TIP', id: 'mini1' }); mgOpen(mgIcon || MG_ON[0], false); };
+let mgPop = 0;
+MINI.init({
+  canvas: $i('mccv'), sfx: k => Sfx.play(k),
+  label(a, b) { $i('mcl').textContent = a; $i('mcs').textContent = b || ''; },
+  pop(t, c) { const e = $i('mcj'); e.textContent = t; e.className = 'mcj ' + c; clearTimeout(mgPop); mgPop = setTimeout(() => { e.textContent = ''; }, 700); },
+  combo(t) { $i('mcc').textContent = t; },
+  done(r) {
+    const { g, practice } = mgPlay, s = store.getState(), MIN = { S: 4, A: 3, B: 2, C: 1 }[r.grade], job = mgMine(s, g) ? 1.5 : 1, per = Math.max(perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0 }), 5); // 속보·부스트·특종 배수는 빼고 평소 생산량 기준
+    const prev = (s.mgBest || {})[g.id]; store.dispatch({ type: 'MGREC', id: g.id, grade: r.grade, practice });
+    $i('mcgr').textContent = r.grade; $i('mcst').textContent = r.stat; $i('mcshot').hidden = true;
+    $i('mcl').textContent = r.perfect ? '완벽!' : '완료'; $i('mcs').textContent = '';
+    if (practice) { mgReward = 0; $i('mcrw').textContent = `연습 모드 · 최고 기록 ${store.getState().mgBest[g.id]}${prev && prev !== store.getState().mgBest[g.id] ? ' (신기록!)' : ''}`; }
+    else { mgReward = Math.floor(per * 60 * MIN * job * (r.perfect ? 1.5 : 1)); mgGrade = r.grade;
+      $i('mcrw').textContent = `보상 ${fmt(mgReward)}점 (생산량 ${MIN}분치${job > 1 ? ' · 직업 특기 x1.5' : ''}${r.perfect ? ' · 완벽 x1.5' : ''})`; }
+    $i('mcrow').hidden = practice; $i('mcprow').hidden = !practice; $i('mcres').hidden = false; $i('mcquit').hidden = true; Sfx.play(r.grade === 'C' ? 'fail' : 'rank');
   },
 });
+window.__mini = MINI; // 테스트용
+{ // 화면 입력: 누르기·문지르기를 캔버스 좌표로 바꿔 지금 게임에 넘긴다
+  const st = $i('mcstage'), xy = e => { const r = st.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * 240, (e.clientY - r.top) / r.height * 150]; };
+  st.addEventListener('pointerdown', e => { e.preventDefault(); const g = MINI.cur; if (!g) return; try { st.setPointerCapture(e.pointerId); } catch (x) { } g.down(...xy(e)); });
+  st.addEventListener('pointermove', e => { const g = MINI.cur; if (g) g.move(...xy(e)); });
+  ['pointerup', 'pointercancel'].forEach(k => st.addEventListener(k, () => { const g = MINI.cur; if (g) g.up(); }));
+  $i('mcshot').addEventListener('pointerdown', e => { e.preventDefault(); const g = MINI.cur; if (g) g.shot(); });
+  addEventListener('keydown', e => { if (mgPlay && MINI.cur && ['ArrowLeft', 'ArrowRight', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); MINI.cur.key(e); } });
+}
 $i('mcok').onclick = () => { if (mgReward) store.dispatch({ type: 'GAIN', n: mgReward }); ui.toast(`${mgGrade}등급! ${fmt(mgReward)}점 획득`); mgReward = 0; mgClose(); };
 $i('mcad').onclick = () => { if (!mgReward) return; store.dispatch({ type: 'GAIN', n: mgReward * 2 }); ui.toast(`실제 앱에서는 보상형 광고가 나와요. ${fmt(mgReward * 2)}점 획득!`); mgReward = 0; Sfx.play('buy'); mgClose(); };
-$i('mcquit').onclick = () => mgClose();
+$i('mcquit').onclick = () => { const p = mgPlay && mgPlay.practice; mgClose(); if (p) mgMenu(); };
+$i('mcagain').onclick = () => mgOpen(mgPlay.g, true);
+$i('mcback').onclick = () => { mgClose(); mgMenu(); };
+// 미니게임 모음(연습)
+function mgMenu() {
+  const s = store.getState(), box = $i('mglist'); box.replaceChildren();
+  MINI.LIST.forEach(g => {
+    const row = document.createElement('div'), info = document.createElement('div'), b = document.createElement('b'), d = document.createElement('small'), best = document.createElement('span'), btn = document.createElement('button');
+    row.className = 'mgi' + (mgMine(s, g) ? ' my' : ''); b.textContent = g.n; d.textContent = g.d; best.className = 'bg'; best.textContent = (s.mgBest || {})[g.id] || '-';
+    btn.className = 'btn mini' + (g.soon ? ' alt' : ''); btn.textContent = g.soon ? '준비 중' : '연습'; btn.disabled = !!g.soon; btn.onclick = () => mgOpen(g, true);
+    info.append(b, d); row.append(best, info, btn); box.append(row);
+  });
+  $i('mgmenu').hidden = false;
+}
+$i('mgmb').onclick = () => mgMenu();
+$i('imini').onclick = () => enter(mgMenu);
+$i('mgmok').onclick = () => { $i('mgmenu').hidden = true; markPop(); };
 // 신문: 바로 띄우지 않고 '신문 도착' 버튼으로 (원할 때 본다)
 let paperNow = null;
 $i('pnew').onclick = () => { if (paperNow) { ui.showPaper(paperNow); paperNow = null; ui.paperReady(false); } };

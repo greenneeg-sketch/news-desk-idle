@@ -20,7 +20,7 @@
 <main class="app">
   <header class="panel hud">
     <div><div class="sname" id="sname"></div><span class="px">SCORE</span><strong id="score">0</strong><small id="rank"></small><div class="ms"><i id="rkb"></i></div></div>
-    <div class="chips"><div class="hbtns"><button class="help home" id="homeb" aria-label="메인 화면으로">⌂</button><button class="help" id="helpb" aria-label="튜토리얼 다시 보기">?</button><button class="help gear" id="gearb" aria-label="설정">⚙</button></div><span id="ps"></span><span id="pt"></span></div>
+    <div class="chips"><div class="hbtns"><button class="help home" id="homeb" aria-label="메인 화면으로">⌂</button><button class="help" id="helpb" aria-label="튜토리얼 다시 보기">?</button><button class="help gear" id="gearb" aria-label="설정">⚙</button><button class="help" id="mgmb" aria-label="미니게임" hidden>🎮</button></div><span id="ps"></span><span id="pt"></span></div>
   </header>
   <section class="panel offline" id="offline" hidden>
     <p id="offd"></p>
@@ -179,18 +179,27 @@
 <button class="mgicon" id="mgicon" hidden><b>속보</b><small>컷 편집</small><i id="mgbar"></i></button>
 <div class="modal" id="mcut" hidden>
   <div class="panel mcut">
-    <div class="fh"><b>속보 컷 편집</b><span class="cnt" id="mcl"></span></div>
+    <div class="fh"><b id="mctitle">미니게임</b><span class="cnt" id="mcl"></span></div>
     <div class="mcstage" id="mcstage">
       <canvas id="mccv" width="240" height="150"></canvas>
       <span class="mcj" id="mcj"></span><span class="mcc" id="mcc"></span>
     </div>
     <p class="note" id="mcs"></p>
+    <button class="btn warn mcshot" id="mcshot" hidden>● 셔터</button>
     <div id="mcres" hidden>
       <div class="mcg"><strong id="mcgr"></strong><span id="mcst"></span></div>
       <p class="mcrw" id="mcrw"></p>
-      <div class="row"><button class="btn" id="mcok">받기</button><button class="btn warn" id="mcad">광고 보고 2배</button></div>
+      <div class="row" id="mcrow"><button class="btn" id="mcok">받기</button><button class="btn warn" id="mcad">광고 보고 2배</button></div>
+      <div class="row" id="mcprow" hidden><button class="btn" id="mcagain">다시 하기</button><button class="btn alt" id="mcback">목록으로</button></div>
     </div>
     <button class="btn alt mcx" id="mcquit">그만하기</button>
+  </div>
+</div>
+<div class="modal" id="mgmenu" hidden>
+  <div class="panel">
+    <div class="fh"><h1>미니게임</h1><button class="btn mini" id="mgmok">닫기</button></div>
+    <p class="note">연습 모드는 보상이 없어요. 최고 등급은 기록돼요. 내 직업의 미니게임은 실전 보상이 1.5배예요.</p>
+    <div id="mglist"></div>
   </div>
 </div>
 <div class="modal" id="paper" hidden>
@@ -212,7 +221,7 @@
   <span class="iver">v__BUILD__</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
-    <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
+    <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
   </div>
   <div class="iticker ifix"><span id="iticker"></span></div>
 </div>
