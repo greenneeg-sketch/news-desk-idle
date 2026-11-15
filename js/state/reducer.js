@@ -1,4 +1,4 @@
-import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES, SCOOP_P, DIL_SEC, RESEARCH, DECOS, CAREER } from '../data/config.js';
+import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES, SCOOP_P, DIL_SEC, RESEARCH, DECOS, jobOf, careerOf } from '../data/config.js';
 import { weekEvent, weekFor } from '../systems/weekly.js';
 import { newMissions, progress } from '../systems/missions.js';
 import { tierOf } from '../systems/season.js';
@@ -13,10 +13,10 @@ export const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {},
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '',
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -36,7 +36,7 @@ const wevBump = (st, k, evId) => { const we = weekEvent(st); return we && st.wev
 function judge(s, pick, r) {
   const ev = { ...s.ev, pick };
   if (pick === 'safe') { ev.sc = Math.round(ev.sc * 1.2 * 10) / 10; s.judge = { res: 'safe', t: s.clock }; }
-  else if (r < SCOOP_P + .04 * rl(s, 'scoop')) { ev.sc *= 2; s.dAdj += .8; s.scoopT += 1; s.rp += 1; s.dW += 1; s.judge = { res: 'win', t: s.clock }; }
+  else if (r < SCOOP_P + .04 * rl(s, 'scoop') + (jobOf(s).scoop || 0)) { ev.sc *= 2; s.dAdj += .8; s.scoopT += 1; s.rp += 1; s.dW += 1; s.judge = { res: 'win', t: s.clock }; }
   else { ev.end = s.clock; s.dAdj -= 1.2; s.dF += 1; s.judge = { res: 'fail', t: s.clock }; }
   s.ev = ev; return s;
 }
@@ -68,13 +68,13 @@ export function reducer(st, a) {
         if (!mis.all && mis.list.every(m => m.done)) { mis.all = 1; s.tickets += 1; s.misAll += 1; s.misHit = { ...s.misHit, all: 1 }; }
         s.mis = mis;
       }
-      { const nc = CAREER[(s.career || 0) + 1]; if (nc && nc.need(s)) { s.career = (s.career || 0) + 1; s.tickets += nc.tk; s.promo = { i: s.career, t: s.clock }; } } // 승진
+      { const nc = careerOf(s)[(s.career || 0) + 1]; if (nc && nc.need(s)) { s.career = (s.career || 0) + 1; s.tickets += nc.tk; s.promo = { i: s.career, t: s.clock }; } } // 승진
       { const we = weekEvent(s); if (we && s.wev && !s.wev.done && s.wev.p >= we.goal) { s.wev = { ...s.wev, done: 1 }; s.tickets += 2; s.badges = [...(s.badges || []), s.wev.id + ':' + s.wev.key]; s.weHit = { id: we.id, t: s.clock }; } }
       const hit = ACHIEVEMENTS.filter(x => !s.ach.includes(x.id) && x.t(s)); if (hit.length) s.ach = [...s.ach, ...hit.map(x => x.id)];
       if (s.chal) { const c = CHALLENGES.find(x => x.id === s.chal); if (c && s.run >= c.goal) { s.chalDone = { ...s.chalDone, [c.id]: 1 }; s.chalWin = c.id + ':' + s.clock; s.chal = null; } }
       return s;
     }
-    case 'NAME': return { ...st, name: a.name, uid: st.uid || a.uid };
+    case 'NAME': return { ...st, name: a.name, uid: st.uid || a.uid, job: a.job || st.job || 'editor' };
     case 'SPAWN': return { ...st, evCount: st.evCount + 1, dEv: st.dEv + 1, dLog: [...(st.dLog || []), a.ev.name].slice(-3), wev: wevBump(st, 'ev', a.ev.id), week: bump(st.week, 'ev'), ev: { ...a.ev, end: st.clock + a.ev.dur, boost: !!st.chief, dilEnd: st.clock + DIL_SEC, pick: null } };
     case 'JUDGE': return st.ev && st.ev.dil && !st.ev.pick ? judge({ ...st }, a.pick, a.r) : st;
     case 'BOOST': return st.ev ? { ...st, ev: { ...st.ev, boost: true } } : st;

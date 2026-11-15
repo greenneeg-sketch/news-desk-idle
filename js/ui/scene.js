@@ -1,4 +1,5 @@
 import { MILESTONES, CARDS, RARITY, DECOS } from '../data/config.js';
+import { drawCards } from './cardart.js';
 // 16비트풍 픽셀 렌더러: 그라데이션 밴드, 베벨 셰이딩, 음영 있는 캐릭터, 단계별 외형 변화(tier 0~4)
 const COL = ['#41a6f6', '#38b764', '#ffcd75', '#b13e53', '#f4f4f4'];
 const IDS = ['crew', 'ing', 'edit', 'cg', 'out', 'live', 'qual'];
@@ -149,16 +150,7 @@ export function Scene(canvases, cardCv) {
         if (i < 5 && s.mg[i]) { person(c, 296, GY - 28, PAL('#f4f4f4', '#14141f')); R(c, 304, GY - 14, 2, 7, '#b13e53'); bx(c, 288, GY - 16, 8, 11, '#8b5e3c'); R(c, 290, GY - 13, 4, 1, '#f4f4f4'); }
         if (k >= 4) { R(c, 0, 0, 320, 2, '#ffd24a'); R(c, 0, 62, 320, 2, '#ffd24a'); }
       });
-      if (cc) { // 직원 카드 도감: 6열 x 2행, 미획득은 실루엣
-        cc.imageSmoothingEnabled = false; R(cc, 0, 0, 320, 88, '#1a1c2c');
-        CARDS.forEach((cd, i) => {
-          const x = i % 8 * 40, y = (i / 8 | 0) * 44, n = s.cards[cd.id] || 0, col = RARITY[cd.rar].c;
-          bx(cc, x + 2, y + 2, 36, 40, n ? '#3a4466' : '#14161f'); if (n) { R(cc, x + 2, y + 2, 36, 2, col); for (let m = 0; m < n; m++) R(cc, x + 8 + m * 8, y + 36, 6, 3, col); }
-          person(cc, x + 10, y + 6, n ? (cd.hero ? HERO_PAL[cd.hero] : PAL(cd.st < 0 ? '#ffd24a' : COL[cd.st], HAIR[i % 4])) : DARK);
-          if (n && cd.hero) { R(cc, x + 3, y + 3, 4, 4, '#ffd24a'); R(cc, x + 4, y + 4, 2, 2, '#ff4ad6'); } // 히어로 표시
-          if (i === sel) { cc.strokeStyle = '#ffffff'; cc.strokeRect(x + 1.5, y + 1.5, 37, 41); }
-        });
-      }
+      if (cc) drawCards(cc, s, t, sel); // 직원 카드 도감 (ui/cardart.js)
     },
   };
 }

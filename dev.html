@@ -68,7 +68,7 @@
   <div class="pane" data-tab="scout" hidden>
     <section class="panel" id="scout">
       <div class="fh"><b>스카우트 도감</b><span class="cnt" id="scd"></span></div>
-      <canvas id="cards" width="320" height="88"></canvas>
+      <canvas id="cards" width="320" height="384"></canvas>
       <p class="note" id="cinfo"></p>
       <p class="note" id="odds"></p>
       <div class="row"><button class="btn" id="scoutb"></button><button class="btn warn" id="scouta"></button></div>
@@ -134,7 +134,7 @@
     </section>
     <section class="panel">
       <div class="fh"><b>설정</b></div>
-      <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="bgmb">BGM ON</button><button class="btn alt" id="pushb">알림 켜기</button><button class="btn alt" id="renameb">이름 변경</button><button class="btn alt" id="titleb">타이틀</button><button class="btn alt" id="resetb">RESET</button></div>
+      <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="bgmb">BGM ON</button><button class="btn alt" id="pushb">알림 켜기</button><button class="btn alt" id="renameb">이름·직업</button><button class="btn alt" id="titleb">타이틀</button><button class="btn alt" id="resetb">RESET</button></div>
     </section>
   </div>
 </main>
@@ -158,6 +158,7 @@
 <div class="modal" id="start" hidden>
   <div class="panel"><h1>NEWS DESK</h1><p>방송국 이름을 정해 주세요.<br><small>다른 사용자와의 순위 보드에 표시돼요.</small></p>
   <input id="nameIn" maxlength="12" placeholder="예: 한강뉴스" autocomplete="off"><p class="note" id="nameErr"></p>
+  <p class="jobq">나의 직업</p><div class="jobs" id="jobs"></div><p class="note" id="jobd"></p>
   <div class="row"><button class="btn" id="startb">방송 시작</button><button class="btn alt" id="cancelb" hidden>취소</button></div></div>
 </div>
 <div class="modal" id="promo" hidden>
@@ -188,7 +189,7 @@
   <span class="iver">v__BUILD__</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
-    <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
+    <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
   </div>
   <div class="iticker ifix"><span id="iticker"></span></div>
 </div>

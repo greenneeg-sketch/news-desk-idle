@@ -148,6 +148,11 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
 .tip .cnt{color:#a7f070}.tip p{margin:6px 0 10px;line-height:1.5}
 .code{font:16px "Press Start 2P",monospace;letter-spacing:2px;color:var(--y);background:#14141f;padding:12px;text-align:center;margin:6px 0;box-shadow:inset 0 0 0 2px #566c86;word-break:break-all}
 #cloudin{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px;background:var(--ink);color:var(--tx);border:0;box-shadow:inset 0 0 0 2px #566c86;text-transform:uppercase}
+.modal .panel{max-height:92vh;overflow-y:auto}
+.jobq{margin:6px 0 4px;color:var(--y);font-size:13px}.jobs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.jobs button{font:inherit;font-size:13px;min-height:44px;padding:6px 4px;color:var(--tx);background:var(--pn);border:0;box-shadow:inset 0 0 0 2px #566c86;cursor:pointer}
+.jobs button.on{background:#3a4466;box-shadow:inset 0 0 0 3px var(--y);color:var(--y)}.jobs button:last-child:nth-child(odd){grid-column:1/-1}
+#jobd{min-height:2.6em}.mj{display:inline-block;margin-left:4px;padding:1px 5px;font-size:10px;color:var(--ink);background:var(--y);vertical-align:2px}
 </style>
 </head>
 <body>
@@ -202,7 +207,7 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
   <div class="pane" data-tab="scout" hidden>
     <section class="panel" id="scout">
       <div class="fh"><b>스카우트 도감</b><span class="cnt" id="scd"></span></div>
-      <canvas id="cards" width="320" height="88"></canvas>
+      <canvas id="cards" width="320" height="384"></canvas>
       <p class="note" id="cinfo"></p>
       <p class="note" id="odds"></p>
       <div class="row"><button class="btn" id="scoutb"></button><button class="btn warn" id="scouta"></button></div>
@@ -268,7 +273,7 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
     </section>
     <section class="panel">
       <div class="fh"><b>설정</b></div>
-      <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="bgmb">BGM ON</button><button class="btn alt" id="pushb">알림 켜기</button><button class="btn alt" id="renameb">이름 변경</button><button class="btn alt" id="titleb">타이틀</button><button class="btn alt" id="resetb">RESET</button></div>
+      <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="bgmb">BGM ON</button><button class="btn alt" id="pushb">알림 켜기</button><button class="btn alt" id="renameb">이름·직업</button><button class="btn alt" id="titleb">타이틀</button><button class="btn alt" id="resetb">RESET</button></div>
     </section>
   </div>
 </main>
@@ -292,6 +297,7 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
 <div class="modal" id="start" hidden>
   <div class="panel"><h1>NEWS DESK</h1><p>방송국 이름을 정해 주세요.<br><small>다른 사용자와의 순위 보드에 표시돼요.</small></p>
   <input id="nameIn" maxlength="12" placeholder="예: 한강뉴스" autocomplete="off"><p class="note" id="nameErr"></p>
+  <p class="jobq">나의 직업</p><div class="jobs" id="jobs"></div><p class="note" id="jobd"></p>
   <div class="row"><button class="btn" id="startb">방송 시작</button><button class="btn alt" id="cancelb" hidden>취소</button></div></div>
 </div>
 <div class="modal" id="promo" hidden>
@@ -319,10 +325,10 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-0939</span>
+  <span class="iver">v2026.11.15-1006</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
-    <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
+    <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
   </div>
   <div class="iticker ifix"><span id="iticker"></span></div>
 </div>
@@ -458,15 +464,58 @@ const DECOS = [
   { id: 'trophy', n: '동시간대 1위 트로피', fl: 4, need: s => (s.bestWin || 0) >= 3, nt: '라이벌 3연승' },
   { id: 'mic', n: '황금 마이크', fl: 0, need: s => s.bestRating >= 10, nt: '시청률 10% 돌파' },
 ];
-// 커리어: 조건을 채우면 승진(개편해도 유지). 승진마다 영구 점수 +5%와 스카우트 티켓
-const CAREER = [
-  { n: '수습 영상편집기자' },
-  { n: '영상편집기자', need: s => s.total >= 1e4, nd: '누적 1만 점', tk: 1, who: '영상편집팀장', say: ['수습 딱지 뗐다. 오늘부터 네 이름으로 리포트 붙는다.', '마감 5분 전에 올리는 버릇만 고치자.'] },
-  { n: '선임 영상편집기자', need: s => s.total >= 1e7 && s.evCount >= 30, nd: '누적 1천만 점 · 속보 30회 대응', tk: 1, who: '보도국장', say: ['속보 때 손 빠른 거 다들 봤어.', '이제 후배들 편집도 좀 봐 줘.'] },
-  { n: '영상편집 데스크', need: s => s.total >= 1e10 && s.bestRating >= 12 && s.evCount >= 80, nd: '누적 100억 점 · 최고 시청률 12% · 속보 80회', tk: 2, who: '보도국장', say: ['8시 뉴스 큐시트, 이제 자네가 챙기게.', '데스크는 모든 컷의 마지막 눈이야.'] },
-  { n: '영상편집부장', need: s => s.total >= 1e13 && s.pts >= 10, nd: '누적 10조 점 · 개편 포인트 10', tk: 2, who: '보도국장', say: ['영상편집부를 맡아 줘.', '사람이 먼저야. 장비는 그다음이고.'] },
-  { n: '보도국장', need: s => s.total >= 1e16 && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+// 직업: 처음에 고른다. 주력 층(st) 처리 속도 +50%·그 층 업그레이드 비용 -20%, 직업마다 특기와 커리어(직급·조건·대사)가 다르다
+// 커리어는 조건을 채우면 승진(개편해도 유지). 승진마다 영구 점수 +5%와 스카우트 티켓. 단계 조건의 누적 점수는 모든 직업이 같다
+const CAREER_AT = [1e4, 1e7, 1e10, 1e13, 1e16];
+const JOBS = [
+  { id: 'reporter', n: '취재기자', st: 0, d: '현장을 뛰며 단독을 쫓는다', perk: '취재 속도 +50% · 단독 성공률 +10%p', scoop: .1,
+    career: [
+      { n: '수습기자' },
+      { n: '취재기자', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '사회부 데스크', say: ['수습 끝. 오늘부터 바이라인에 네 이름 나간다.', '기사는 발로 쓰는 거야.'] },
+      { n: '선임기자', need: s => s.total >= CAREER_AT[1] && (s.scoopT || 0) >= 5 && s.day >= 10, nd: '누적 1천만 점 · 단독 5회 · 게임 속 10일째', tk: 1, who: '사회부장', say: ['단독 세 건, 다들 봤어.', '후배들 취재 동선도 좀 짜 줘.'] },
+      { n: '사회부 데스크', need: s => s.total >= CAREER_AT[2] && (s.scoopT || 0) >= 25 && s.day >= 30, nd: '누적 100억 점 · 단독 25회 · 게임 속 30일째', tk: 2, who: '보도국장', say: ['이제 기사를 고치는 쪽이야.', '팩트 하나에 방송국 신뢰가 걸려 있어.'] },
+      { n: '사회부장', need: s => s.total >= CAREER_AT[3] && s.pts >= 10 && (s.scoopT || 0) >= 40, nd: '누적 10조 점 · 개편 포인트 10 · 단독 40회', tk: 2, who: '보도국장', say: ['사회부를 맡아 줘.', '사건은 끝나도 취재는 끝나지 않아.'] },
+      { n: '보도국장', need: s => s.total >= CAREER_AT[4] && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+    ] },
+  { id: 'camera', n: '영상기자', st: 0, d: '카메라 하나로 현장을 전한다', perk: '취재 속도 +50% · 중계 장비 효과 x1.5', live: 1.5,
+    career: [
+      { n: '수습 영상기자' },
+      { n: '영상기자', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '영상취재 데스크', say: ['삼각대 혼자 펼 줄 알면 이제 영상기자다.', '그림 없으면 뉴스도 없어.'] },
+      { n: '선임 영상기자', need: s => s.total >= CAREER_AT[1] && s.evCount >= 30, nd: '누적 1천만 점 · 속보 30회 대응', tk: 1, who: '영상취재부장', say: ['속보 현장마다 네 그림이 제일 먼저 들어왔어.', '후배들 안전도 챙겨 줘.'] },
+      { n: '영상취재 데스크', need: s => s.total >= CAREER_AT[2] && s.lv.live >= 25 && s.evCount >= 80, nd: '누적 100억 점 · 중계 장비 Lv.25 · 속보 80회', tk: 2, who: '보도국장', say: ['중계차 배치는 이제 네 판단이야.', '어디에 카메라를 세울지가 뉴스를 정해.'] },
+      { n: '영상취재부장', need: s => s.total >= CAREER_AT[3] && s.pts >= 10 && s.lv.live >= 50, nd: '누적 10조 점 · 개편 포인트 10 · 중계 장비 Lv.50', tk: 2, who: '보도국장', say: ['영상취재부를 맡아 줘.', '좋은 그림은 좋은 팀에서 나와.'] },
+      { n: '보도국장', need: s => s.total >= CAREER_AT[4] && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+    ] },
+  { id: 'editor', n: '영상편집기자', st: 2, d: '1프레임으로 뉴스를 완성한다', perk: '편집 속도 +50% · 속보 점수 +25%', ev: 1.25,
+    career: [
+      { n: '수습 영상편집기자' },
+      { n: '영상편집기자', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '영상편집팀장', say: ['수습 딱지 뗐다. 오늘부터 네 이름으로 리포트 붙는다.', '마감 5분 전에 올리는 버릇만 고치자.'] },
+      { n: '선임 영상편집기자', need: s => s.total >= CAREER_AT[1] && s.evCount >= 30, nd: '누적 1천만 점 · 속보 30회 대응', tk: 1, who: '보도국장', say: ['속보 때 손 빠른 거 다들 봤어.', '이제 후배들 편집도 좀 봐 줘.'] },
+      { n: '영상편집 데스크', need: s => s.total >= CAREER_AT[2] && s.bestRating >= 12 && s.evCount >= 80, nd: '누적 100억 점 · 최고 시청률 12% · 속보 80회', tk: 2, who: '보도국장', say: ['8시 뉴스 큐시트, 이제 자네가 챙기게.', '데스크는 모든 컷의 마지막 눈이야.'] },
+      { n: '영상편집부장', need: s => s.total >= CAREER_AT[3] && s.pts >= 10, nd: '누적 10조 점 · 개편 포인트 10', tk: 2, who: '보도국장', say: ['영상편집부를 맡아 줘.', '사람이 먼저야. 장비는 그다음이고.'] },
+      { n: '보도국장', need: s => s.total >= CAREER_AT[4] && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+    ] },
+  { id: 'designer', n: '그래픽 디자이너', st: 3, d: '숫자와 지도를 한눈에 보이게', perk: 'CG 속도 +50% · 시청률 +0.5 · 방송 품질 효과 x1.2', rating: .5, qual: 1.2,
+    career: [
+      { n: '인턴 디자이너' },
+      { n: '그래픽 디자이너', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '뉴스그래픽팀장', say: ['인턴 끝. 오늘부터 8시 뉴스 자막도 맡아.', '폰트 하나도 뉴스야.'] },
+      { n: '선임 디자이너', need: s => s.total >= CAREER_AT[1] && s.lv.cg >= 25 && s.day >= 10, nd: '누적 1천만 점 · CG 템플릿 Lv.25 · 게임 속 10일째', tk: 1, who: '뉴스그래픽팀장', say: ['개표 그래픽 반응 좋더라.', '템플릿 정리 좀 부탁해.'] },
+      { n: '아트 디렉터', need: s => s.total >= CAREER_AT[2] && s.lv.qual >= 25 && s.bestRating >= 12 && s.day >= 30, nd: '누적 100억 점 · 방송 품질 Lv.25 · 최고 시청률 12% · 게임 속 30일째', tk: 2, who: '보도국장', say: ['화면 전체의 톤은 이제 자네 몫이야.', '시청자는 3초 안에 이해해야 해.'] },
+      { n: '뉴스그래픽팀장', need: s => s.total >= CAREER_AT[3] && s.pts >= 10 && s.lv.cg >= 100, nd: '누적 10조 점 · 개편 포인트 10 · CG 템플릿 Lv.100', tk: 2, who: '보도국장', say: ['그래픽팀을 맡아 줘.', '수정 요청은 이제 네가 정리하는 거야.'] },
+      { n: '디자인센터장', need: s => s.total >= CAREER_AT[4] && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['방송국의 얼굴을 맡기겠습니다.', '오늘도 화면은 계속됩니다.'] },
+    ] },
+  { id: 'anchor', n: '앵커', st: 4, d: '8시, 시청자와 눈을 맞춘다', perk: '송출 속도 +50% · 시청률 +1.0 · 8시 뉴스 광고 수입 x1.5', rating: 1, ad: 1.5,
+    career: [
+      { n: '수습 아나운서' },
+      { n: '아나운서', need: s => s.total >= CAREER_AT[0], nd: '누적 1만 점', tk: 1, who: '아나운서팀장', say: ['첫 리딩 깔끔했어.', '숨 쉬는 자리만 조금 더 연습하자.'] },
+      { n: '주말뉴스 앵커', need: s => s.total >= CAREER_AT[1] && s.bestRating >= 6 && s.day >= 10, nd: '누적 1천만 점 · 최고 시청률 6% · 게임 속 10일째', tk: 1, who: '보도국장', say: ['주말 뉴스를 맡아 줘.', '프롬프터가 멈춰도 표정은 멈추면 안 돼.'] },
+      { n: '8시 뉴스 앵커', need: s => s.total >= CAREER_AT[2] && s.bestRating >= 12 && s.day >= 30, nd: '누적 100억 점 · 최고 시청률 12% · 게임 속 30일째', tk: 2, who: '보도국장', say: ['이제 8시는 자네 시간이야.', '오늘 첫 문장이 내일 신뢰를 만든다.'] },
+      { n: '간판 앵커', need: s => s.total >= CAREER_AT[3] && s.pts >= 10 && (s.bestWin || 0) >= 3, nd: '누적 10조 점 · 개편 포인트 10 · 라이벌 3연승', tk: 2, who: '보도국장', say: ['방송국 하면 자네 얼굴이 떠오른대.', '그만큼 말 한마디가 무거워졌어.'] },
+      { n: '보도본부장', need: s => s.total >= CAREER_AT[4] && (s.bestWin || 0) >= 7, nd: '누적 1경 점 · 라이벌 7연승', tk: 3, who: '사장', say: ['보도본부를 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+    ] },
 ];
+const jobOf = s => JOBS.find(j => j.id === (s && s.job)) || JOBS[2]; // 직업을 고르기 전 저장본은 영상편집기자로 본다
+const careerOf = s => jobOf(s).career;
 // 주간 한정 이벤트: 매주 월요일(서버 시각)마다 바뀐다. 목표 달성 시 티켓 2장 + 한정 배지
 const WEEK_EVENTS = [
   { id: 'vote', n: '대선 개표 방송 주간 (가상)', d: '정치 속보가 4배 자주, 점수 x1.5', ev: 'politics', w: 4, sc: 1.5, k: 'ev', goal: 8, gd: '정치 속보 8회 대응' },
@@ -524,13 +573,15 @@ const tierOf = p => TIERS.filter(t => p >= t.at).length - 1;
 const U = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
 const rl = (s, id) => (s.res && s.res[id]) || 0; // 연구 레벨
 const cm = s => 1 - .03 * rl(s, 'cost');
+const cmU = (s, u) => cm(s) * (u.st >= 0 && u.st === jobOf(s).st ? .8 : 1); // 내 직업 주력 층 업그레이드는 20% 싸다
+const boost = (m, k) => k ? 1 + (m - 1) * k : m;                              // 직업 특기로 효과 키우기
 const mult = (s, u) => { const l = s.lv[u.id], b = 1 + u.pct * l; return u.nm ? b : b * 2 ** MILESTONES.filter(m => l >= m).length; };
-const cost = (s, u) => Math.ceil(u.base * u.g ** s.lv[u.id] * cm(s));
+const cost = (s, u) => Math.ceil(u.base * u.g ** s.lv[u.id] * cmU(s, u));
 // 구매 수량(x1/x10/MAX)에 따른 레벨 수와 총 비용
 function bulk(s, u, n) {
   const l = s.lv[u.id], lim = n === 'max' ? 1000 : +n; let k = 0, tot = 0;
-  while (k < lim) { const c = Math.ceil(u.base * u.g ** (l + k) * cm(s)); if (n === 'max' && s.score < tot + c) break; tot += c; k++; }
-  if (!k) { k = 1; tot = Math.ceil(u.base * u.g ** l * cm(s)); }
+  while (k < lim) { const c = Math.ceil(u.base * u.g ** (l + k) * cmU(s, u)); if (n === 'max' && s.score < tot + c) break; tot += c; k++; }
+  if (!k) { k = 1; tot = Math.ceil(u.base * u.g ** l * cmU(s, u)); }
   return { k, total: tot };
 }
 const rank = s => RANKS.filter(r => s.run >= r.at).length - 1;
@@ -541,13 +592,15 @@ function rates(s) {
   UPGRADES.forEach(u => { if (u.st >= 0) r[u.st] *= mult(s, u); });
   s.mg.forEach((m, i) => { if (m) r[i] *= 2; });
   for (let i = 0; i < 5; i++) r[i] *= (1 + cardBonus(s, i)) * (1 + .1 * rl(s, 'speed'));
+  r[jobOf(s).st] *= 1.5; // 내 직업 주력 층 +50%
   if (s.ev) r[0] *= s.ev.inf;
   if (s.clock < s.spdEnd) r.forEach((v, i) => { r[i] = v * 2; });
   return r;
 }
 function scoreMul(s) {
-  let m = prestigeBonus(s) * mult(s, U.live) * mult(s, U.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? 7 : 1);
-  if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s); m *= e * (1 + .15 * rl(s, 'event')); }
+  const jb = jobOf(s);
+  let m = prestigeBonus(s) * boost(mult(s, U.live), jb.live) * boost(mult(s, U.qual), jb.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? 7 : 1);
+  if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s); e *= jb.ev || 1; m *= e * (1 + .15 * rl(s, 'event')); }
   return m;
 }
 const goldGap = (s, r) => (60 + r * 60) * (1 - .08 * rl(s, 'gold')) * ((weekEvent(s) || {}).gold || 1);
@@ -593,16 +646,17 @@ function checkName(raw) {
 
 
 
+
 const QUAL = UPGRADES.find(u => u.id === 'qual');
 // 8시 뉴스 일일 평가: 오늘의 송출량, 속보 대응, 방송 품질, 승급 단계로 시청률을 정하고, 매일 +-20% 변동을 준다.
 // 시청률로 유튜브 조회수가 정해지고(12% 확률로 대박 x5), 광고 수입이 점수로 지급된다.
 // 라이벌 방송국도 같은 기준선에서 시청률을 받는다. 이기면 광고 수입 x1.5(+연승마다 10%, 최대 +100%)
 function evaluateDay(s, r, r2, r3 = .5) {
   const base = 2 + 1.1 * Math.log10(1 + s.dOut) + .6 * Math.min(s.dEv, 5) + 1.2 * Math.sqrt(mult(s, QUAL) - 1) + .4 * rank(s);
-  const rating = Math.max(.5, Math.min(30, Math.round((base * (.8 + .4 * r) + (s.dAdj || 0) + .3 * rl(s, 'rating')) * 10) / 10)), viral = r2 < .12;
+  const rating = Math.max(.5, Math.min(30, Math.round((base * (.8 + .4 * r) + (s.dAdj || 0) + .3 * rl(s, 'rating') + (jobOf(s).rating || 0)) * 10) / 10)), viral = r2 < .12;
   const rival = Math.round(base * (.85 + .35 * r3) * 10) / 10, won = rating > rival, win = won ? (s.win || 0) + 1 : 0, wm = won ? (1.4 + .1 * Math.min(win, 10)) * ((weekEvent(s) || {}).rival || 1) : 1;
   const views = Math.floor((s.dOut * 8 + s.dEv * 400) * (1 + rating / 10) * (viral ? 5 : 1));
-  return { rating, views, viral, rival, won, win, bonus: Math.floor((perSec(s) * rating * 10 + views * .05) * wm) };
+  return { rating, views, viral, rival, won, win, bonus: Math.floor((perSec(s) * rating * 10 + views * .05) * wm * (jobOf(s).ad || 1)) };
 }
 
 
@@ -662,10 +716,10 @@ const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {},
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '',
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -685,7 +739,7 @@ const wevBump = (st, k, evId) => { const we = weekEvent(st); return we && st.wev
 function judge(s, pick, r) {
   const ev = { ...s.ev, pick };
   if (pick === 'safe') { ev.sc = Math.round(ev.sc * 1.2 * 10) / 10; s.judge = { res: 'safe', t: s.clock }; }
-  else if (r < SCOOP_P + .04 * rl(s, 'scoop')) { ev.sc *= 2; s.dAdj += .8; s.scoopT += 1; s.rp += 1; s.dW += 1; s.judge = { res: 'win', t: s.clock }; }
+  else if (r < SCOOP_P + .04 * rl(s, 'scoop') + (jobOf(s).scoop || 0)) { ev.sc *= 2; s.dAdj += .8; s.scoopT += 1; s.rp += 1; s.dW += 1; s.judge = { res: 'win', t: s.clock }; }
   else { ev.end = s.clock; s.dAdj -= 1.2; s.dF += 1; s.judge = { res: 'fail', t: s.clock }; }
   s.ev = ev; return s;
 }
@@ -717,13 +771,13 @@ function reducer(st, a) {
         if (!mis.all && mis.list.every(m => m.done)) { mis.all = 1; s.tickets += 1; s.misAll += 1; s.misHit = { ...s.misHit, all: 1 }; }
         s.mis = mis;
       }
-      { const nc = CAREER[(s.career || 0) + 1]; if (nc && nc.need(s)) { s.career = (s.career || 0) + 1; s.tickets += nc.tk; s.promo = { i: s.career, t: s.clock }; } } // 승진
+      { const nc = careerOf(s)[(s.career || 0) + 1]; if (nc && nc.need(s)) { s.career = (s.career || 0) + 1; s.tickets += nc.tk; s.promo = { i: s.career, t: s.clock }; } } // 승진
       { const we = weekEvent(s); if (we && s.wev && !s.wev.done && s.wev.p >= we.goal) { s.wev = { ...s.wev, done: 1 }; s.tickets += 2; s.badges = [...(s.badges || []), s.wev.id + ':' + s.wev.key]; s.weHit = { id: we.id, t: s.clock }; } }
       const hit = ACHIEVEMENTS.filter(x => !s.ach.includes(x.id) && x.t(s)); if (hit.length) s.ach = [...s.ach, ...hit.map(x => x.id)];
       if (s.chal) { const c = CHALLENGES.find(x => x.id === s.chal); if (c && s.run >= c.goal) { s.chalDone = { ...s.chalDone, [c.id]: 1 }; s.chalWin = c.id + ':' + s.clock; s.chal = null; } }
       return s;
     }
-    case 'NAME': return { ...st, name: a.name, uid: st.uid || a.uid };
+    case 'NAME': return { ...st, name: a.name, uid: st.uid || a.uid, job: a.job || st.job || 'editor' };
     case 'SPAWN': return { ...st, evCount: st.evCount + 1, dEv: st.dEv + 1, dLog: [...(st.dLog || []), a.ev.name].slice(-3), wev: wevBump(st, 'ev', a.ev.id), week: bump(st.week, 'ev'), ev: { ...a.ev, end: st.clock + a.ev.dur, boost: !!st.chief, dilEnd: st.clock + DIL_SEC, pick: null } };
     case 'JUDGE': return st.ev && st.ev.dil && !st.ev.pick ? judge({ ...st }, a.pick, a.r) : st;
     case 'BOOST': return st.ev ? { ...st, ev: { ...st.ev, boost: true } } : st;
@@ -824,7 +878,7 @@ const EventScheduler = store => ({
 
 
 
-const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips'];
+const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job'];
 // Repository 패턴: 저장 매체(localStorage)를 이 모듈 안에 가둔다
 const Repo = {
   snapshot: s => ({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() }), // 클라우드 저장에도 같은 모양을 쓴다
@@ -1023,6 +1077,111 @@ return {
 })();
 
 
+// 스카우트 카드 그림: 카드마다 머리·피부·옷·소품이 다르고, 같은 카드가 겹칠수록(★2, ★3) 외형과 액자가 업그레이드된다
+// 인물은 16x22 칸 격자에 2배로 그린다. 카드 한 장 = 80x96
+const SK = ['#f2c9a0', '#e0ac7e', '#c68a5c', '#f6d5b8'];
+const LOOK = {
+  c1: { hair: 'short', hc: '#5a3a20', sk: 0, top: '#41a6f6', acc: 'camera' },
+  c2: { hair: 'pony', hc: '#14141f', sk: 3, top: '#38b764', acc: 'headset' },
+  c3: { hair: 'curly', hc: '#8b5e3c', sk: 1, top: '#ffcd75', acc: 'glasses', acc2: 'headset' },
+  c4: { hair: 'bob', hc: '#b45bff', sk: 3, top: '#e43b44', acc: 'tablet' },
+  c5: { hair: 'long', hc: '#3b2a20', sk: 0, top: '#f4f4f4', acc: 'script', tie: '#2a6fdb' },
+  c6: { hair: 'cap', hc: '#333c57', cap: '#e43b44', sk: 2, top: '#566c86', acc: 'camera', beard: 1 },
+  c7: { hair: 'curly', hc: '#14141f', sk: 1, top: '#8b9bb4', acc: 'coffee', tired: 1 },
+  c8: { hair: 'beanie', hc: '#3b2a20', cap: '#257179', sk: 2, top: '#73eff7', acc: 'tablet', acc2: 'glasses' },
+  c9: { hair: 'fedora', hc: '#3b2a20', cap: '#5a3a20', sk: 0, top: '#c2a35a', acc: 'script' },
+  c10: { hair: 'pony', hc: '#c2c3c7', sk: 1, top: '#222633', acc: 'headset', acc2: 'glasses' },
+  c11: { hair: 'neat', hc: '#14141f', sk: 0, top: '#1d3a6b', acc: 'mic', tie: '#e43b44' },
+  c12: { hair: 'bald', hc: '#c2c3c7', sk: 2, top: '#2a2a3a', acc: 'badge', tie: '#ffd24a' },
+  h1: { hair: 'goggles', hc: '#3b2a20', sk: 0, top: '#ffcd75', acc: 'cape', cape: '#38b764' },
+  h2: { hair: 'hood', hc: '#14141f', hood: '#257179', sk: 1, top: '#257179', acc: 'scarf', mask: 1 },
+  h3: { hair: 'helmet', hc: '#c2c3c7', sk: 0, top: '#94b0c2', acc: 'jet' },
+  h4: { hair: 'hood', hc: '#333c57', hood: '#ef7d57', sk: 2, top: '#333c57', acc: 'board' },
+};
+const hexn = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+const shade = (h, a) => '#' + hexn(h).map(v => Math.max(0, Math.min(255, Math.round(a > 0 ? v + (255 - v) * a : v * (1 + a)))).toString(16).padStart(2, '0')).join('');
+
+function drawCards(c, s, t, sel) {
+  const R = (x, y, w, h, k) => { c.fillStyle = k; c.fillRect(Math.round(x), Math.round(y), w, h); };
+  c.imageSmoothingEnabled = false; R(0, 0, 320, 384, '#1a1c2c');
+  CARDS.forEach((cd, i) => {
+    const x = i % 4 * 80, y = (i / 4 | 0) * 96, n = s.cards[cd.id] || 0, rc = RARITY[cd.rar].c;
+    drawCard(R, x, y, cd, n, rc, t, i);
+    if (i === sel) { c.strokeStyle = '#ffffff'; c.lineWidth = 2; c.strokeRect(x + 2, y + 2, 76, 92); }
+  });
+}
+
+function drawCard(R, x, y, cd, n, rc, t, idx) {
+  const L = LOOK[cd.id] || LOOK.c1, gold = '#ffd24a', silver = '#dfe6ee';
+  // 배경 + 액자
+  for (let j = 0; j < 88; j += 4) R(x + 4, y + 4 + j, 72, 4, shade(n ? rc : '#2a2e44', n ? -.72 + j / 88 * .12 : -.35));
+  if (n >= 2) for (let k = -88; k < 72; k += 10) for (let j = 0; j < 88; j += 2) { const px = x + 4 + k + j; if (px >= x + 4 && px < x + 76) R(px, y + 4 + j, 1, 2, shade(rc, -.5)); }
+  if (n >= 3) { const a = t * .8; for (let r = 0; r < 8; r++) { const an = a + r * Math.PI / 4; for (let d = 8; d < 40; d += 3) R(x + 40 + Math.cos(an) * d, y + 40 + Math.sin(an) * d, 2, 2, shade(gold, -.45)); } }
+  const fr = n >= 3 ? gold : n >= 2 ? silver : n ? rc : '#3a4466';
+  R(x + 3, y + 3, 74, 2, fr); R(x + 3, y + 91, 74, 2, fr); R(x + 3, y + 3, 2, 90, fr); R(x + 75, y + 3, 2, 90, fr);
+  if (n >= 2) { R(x + 6, y + 6, 70, 1, shade(fr, -.3)); R(x + 6, y + 88, 70, 1, shade(fr, -.3)); }
+  if (n >= 3) for (const [cx, cy] of [[4, 4], [72, 4], [4, 88], [72, 88]]) { R(x + cx, y + cy, 4, 4, (t * 3 + cx) % 2 < 1 ? '#ffffff' : '#ff4ad6'); }
+  if (!n) { figure(R, x + 24, y + 12, L, 0, t, true); R(x + 36, y + 62, 8, 2, '#566c86'); R(x + 34, y + 54, 2, 4, '#566c86'); R(x + 36, y + 52, 8, 2, '#566c86'); R(x + 44, y + 54, 2, 4, '#566c86'); R(x + 40, y + 58, 4, 2, '#566c86'); R(x + 38, y + 66, 4, 2, '#566c86'); return; }
+  figure(R, x + 24, y + 12, L, n, t, false);
+  // 별
+  for (let k = 0; k < n; k++) { const sx = x + 40 - n * 6 + k * 12 + 2, sy = y + 80, sc = n >= 3 ? gold : n >= 2 ? silver : rc; R(sx + 2, sy, 2, 6, sc); R(sx, sy + 2, 6, 2, sc); R(sx + 1, sy + 1, 4, 4, sc); }
+  if (cd.hero) { R(x + 8, y + 8, 6, 6, gold); R(x + 10, y + 10, 2, 2, '#ff4ad6'); }
+  if (n >= 3) for (let k = 0; k < 3; k++) { const ph = (t * 1.3 + k * .37) % 1, sx = x + 14 + ((k * 23 + idx * 7) % 52), sy = y + 70 - ph * 56; R(sx, sy, 2, 2, '#ffffff'); R(sx - 2, sy, 1, 2, gold); R(sx + 3, sy, 1, 2, gold); }
+}
+
+// 인물: (ox, oy)에서 16x22 칸, 한 칸 = 2px. n = 별 개수(외형 업그레이드), dark = 미획득 실루엣
+function figure(R, ox, oy, L, n, t, dark) {
+  const D = '#222633', P = (gx, gy, w, h, k) => R(ox + gx * 2, oy + gy * 2, w * 2, h * 2, dark ? D : k);
+  const sk = SK[L.sk || 0], top = n >= 2 ? shade(L.top, .12) : L.top, hc = L.hc, gold = '#ffd24a';
+  if (L.acc === 'cape') { P(3, 11, 10, 10, L.cape); P(2, 13 + ((t * 4 | 0) % 2), 2, 7, shade(L.cape, -.2)); P(12, 13 + ((t * 4 + 1 | 0) % 2), 2, 7, shade(L.cape, -.2)); }
+  // 다리·신발
+  P(5, 19, 2, 2, '#2a2a3a'); P(9, 19, 2, 2, '#2a2a3a'); P(4, 21, 3, 1, '#14141f'); P(9, 21, 3, 1, '#14141f');
+  if (L.acc === 'board') { P(1, 21, 14, 1, '#b45bff'); P(2, 22, 12, 1, (t * 6 | 0) % 2 ? '#ff4ad6' : '#5d275d'); }
+  if (L.acc === 'jet') { const f = (t * 10 | 0) % 2; P(5, 22, 2, 1 + f, '#73eff7'); P(9, 22, 2, 1 + f, '#73eff7'); }
+  // 몸통·팔·손
+  P(4, 11, 8, 8, top); P(11, 11, 1, 8, shade(top, -.25)); P(2, 11, 2, 6, top); P(12, 11, 2, 6, shade(top, -.15)); P(2, 17, 2, 1, sk); P(12, 17, 2, 1, sk);
+  P(7, 10, 2, 1, shade(sk, -.1));
+  if (L.tie) { P(6, 11, 1, 2, '#f4f4f4'); P(9, 11, 1, 2, '#f4f4f4'); P(7, 11, 2, 5, L.tie); }
+  if (n >= 2 && !L.tie) P(6, 11, 4, 1, '#f4f4f4');                                          // ★2: 흰 옷깃
+  if (n >= 3) { P(4, 11, 8, 1, gold); P(8, 13, 1, 1, gold); P(7, 14, 3, 1, shade(gold, -.2)); } // ★3: 금장식·가슴 휘장
+  // 머리
+  P(5, 4, 6, 6, sk); P(10, 4, 1, 6, shade(sk, -.12));
+  if (!dark) { R(ox + 12, oy + 12, 2, 2, '#14141f'); R(ox + 18, oy + 12, 2, 2, '#14141f'); R(ox + 14, oy + 16, 4, 2, shade(sk, -.3)); }
+  if (L.tired && !dark) { R(ox + 12, oy + 14, 2, 1, '#9b7bb5'); R(ox + 18, oy + 14, 2, 1, '#9b7bb5'); }
+  if (L.beard) P(5, 8, 6, 2, hc);
+  const H = {
+    short: () => { P(5, 2, 6, 2, hc); P(4, 3, 1, 3, hc); P(11, 3, 1, 3, hc); },
+    neat: () => { P(5, 2, 6, 2, hc); P(4, 3, 1, 3, hc); P(11, 3, 1, 2, hc); P(7, 2, 1, 1, shade(hc, .3)); },
+    pony: () => { P(5, 2, 6, 2, hc); P(4, 3, 1, 3, hc); P(11, 3, 2, 2, hc); P(12, 5, 1, 4, hc); },
+    long: () => { P(5, 2, 6, 2, hc); P(4, 3, 1, 8, hc); P(11, 3, 1, 8, hc); },
+    bob: () => { P(5, 2, 6, 2, hc); P(4, 3, 1, 6, hc); P(11, 3, 1, 6, hc); P(5, 4, 2, 1, hc); },
+    curly: () => { for (let i = 4; i < 12; i++) P(i, 1 + (i % 2), 1, 3 - (i % 2), hc); P(4, 4, 1, 2, hc); P(11, 4, 1, 2, hc); },
+    cap: () => { P(4, 2, 8, 2, L.cap); P(10, 4, 4, 1, shade(L.cap, -.25)); P(4, 4, 1, 2, hc); },
+    beanie: () => { P(4, 1, 8, 3, L.cap); P(4, 3, 8, 1, shade(L.cap, .25)); P(7, 0, 2, 1, shade(L.cap, -.2)); },
+    fedora: () => { P(5, 1, 6, 2, L.cap); P(3, 3, 10, 1, shade(L.cap, -.2)); P(5, 2, 6, 1, '#14141f'); },
+    bald: () => { P(4, 5, 1, 2, hc); P(11, 5, 1, 2, hc); P(6, 3, 4, 1, shade(sk, .2)); },
+    goggles: () => { P(5, 2, 6, 2, hc); P(4, 3, 1, 2, hc); P(4, 5, 8, 1, '#5a3a20'); P(5, 5, 2, 1, '#73eff7'); P(9, 5, 2, 1, '#73eff7'); },
+    hood: () => { P(4, 2, 8, 9, L.hood); P(6, 5, 4, 4, sk); if (L.mask) P(6, 7, 4, 2, '#14141f'); else P(6, 5, 4, 1, '#14141f'); },
+    helmet: () => { P(4, 2, 8, 8, L.hc); P(5, 5, 6, 2, '#b45bff'); P(4, 2, 8, 1, shade(L.hc, .3)); },
+  };
+  (H[L.hair] || H.short)();
+  // 소품 (★2·★3이면 업그레이드)
+  const A = {
+    camera: () => { P(11, 8, 5, 4, '#2a2a3a'); P(15, 9, 1, 2, '#94b0c2'); P(12, 9, 2, 1, '#566c86'); if (n >= 2) { P(12, 7, 2, 1, '#ffd24a'); } if (n >= 3) P(11, 11, 5, 1, gold); if (!dark && (t * 2 | 0) % 2) R(ox + 24, oy + 16, 2, 2, '#ff004d'); },
+    headset: () => { P(4, 2, 8, 1, '#2a2a3a'); P(3, 5, 1, 3, n >= 3 ? gold : '#2a2a3a'); P(12, 5, 1, 3, n >= 3 ? gold : '#2a2a3a'); if (n >= 2) { P(12, 8, 2, 1, '#2a2a3a'); P(13, 9, 1, 1, '#ff004d'); } },
+    glasses: () => { const k = n >= 3 ? gold : '#14141f'; P(5, 6, 6, 1, k); if (n >= 2 && !dark) { R(ox + 12, oy + 12, 4, 2, '#14141f'); R(ox + 18, oy + 12, 4, 2, '#14141f'); } },
+    tablet: () => { P(5, 13, 6, 4, '#2a2a3a'); P(6, 14, 4, 2, n >= 3 ? ((t * 4 | 0) % 2 ? '#73eff7' : '#ff77e1') : '#41a6f6'); if (n >= 2) P(11, 12, 1, 4, '#f4f4f4'); },
+    script: () => { P(1, 14, 3, 4, n >= 3 ? gold : '#f4f4f4'); P(1, 15, 3, 1, '#94b0c2'); if (n >= 2) P(1, 13, 3, 1, '#8b5e3c'); },
+    coffee: () => { P(12, 15, 2, 3, n >= 3 ? gold : '#f4f4f4'); P(12, 16, 2, 1, '#5a3a20'); if (!dark) R(ox + 26, oy + 26 - (t * 6 | 0) % 3 * 2, 2, 2, '#c2c3c7'); if (n >= 2) P(14, 16, 1, 1, '#f4f4f4'); },
+    mic: () => { P(13, 12, 1, 4, '#14141f'); P(12, 11, 3, 2, n >= 3 ? gold : '#94b0c2'); if (n >= 2) P(12, 13, 3, 2, '#e43b44'); },
+    badge: () => { P(9, 12, 2, 2, gold); if (n >= 2) P(5, 12, 2, 1, '#e43b44'); },
+    scarf: () => { P(5, 10, 6, 1, '#f4f4f4'); P(11, 10, 1, 1, '#f4f4f4'); P(12, 10 + ((t * 5 | 0) % 2), 3, 1, '#f4f4f4'); },
+  };
+  if (A[L.acc]) A[L.acc](); if (A[L.acc2]) A[L.acc2]();
+}
+
+
+
 // 16비트풍 픽셀 렌더러: 그라데이션 밴드, 베벨 셰이딩, 음영 있는 캐릭터, 단계별 외형 변화(tier 0~4)
 const COL = ['#41a6f6', '#38b764', '#ffcd75', '#b13e53', '#f4f4f4'];
 const IDS = ['crew', 'ing', 'edit', 'cg', 'out', 'live', 'qual'];
@@ -1173,16 +1332,7 @@ function Scene(canvases, cardCv) {
         if (i < 5 && s.mg[i]) { person(c, 296, GY - 28, PAL('#f4f4f4', '#14141f')); R(c, 304, GY - 14, 2, 7, '#b13e53'); bx(c, 288, GY - 16, 8, 11, '#8b5e3c'); R(c, 290, GY - 13, 4, 1, '#f4f4f4'); }
         if (k >= 4) { R(c, 0, 0, 320, 2, '#ffd24a'); R(c, 0, 62, 320, 2, '#ffd24a'); }
       });
-      if (cc) { // 직원 카드 도감: 6열 x 2행, 미획득은 실루엣
-        cc.imageSmoothingEnabled = false; R(cc, 0, 0, 320, 88, '#1a1c2c');
-        CARDS.forEach((cd, i) => {
-          const x = i % 8 * 40, y = (i / 8 | 0) * 44, n = s.cards[cd.id] || 0, col = RARITY[cd.rar].c;
-          bx(cc, x + 2, y + 2, 36, 40, n ? '#3a4466' : '#14161f'); if (n) { R(cc, x + 2, y + 2, 36, 2, col); for (let m = 0; m < n; m++) R(cc, x + 8 + m * 8, y + 36, 6, 3, col); }
-          person(cc, x + 10, y + 6, n ? (cd.hero ? HERO_PAL[cd.hero] : PAL(cd.st < 0 ? '#ffd24a' : COL[cd.st], HAIR[i % 4])) : DARK);
-          if (n && cd.hero) { R(cc, x + 3, y + 3, 4, 4, '#ffd24a'); R(cc, x + 4, y + 4, 2, 2, '#ff4ad6'); } // 히어로 표시
-          if (i === sel) { cc.strokeStyle = '#ffffff'; cc.strokeRect(x + 1.5, y + 1.5, 37, 41); }
-        });
-      }
+      if (cc) drawCards(cc, s, t, sel); // 직원 카드 도감 (ui/cardart.js)
     },
   };
 }
@@ -1565,7 +1715,7 @@ const $ = id => document.getElementById(id);
 const fmt = n => { n = Math.floor(n); return n >= 1e16 ? (n / 1e16).toFixed(1) + '경' : n >= 1e12 ? (n / 1e12).toFixed(1) + '조' : n >= 1e8 ? (n / 1e8).toFixed(1) + '억' : n >= 1e4 ? (n / 1e4).toFixed(1) + '만' : n.toLocaleString('ko-KR'); };
 const FLOORS = [['취재', '카메라 기자 · 취재 기자', 'crew'], ['인제스트', '인제스트실', 'ing'], ['편집', '영상편집기자', 'edit'], ['CG', '그래픽 디자이너', 'cg'], ['송출', '뉴스 스튜디오', 'out'], ['중계 장비', '중계 차량 · 리포터', 'live'], ['방송 품질', '화질 · 시청률', 'qual']];
 const byId = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
-const floorHtml = i => `<section class="panel floor" id="fl${i}"><div class="fh"><div><b>${FLOORS[i][0]}</b> <small>${FLOORS[i][1]}</small><div class="cnt" id="c${i}"></div></div><div class="bs"><button class="btn mini" data-id="${FLOORS[i][2]}" id="fb${i}"></button>${i < 5 ? `<button class="btn mini" data-hire="${i}" id="mb${i}"></button>` : ''}</div></div><div class="ms"><i id="m${i}"></i></div><canvas width="320" height="64"></canvas></section>`;
+const floorHtml = i => `<section class="panel floor" id="fl${i}"><div class="fh"><div><b>${FLOORS[i][0]}</b><i class="mj" id="mj${i}" hidden>주력</i> <small>${FLOORS[i][1]}</small><div class="cnt" id="c${i}"></div></div><div class="bs"><button class="btn mini" data-id="${FLOORS[i][2]}" id="fb${i}"></button>${i < 5 ? `<button class="btn mini" data-hire="${i}" id="mb${i}"></button>` : ''}</div></div><div class="ms"><i id="m${i}"></i></div><canvas width="320" height="64"></canvas></section>`;
 // View: DOM을 만들고 갱신만 한다. 사용자 입력은 버스 이벤트로만 내보낸다
 function Hud(bus) {
   $('floors').innerHTML = [0, 1, 2, 3, 4].map(floorHtml).join(''); $('hq').innerHTML = [5, 6].map(floorHtml).join('');
@@ -1614,15 +1764,19 @@ function Hud(bus) {
   $('rlist').onclick = e => { const b = e.target.closest('[data-res]'); if (b && !b.disabled) bus.emit('research', b.dataset.res); };
   $('dlist').innerHTML = DECOS.map((d, i) => `<div class="wg"><div class="row2"><span>${d.n}<br><small id="dn${i}"></small></span><button class="btn mini" data-deco="${d.id}" id="db${i}"></button></div></div>`).join('');
   $('dlist').onclick = e => { const b = e.target.closest('[data-deco]'); if (b && !b.disabled) bus.emit('deco', b.dataset.deco); };
-  $('carl').innerHTML = CAREER.map(c => `<li>${c.n}${c.nd ? ` <small>(${c.nd})</small>` : ''}</li>`).join('');
+  let carJob = '';
   $('prok').onclick = () => { $('promo').hidden = true; };
   $('pok').onclick = () => { $('paper').hidden = true; }; $('pad').onclick = () => bus.emit('paperad');
   $('dilR').onclick = () => bus.emit('judge', 'risk'); $('dilS').onclick = () => bus.emit('judge', 'safe');
   $('wlist').onclick = e => { const b = e.target.closest('[data-goal]'); if (b && !b.disabled) bus.emit('goal', b.dataset.goal); };
   $('scoutb').onclick = () => bus.emit('scout', 'paid'); $('scouta').onclick = () => bus.emit('scout', 'free');
-  $('cards').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); selCard = Math.floor((e.clientY - r.top) / r.height * 2) * 8 + Math.floor((e.clientX - r.left) / r.width * 8); };
+  $('cards').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); selCard = Math.floor((e.clientY - r.top) / r.height * 4) * 4 + Math.floor((e.clientX - r.left) / r.width * 4); };
   $('hist').innerHTML = '<i></i>'.repeat(7); $('boardb').onclick = () => bus.emit('board');
-  $('startb').onclick = () => { const r = checkName($('nameIn').value); if (r.err) { $('nameErr').textContent = r.err; return; } bus.emit('name', r.name); };
+  let jobSel = 'editor';
+  const showJob = () => { document.querySelectorAll('#jobs button').forEach(b => b.classList.toggle('on', b.dataset.job === jobSel)); const j = JOBS.find(x => x.id === jobSel); $('jobd').textContent = `${j.d} · ${j.perk}`; };
+  $('jobs').innerHTML = JOBS.map(j => `<button type="button" data-job="${j.id}">${j.n}</button>`).join('');
+  $('jobs').onclick = e => { const b = e.target.closest('[data-job]'); if (b) { jobSel = b.dataset.job; showJob(); } };
+  $('startb').onclick = () => { const r = checkName($('nameIn').value); if (r.err) { $('nameErr').textContent = r.err; return; } bus.emit('name', { name: r.name, job: jobSel }); };
   $('nameIn').onkeydown = e => { if (e.key === 'Enter') $('startb').click(); };
   $('cancelb').onclick = () => { $('start').hidden = true; }; $('renameb').onclick = () => bus.emit('rename');
   $('chiefb').onclick = () => bus.emit('chief'); $('evb').onclick = () => bus.emit('boost'); $('mute').onclick = () => bus.emit('mute');
@@ -1633,13 +1787,13 @@ function Hud(bus) {
   let tt;
   return {
     showTab, canvases: [...document.querySelectorAll('.floor canvas')], cardCanvas: $('cards'), sel: () => selCard,
-    askName(cur = '') { $('nameIn').value = cur; $('nameErr').textContent = ''; $('cancelb').hidden = !cur; $('startb').textContent = cur ? '저장' : '방송 시작'; $('start').hidden = false; setTimeout(() => $('nameIn').focus(), 0); },
+    askName(cur = '', job = 'editor') { jobSel = job || 'editor'; showJob(); $('nameIn').value = cur; $('nameErr').textContent = ''; $('cancelb').hidden = !cur; $('startb').textContent = cur ? '저장' : '방송 시작'; $('start').hidden = false; setTimeout(() => $('nameIn').focus(), 0); },
     closeName() { $('start').hidden = true; },
     board(list, me, mode, season) { bd = { list, me, mode, season }; drawBoard(); },
     toast(m) { const e = $('toast'); e.textContent = m; clearTimeout(tt); tt = setTimeout(() => e.textContent = '', 3500); },
     offline(o) { $('offd').textContent = `${o.min}분 동안 야간 근무로 ${fmt(o.n)}점을 벌었어요.`; $('offline').hidden = false; },
     showPaper(p) { $('pmast').textContent = p.mast; $('pno').textContent = p.no; $('phead').textContent = p.head; $('pfoot').textContent = p.foot; $('psubs').innerHTML = ''; p.subs.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('psubs').appendChild(li); }); $('pad').disabled = false; $('pad').textContent = '광고 보고 수입 2배'; $('paper').hidden = false; },
-    showPromo(i, name) { const c = CAREER[i]; $('prt').textContent = `${name}님을 ${c.n}(으)로 임명합니다.`; $('prwho').textContent = c.who; $('prsay').textContent = c.say.join(' '); $('prrew').textContent = `보상: 영구 점수 +5% · 스카우트 티켓 ${c.tk}장`; $('promo').hidden = false; },
+    showPromo(i, name, s) { const c = careerOf(s)[i]; $('prt').textContent = `${name}님을 ${c.n}(으)로 임명합니다.`; $('prwho').textContent = c.who; $('prsay').textContent = c.say.join(' '); $('prrew').textContent = `보상: 영구 점수 +5% · 스카우트 티켓 ${c.tk}장`; $('promo').hidden = false; },
     showTip(t) { $('tipt').textContent = t.t; $('tipd').textContent = t.d; $('tipgo').hidden = !t.tab; $('tip').hidden = false; },
     hideTip() { $('tip').hidden = true; },
     tipOpen: () => !$('tip').hidden,
@@ -1670,11 +1824,14 @@ function Hud(bus) {
       document.querySelectorAll('#ach i').forEach((e, i) => e.classList.toggle('on', s.ach.includes(ACHIEVEMENTS[i].id)));
       const na = ACHIEVEMENTS.find(a => !s.ach.includes(a.id)); $('achn').textContent = na ? `다음 업적: ${na.n} · ${na.d}` : '모든 업적을 달성했어요!';
       $('achd').textContent = `${s.ach.length}/${ACHIEVEMENTS.length} · 점수 +${s.ach.length * 2}%`;
-      $('sname').textContent = s.name ? `${s.name} · ${CAREER[s.career || 0].n}` : '';
+      const CR = careerOf(s), JB = jobOf(s);
+      $('sname').textContent = s.name ? `${s.name} · ${CR[s.career || 0].n}` : '';
+      for (let i = 0; i < 5; i++) $('mj' + i).hidden = i !== JB.st;
+      if (carJob !== JB.id) { carJob = JB.id; $('carl').innerHTML = CR.map(c => `<li>${c.n}${c.nd ? ` <small>(${c.nd})</small>` : ''}</li>`).join(''); }
       { // 커리어
-        const ci = s.career || 0, nx = CAREER[ci + 1];
-        $('carn').textContent = CAREER[ci].n; $('card').textContent = `영구 점수 +${ci * 5}%`;
-        $('carx').textContent = nx ? `다음 승진: ${nx.n} · 조건 ${nx.nd}` : '최고 직급에 올랐어요!';
+        const ci = s.career || 0, nx = CR[ci + 1];
+        $('carn').textContent = CR[ci].n; $('card').textContent = `${JB.n} · 영구 점수 +${ci * 5}%`;
+        $('carx').textContent = (nx ? `다음 승진: ${nx.n} · 조건 ${nx.nd}` : '최고 직급에 올랐어요!') + ` · 특기: ${JB.perk}`;
         document.querySelectorAll('#carl li').forEach((li, i) => { li.className = i === ci ? 'now' : i < ci ? 'on' : ''; });
       }
       { // 주간 한정 이벤트
@@ -1724,7 +1881,7 @@ function Hud(bus) {
       $('scoutb').textContent = `스카우트 ${fmt(scost)}점`; $('scoutb').classList.toggle('can', s.score >= scost);
       $('scouta').textContent = s.tickets > 0 ? `티켓 사용 (${s.tickets}장)` : adcd ? `광고 스카우트 ${Math.ceil(s.freeReady - s.clock)}초` : '광고 보고 무료 스카우트'; $('scouta').disabled = s.tickets < 1 && adcd;
       const c0 = CARDS[selCard] || CARDS[0], n0 = s.cards[c0.id] || 0;
-      $('cinfo').textContent = n0 ? `${c0.n} · ${RARITY[c0.rar].n} · ${c0.st < 0 ? '전 층' : FLOORS[c0.st][0]} 속도 +${Math.round(RARITY[c0.rar].b * (1 + .5 * (n0 - 1)) * 100)}% · ★${n0}${c0.hero ? ' · 뉴스 디펜더즈: 거대 로봇 속보 점수 +50%' : ''}` : (c0.hero ? '??? · 전설의 히어로. 거대 로봇이 나타나면 출동해요.' : '??? · 아직 모르는 직원이에요. 카드를 눌러 확인해 보세요.');
+      $('cinfo').textContent = n0 ? `${c0.n} · ${RARITY[c0.rar].n} · ${c0.st < 0 ? '전 층' : FLOORS[c0.st][0]} 속도 +${Math.round(RARITY[c0.rar].b * (1 + .5 * (n0 - 1)) * 100)}% · ★${n0}${c0.hero ? ' · 뉴스 디펜더즈: 거대 로봇 속보 점수 +50%' : ''}${n0 < 3 ? ` · 한 장 더 나오면 ★${n0 + 1} ${n0 === 1 ? '은빛 외형' : '금빛 외형'}` : ' · 최고 등급 외형'}` : (c0.hero ? '??? · 전설의 히어로. 거대 로봇이 나타나면 출동해요.' : '??? · 아직 모르는 직원이에요. 카드를 눌러 확인해 보세요.');
       $('cbonus').textContent = '도감 보너스 ' + FLOORS.slice(0, 5).map(([n], i) => `${n} +${Math.round(cardBonus(s, i) * 100)}%`).join(' · ');
       WEEKLY.forEach((g, i) => { const p = Math.min(g.goal, s.week.prog[g.k] || 0), dn = s.week.done[g.id], b = $('wb' + i); $('wp' + i).textContent = `${p}/${g.goal}`; $('wm' + i).style.width = p / g.goal * 100 + '%'; b.textContent = dn ? '완료' : '받기'; b.disabled = !!dn || p < g.goal; b.classList.toggle('can', !dn && p >= g.goal); });
       $('wkd').textContent = `출석 ${s.login.streak}일째 · 7일 연속 시 티켓`;
@@ -1932,12 +2089,13 @@ createBoard(LEADERBOARD).then(b => { board = b; refresh(); syncClock(); });
 setInterval(syncClock, 600000);
 
 // Command 핸들러: 사용자 의도 -> 상태 변경 + 피드백
-bus.on('name', raw => {
-  const r = checkName(raw); if (r.err) return ui.toast(r.err);
-  const renamed = !!store.getState().name; store.dispatch({ type: 'NAME', name: r.name, uid: newId() }); ui.closeName(); Sfx.play('rank');
-  ui.toast(renamed ? `방송국 이름을 ${r.name}(으)로 바꿨어요.` : `${r.name} 방송 시작!`); checkDates(); refresh();
+bus.on('name', ({ name, job }) => {
+  const r = checkName(name); if (r.err) return ui.toast(r.err);
+  const p = store.getState(), renamed = !!p.name; store.dispatch({ type: 'NAME', name: r.name, uid: newId(), job }); ui.closeName(); Sfx.play('rank');
+  const J = JOBS.find(x => x.id === job);
+  ui.toast(renamed ? (p.job && p.job !== job ? `${J.n}(으)로 전직했어요! 특기: ${J.perk}` : `방송국 이름을 ${r.name}(으)로 바꿨어요.`) : `${r.name} 방송 시작! ${J.n}의 특기: ${J.perk}`); checkDates(); refresh();
 });
-bus.on('rename', () => ui.askName(store.getState().name));
+bus.on('rename', () => ui.askName(store.getState().name, store.getState().job || 'editor'));
 bus.on('board', refresh);
 bus.on('buy', id => {
   const u = UPGRADES.find(x => x.id === id), s = store.getState(), { total } = bulk(s, u, s.buyN);
@@ -2014,7 +2172,7 @@ store.subscribe((s, p) => {
   if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; if (s.tut < 0 || s.tut >= 7) ui.showPaper(paper(s.name, r)); else ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}% · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
   if (s.judge && s.judge !== p.judge) { const j = s.judge.res; Sfx.play(j === 'fail' ? 'fail' : j === 'win' ? 'rank' : 'buy'); ui.toast(j === 'win' ? '단독 성공! 이번 속보 점수 x2 · 오늘 시청률 +0.8' : j === 'fail' ? '오보! 정정 보도 나갑니다... 오늘 시청률 -1.2' : '팩트 체크 완료, 안전하게 송출 (점수 x1.2)'); }
   if (s.misHit && s.misHit !== p.misHit) { const m = s.misHit; Sfx.play('rank'); ui.toast(m.all ? `오늘의 미션 올클리어! +${fmt(m.gain)}점 · 스카우트 티켓 +1` : `미션 달성! +${fmt(m.gain)}점`); }
-  if (s.promo && s.promo !== p.promo) { Sfx.play('rank'); ui.showPromo(s.promo.i, s.name); }
+  if (s.promo && s.promo !== p.promo) { Sfx.play('rank'); ui.showPromo(s.promo.i, s.name, s); }
   if (s.weHit && s.weHit !== p.weHit) { Sfx.play('rank'); ui.toast('한정 이벤트 달성! 스카우트 티켓 +2 · 한정 배지 획득'); }
   if (s.ev && s.ev.id === 'robot' && (!p.ev || p.ev.id !== 'robot')) ui.toast(heroCount(s) ? `뉴스 디펜더즈 ${heroCount(s)}명 출동! 이번 속보 점수 +${heroCount(s) * 50}%` : '거대 로봇 습격! 히어로 카드가 있으면 점수가 크게 올라요.');
   if (s.ach.length > p.ach.length) { const a = ACHIEVEMENTS.find(x => x.id === s.ach[s.ach.length - 1]); Sfx.play('rank'); ui.toast(`업적 달성: ${a.n} (점수 +2%)`); }
