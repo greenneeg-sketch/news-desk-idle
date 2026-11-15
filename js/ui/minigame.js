@@ -274,12 +274,12 @@ const MATCH = (() => {
 // 막대가 초록 구간 안에 있으면 '송출 안정' 게이지가 차고, 벗어나면 줄어든다. 게이지를 채우면 복구! 사고 4건, 점점 어려워진다.
 const SIGNAL = (() => {
   const CASES = [
-    { n: '영상 신호 끊김', band: .35, jump: [1.8, 2.6], ease: 1.3 },
-    { n: '오디오 레벨 폭주', band: .31, jump: [1.5, 2.3], ease: 1.6 },
-    { n: '위성 링크 흔들림', band: .27, jump: [1.3, 2.0], ease: 1.9 },
-    { n: '중계차 전송 장애', band: .24, jump: [1.1, 1.8], ease: 2.2 },
+    { n: '영상 신호 끊김', band: .38, jump: [2.0, 2.9], ease: 1.15 },
+    { n: '오디오 레벨 폭주', band: .34, jump: [1.7, 2.6], ease: 1.4 },
+    { n: '위성 링크 흔들림', band: .30, jump: [1.5, 2.3], ease: 1.65 },
+    { n: '중계차 전송 장애', band: .27, jump: [1.3, 2.0], ease: 1.9 },
   ];
-  const LIM = 18, UP = 1.8, DOWN = 1.5, VMAX = .9, FILL = .19, DRAIN = .09; // 감도: 천천히 오르내리고, 게이지는 빨리 차고 천천히 준다
+  const LIM = 18, UP = 1.65, DOWN = 1.35, VMAX = .8, FILL = .2, DRAIN = .08; // 감도: 천천히 오르내리고, 게이지는 빨리 차고 천천히 준다
   const MX = 166, MY = 8, MW = 30, MH = 134, GX = 206, GW = 22;
   let st = null;
   function incident(i) {

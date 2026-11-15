@@ -123,15 +123,32 @@ export const RESEARCH = [
   { id: 'night', n: '야간 근무조', d: '오프라인 수익 +10%p · 최대 +1시간', max: 5, c: 5, req: ['event', 2] },
 ];
 // 사무실 꾸미기: 하나당 점수 +2% (개편해도 유지). at = 점수 가격, need = 해금 조건
+// 사무실 꾸미기: 하나당 점수 +2%. fl = 놓이는 층(0 취재 1 인제스트 2 편집 3 CG 4 송출 5 중계 6 품질 7 팀장), at = 가격, need = 조건 달성 시 무료
 export const DECOS = [
   { id: 'plant', n: '편집실 화분', fl: 2, at: 2e4 },
+  { id: 'lamp', n: '취재 거리 가로등', fl: 0, at: 5e4 },
   { id: 'coffee', n: '인제스트실 커피 머신', fl: 1, at: 2e5 },
+  { id: 'tape', n: '테이프 아카이브 선반', fl: 1, at: 5e5 },
   { id: 'cat', n: '보도국 고양이', fl: 7, at: 2e6 },
+  { id: 'fridge', n: '편집실 미니 냉장고', fl: 2, at: 5e6 },
   { id: 'sofa', n: 'CG실 야근 소파', fl: 3, at: 2e7 },
+  { id: 'poster', n: '편집실 영화 포스터', fl: 2, at: 5e7 },
   { id: 'neon', n: '스튜디오 네온 간판', fl: 4, at: 2e8 },
+  { id: 'figure', n: 'CG실 피규어 진열장', fl: 3, at: 5e8 },
   { id: 'tank', n: '로비 수족관', fl: 6, at: 2e9 },
+  { id: 'clock', n: '인제스트실 세계 시계', fl: 1, at: 5e9 },
+  { id: 'light', n: '스튜디오 조명 스탠드', fl: 4, at: 2e10 },
+  { id: 'parasol', n: '중계 현장 파라솔', fl: 5, at: 1e11 },
+  { id: 'swatch', n: 'CG실 컬러칩 벽보', fl: 3, at: 5e11 },
+  { id: 'bike', n: '취재 오토바이', fl: 0, at: 2e12 },
+  { id: 'board', n: '팀장실 화이트보드', fl: 7, at: 1e13 },
+  { id: 'drone', n: '중계 드론', fl: 5, at: 5e13 },
+  { id: 'bonsai', n: '팀장실 분재', fl: 7, at: 2e14 },
   { id: 'trophy', n: '동시간대 1위 트로피', fl: 4, need: s => (s.bestWin || 0) >= 3, nt: '라이벌 3연승' },
   { id: 'mic', n: '황금 마이크', fl: 0, need: s => s.bestRating >= 10, nt: '시청률 10% 돌파' },
+  { id: 'globe', n: '개편 기념 지구본', fl: 4, need: s => s.pts > 0, nt: '첫 개편' },
+  { id: 'disc', n: '미니게임 골든 디스크', fl: 6, need: s => Object.values(s.mgBest || {}).includes('S'), nt: '미니게임 S등급' },
+  { id: 'flower', n: '시청자 감사 꽃다발', fl: 6, need: s => (s.career || 0) >= 3, nt: '직급 3번 승진' },
 ];
 // 직업: 처음에 고른다. 주력 층(st) 처리 속도 +50%·그 층 업그레이드 비용 -20%, 직업마다 특기와 커리어(직급·조건·대사)가 다르다
 // 커리어는 누적 점수가 기준을 넘으면 승진(개편해도 유지). 승진마다 영구 점수 +5%와 스카우트 티켓. 기준은 모든 직업이 같고 직급 이름·대사만 다르다

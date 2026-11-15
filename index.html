@@ -414,7 +414,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-2027</span>
+  <span class="iver">v2026.11.15-2046</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -553,15 +553,32 @@ const RESEARCH = [
   { id: 'night', n: '야간 근무조', d: '오프라인 수익 +10%p · 최대 +1시간', max: 5, c: 5, req: ['event', 2] },
 ];
 // 사무실 꾸미기: 하나당 점수 +2% (개편해도 유지). at = 점수 가격, need = 해금 조건
+// 사무실 꾸미기: 하나당 점수 +2%. fl = 놓이는 층(0 취재 1 인제스트 2 편집 3 CG 4 송출 5 중계 6 품질 7 팀장), at = 가격, need = 조건 달성 시 무료
 const DECOS = [
   { id: 'plant', n: '편집실 화분', fl: 2, at: 2e4 },
+  { id: 'lamp', n: '취재 거리 가로등', fl: 0, at: 5e4 },
   { id: 'coffee', n: '인제스트실 커피 머신', fl: 1, at: 2e5 },
+  { id: 'tape', n: '테이프 아카이브 선반', fl: 1, at: 5e5 },
   { id: 'cat', n: '보도국 고양이', fl: 7, at: 2e6 },
+  { id: 'fridge', n: '편집실 미니 냉장고', fl: 2, at: 5e6 },
   { id: 'sofa', n: 'CG실 야근 소파', fl: 3, at: 2e7 },
+  { id: 'poster', n: '편집실 영화 포스터', fl: 2, at: 5e7 },
   { id: 'neon', n: '스튜디오 네온 간판', fl: 4, at: 2e8 },
+  { id: 'figure', n: 'CG실 피규어 진열장', fl: 3, at: 5e8 },
   { id: 'tank', n: '로비 수족관', fl: 6, at: 2e9 },
+  { id: 'clock', n: '인제스트실 세계 시계', fl: 1, at: 5e9 },
+  { id: 'light', n: '스튜디오 조명 스탠드', fl: 4, at: 2e10 },
+  { id: 'parasol', n: '중계 현장 파라솔', fl: 5, at: 1e11 },
+  { id: 'swatch', n: 'CG실 컬러칩 벽보', fl: 3, at: 5e11 },
+  { id: 'bike', n: '취재 오토바이', fl: 0, at: 2e12 },
+  { id: 'board', n: '팀장실 화이트보드', fl: 7, at: 1e13 },
+  { id: 'drone', n: '중계 드론', fl: 5, at: 5e13 },
+  { id: 'bonsai', n: '팀장실 분재', fl: 7, at: 2e14 },
   { id: 'trophy', n: '동시간대 1위 트로피', fl: 4, need: s => (s.bestWin || 0) >= 3, nt: '라이벌 3연승' },
   { id: 'mic', n: '황금 마이크', fl: 0, need: s => s.bestRating >= 10, nt: '시청률 10% 돌파' },
+  { id: 'globe', n: '개편 기념 지구본', fl: 4, need: s => s.pts > 0, nt: '첫 개편' },
+  { id: 'disc', n: '미니게임 골든 디스크', fl: 6, need: s => Object.values(s.mgBest || {}).includes('S'), nt: '미니게임 S등급' },
+  { id: 'flower', n: '시청자 감사 꽃다발', fl: 6, need: s => (s.career || 0) >= 3, nt: '직급 3번 승진' },
 ];
 // 직업: 처음에 고른다. 주력 층(st) 처리 속도 +50%·그 층 업그레이드 비용 -20%, 직업마다 특기와 커리어(직급·조건·대사)가 다르다
 // 커리어는 누적 점수가 기준을 넘으면 승진(개편해도 유지). 승진마다 영구 점수 +5%와 스카우트 티켓. 기준은 모든 직업이 같고 직급 이름·대사만 다르다
@@ -1459,6 +1476,24 @@ const DECO_DRAW = {
   neon: (c, t) => { const k = blink(t, 1.5) ? '#ff4ad6' : '#7a2a6a'; R(c, 6, 6, 52, 13, '#14141f'); text(c, '24H', 14, 16, 8, k); R(c, 6, 6, 52, 1, k); R(c, 6, 18, 52, 1, k); },
   tank: (c, t) => { bx(c, 4, GY - 22, 36, 18, '#257179'); R(c, 6, GY - 20, 32, 14, '#41a6f6'); R(c, 6, GY - 8, 32, 2, '#ffcd75'); const fx = 8 + ((t * 8) % 24); R(c, fx, GY - 15, 4, 2, '#ef7d57'); R(c, fx - 1, GY - 16, 1, 4, '#ef7d57'); R(c, 34 - ((t * 5) % 22), GY - 12, 3, 2, '#ffcd75'); bx(c, 2, GY - 4, 40, 4, '#5a3a20'); },
   trophy: (c, t) => { bx(c, 236, GY - 6, 12, 6, '#5a3a20'); R(c, 239, GY - 10, 6, 4, '#ffcd75'); R(c, 237, GY - 18, 10, 8, '#ffd24a'); R(c, 235, GY - 17, 2, 4, '#ffd24a'); R(c, 247, GY - 17, 2, 4, '#ffd24a'); R(c, 239, GY - 16, 2, 3, '#fff6c0'); if (blink(t, 1)) R(c, 248, GY - 21, 2, 2, '#ffffff'); },
+  // ── 추가 소품
+  lamp: (c, t) => { R(c, 66, GY - 40, 2, 40, '#333c57'); R(c, 66, GY - 42, 12, 2, '#333c57'); bx(c, 74, GY - 41, 7, 4, '#566c86'); R(c, 75, GY - 37, 5, 1, '#ffcd75'); c.globalAlpha = .18; R(c, 70, GY - 36, 15, 36, '#ffcd75'); c.globalAlpha = 1; R(c, 63, GY - 2, 8, 2, '#333c57'); },
+  tape: c => { bx(c, 238, GY - 30, 24, 30, '#5a3a20'); for (let r = 0; r < 3; r++) { R(c, 240, GY - 28 + r * 10, 20, 1, '#3a2414'); for (let k = 0; k < 4; k++) R(c, 241 + k * 5, GY - 26 + r * 10, 3, 7, ['#14141f', '#333c57', '#b13e53', '#41a6f6'][(k + r) % 4]); } },
+  clock: (c, t) => { [['SEL', 230, '#ffcd75'], ['NY', 249, '#41a6f6'], ['LDN', 268, '#a7f070']].forEach(([n, x, k], i) => { bx(c, x, 4, 18, 18, '#1a1c2c'); R(c, x + 2, 6, 14, 10, '#0b0b14'); R(c, x + 8, 7, 2, 5, k); const a = t * .5 + i * 2; R(c, x + 8 + Math.round(Math.cos(a) * 3), 11 + Math.round(Math.sin(a) * 3), 2, 2, k); text(c, n, x + 2, 21, 4, '#94b0c2'); }); },
+  fridge: (c, t) => { bx(c, 20, GY - 22, 16, 22, '#c2c3c7'); R(c, 20, GY - 14, 16, 1, '#8b9bb4'); R(c, 33, GY - 20, 1, 4, '#566c86'); R(c, 33, GY - 11, 1, 4, '#566c86'); R(c, 23, GY - 20, 4, 3, '#ef7d57'); R(c, 28, GY - 19, 3, 3, '#ffcd75'); if (blink(t, .5)) R(c, 22, GY - 3, 2, 1, '#38b764'); },
+  poster: c => { bx(c, 18, 6, 22, 30, '#14141f'); R(c, 20, 8, 18, 18, '#5d275d'); R(c, 24, 12, 10, 10, '#ffcd75'); R(c, 26, 14, 6, 6, '#ef7d57'); R(c, 20, 28, 18, 2, '#f4f4f4'); R(c, 22, 31, 14, 1, '#94b0c2'); },
+  figure: (c, t) => { bx(c, 44, GY - 30, 26, 30, '#29366f'); R(c, 46, GY - 28, 22, 26, '#73eff7'); c.globalAlpha = .25; R(c, 46, GY - 28, 22, 26, '#ffffff'); c.globalAlpha = 1; R(c, 46, GY - 15, 22, 1, '#29366f');
+    R(c, 49, GY - 25, 4, 4, '#f4c2a0'); R(c, 48, GY - 21, 6, 5, '#b13e53'); R(c, 58, GY - 26, 5, 5, '#a7f070'); R(c, 57, GY - 21, 7, 5, '#3b5dc9'); R(c, 50, GY - 12, 6, 7, '#ffcd75'); R(c, 51, GY - 13, 4, 2, '#ef7d57'); R(c, 60, GY - 12, 5, 8, '#c2c3c7'); if (blink(t, .7)) R(c, 61, GY - 11, 1, 1, '#ff2e4d'); },
+  swatch: c => { bx(c, 246, 4, 26, 20, '#f4f4f4'); ['#b13e53', '#ef7d57', '#ffcd75', '#a7f070', '#38b764', '#41a6f6', '#3b5dc9', '#5d275d', '#333c57'].forEach((k, i) => R(c, 248 + (i % 3) * 8, 6 + (i / 3 | 0) * 6, 6, 4, k)); },
+  light: (c, t) => { R(c, 60, GY - 24, 2, 24, '#333c57'); R(c, 56, GY - 2, 10, 2, '#333c57'); bx(c, 55, GY - 32, 12, 8, '#14141f'); R(c, 57, GY - 30, 8, 4, blink(t, .3) ? '#fff6c0' : '#ffcd75'); c.globalAlpha = .12; R(c, 67, GY - 30, 36, 30, '#fff6c0'); c.globalAlpha = 1; },
+  globe: (c, t) => { R(c, 258, GY - 4, 10, 4, '#5a3a20'); R(c, 262, GY - 8, 2, 4, '#ffcd75'); R(c, 255, GY - 22, 16, 15, '#3b5dc9'); const o = (t * 6 | 0) % 12; R(c, 256 + (o % 10), GY - 19, 5, 4, '#38b764'); R(c, 258 + ((o + 6) % 10), GY - 13, 4, 3, '#38b764'); R(c, 253, GY - 23, 2, 17, '#ffcd75'); },
+  parasol: c => { R(c, 214, GY - 30, 2, 30, '#f4f4f4'); R(c, 198, GY - 32, 34, 4, '#b13e53'); R(c, 202, GY - 35, 26, 3, '#b13e53'); R(c, 206, GY - 32, 6, 4, '#f4f4f4'); R(c, 218, GY - 32, 6, 4, '#f4f4f4'); bx(c, 204, GY - 10, 22, 4, '#94b0c2'); R(c, 206, GY - 6, 2, 6, '#566c86'); R(c, 222, GY - 6, 2, 6, '#566c86'); R(c, 210, GY - 13, 4, 3, '#f4f4f4'); },
+  drone: (c, t) => { const x = 190 + Math.sin(t * .7) * 28, y = 12 + Math.sin(t * 1.9) * 3, f = blink(t, 8); R(c, x - 6, y, 12, 3, '#333c57'); R(c, x - 2, y + 3, 4, 3, '#14141f'); R(c, x - 1, y + 4, 2, 1, '#41a6f6'); R(c, x - 9, y - 1, f ? 6 : 3, 1, '#c2c3c7'); R(c, x + (f ? 3 : 6), y - 1, f ? 6 : 3, 1, '#c2c3c7'); if (blink(t, 1)) R(c, x + 5, y + 1, 1, 1, '#ff2e4d'); },
+  disc: (c, t) => { bx(c, 68, 6, 24, 26, '#5a3a20'); R(c, 70, 8, 20, 22, '#14141f'); R(c, 73, 10, 14, 14, '#ffd24a'); R(c, 78, 15, 4, 4, '#14141f'); R(c, 74, 11, 3, 3, '#fff6c0'); text(c, 'S', 77, 30, 5, '#ffcd75'); if (blink(t, 1)) R(c, 88, 9, 2, 2, '#ffffff'); },
+  flower: c => { bx(c, 72, GY - 8, 12, 8, '#41a6f6'); R(c, 76, GY - 16, 1, 8, '#38b764'); R(c, 79, GY - 18, 1, 10, '#38b764'); R(c, 73, GY - 20, 5, 5, '#ff4ad6'); R(c, 78, GY - 22, 5, 5, '#ffcd75'); R(c, 81, GY - 17, 4, 4, '#ef7d57'); R(c, 74, GY - 14, 3, 3, '#f4f4f4'); },
+  bike: (c, t) => { const w = (t * 4 | 0) % 2; R(c, 228, GY - 6, 7, 6, '#14141f'); R(c, 248, GY - 6, 7, 6, '#14141f'); R(c, 230, GY - 4, 3, 2, w ? '#566c86' : '#333c57'); R(c, 250, GY - 4, 3, 2, w ? '#566c86' : '#333c57'); bx(c, 232, GY - 12, 18, 6, '#b13e53'); R(c, 236, GY - 15, 9, 3, '#14141f'); R(c, 249, GY - 17, 2, 7, '#566c86'); R(c, 247, GY - 18, 5, 2, '#14141f'); bx(c, 228, GY - 18, 9, 7, '#f4f4f4'); text(c, 'TV', 229, GY - 12, 4, '#b13e53'); R(c, 252, GY - 13, 2, 2, '#ffcd75'); },
+  board: c => { bx(c, 8, GY - 30, 40, 24, '#f4f4f4'); R(c, 12, GY - 6, 2, 6, '#566c86'); R(c, 42, GY - 6, 2, 6, '#566c86'); R(c, 11, GY - 26, 18, 1, '#3b5dc9'); R(c, 11, GY - 22, 26, 1, '#b13e53'); R(c, 11, GY - 18, 14, 1, '#3b5dc9'); R(c, 33, GY - 27, 10, 7, '#ffcd75'); R(c, 34, GY - 18, 9, 7, '#a7f070'); text(c, 'D-1', 12, GY - 9, 4, '#38b764'); },
+  bonsai: c => { bx(c, 236, GY - 7, 16, 7, '#5d275d'); R(c, 243, GY - 15, 2, 8, '#5a3a20'); R(c, 240, GY - 14, 4, 2, '#5a3a20'); R(c, 234, GY - 20, 10, 5, '#257179'); R(c, 242, GY - 23, 12, 6, '#38b764'); R(c, 237, GY - 18, 6, 2, '#38b764'); },
   mic: (c, t) => { R(c, 150, GY - 9, 2, 9, '#ffcd75'); bx(c, 148, GY - 15, 6, 7, '#ffd24a'); R(c, 149, GY - 14, 2, 2, '#fff6c0'); if (blink(t, 1)) { R(c, 156, GY - 18, 2, 2, '#ffffff'); R(c, 145, GY - 12, 1, 1, '#ffffff'); } },
 };
 const HERO_PAL = { cap: PAL('#ffcd75', '#257179'), ninja: PAL('#257179', '#14141f'), mecha: PAL('#c2c3c7', '#b45bff'), night: PAL('#ef7d57', '#333c57') };
@@ -2123,12 +2158,12 @@ const MATCH = (() => {
 // 막대가 초록 구간 안에 있으면 '송출 안정' 게이지가 차고, 벗어나면 줄어든다. 게이지를 채우면 복구! 사고 4건, 점점 어려워진다.
 const SIGNAL = (() => {
   const CASES = [
-    { n: '영상 신호 끊김', band: .35, jump: [1.8, 2.6], ease: 1.3 },
-    { n: '오디오 레벨 폭주', band: .31, jump: [1.5, 2.3], ease: 1.6 },
-    { n: '위성 링크 흔들림', band: .27, jump: [1.3, 2.0], ease: 1.9 },
-    { n: '중계차 전송 장애', band: .24, jump: [1.1, 1.8], ease: 2.2 },
+    { n: '영상 신호 끊김', band: .38, jump: [2.0, 2.9], ease: 1.15 },
+    { n: '오디오 레벨 폭주', band: .34, jump: [1.7, 2.6], ease: 1.4 },
+    { n: '위성 링크 흔들림', band: .30, jump: [1.5, 2.3], ease: 1.65 },
+    { n: '중계차 전송 장애', band: .27, jump: [1.3, 2.0], ease: 1.9 },
   ];
-  const LIM = 18, UP = 1.8, DOWN = 1.5, VMAX = .9, FILL = .19, DRAIN = .09; // 감도: 천천히 오르내리고, 게이지는 빨리 차고 천천히 준다
+  const LIM = 18, UP = 1.65, DOWN = 1.35, VMAX = .8, FILL = .2, DRAIN = .08; // 감도: 천천히 오르내리고, 게이지는 빨리 차고 천천히 준다
   const MX = 166, MY = 8, MW = 30, MH = 134, GX = 206, GW = 22;
   let st = null;
   function incident(i) {
