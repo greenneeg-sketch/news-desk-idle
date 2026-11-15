@@ -1,9 +1,9 @@
-import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES, SCOOP_P, DIL_SEC, RESEARCH, DECOS, jobOf, careerOf, BRANCHES, BR_MAX, brCost } from '../data/config.js';
+import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES, SCOOP_P, DIL_SEC, RESEARCH, DECOS, jobOf, careerOf, BRANCHES, BR_MAX, brCost, BAL } from '../data/config.js';
 import { weekEvent, weekFor } from '../systems/weekly.js';
 import { UNLOCKS, unlockReady } from '../data/tips.js';
 import { newMissions, progress } from '../systems/missions.js';
 import { tierOf } from '../systems/season.js';
-import { rates, scoreMul, bulk, prestigeGain, goldReward, perSec, rl, goldGap } from '../systems/economy.js';
+import { rates, scoreMul, bulk, prestigeGain, goldReward, perSec, basePS, rl, goldGap } from '../systems/economy.js';
 import { evaluateDay } from '../systems/ratings.js';
 import { rollCard, scoutCost } from '../systems/cards.js';
 export const initialState = () => ({
@@ -64,7 +64,7 @@ export function reducer(st, a) {
       }
       if (!s.mis || s.mis.day !== s.day) s.mis = newMissions(s, a.r2);
       else if (s.mis.list.some(m => !m.done && progress(s, m) >= m.goal)) { // 미션 달성: 즉시 보상, 3개 모두 달성 시 티켓
-        const mis = { ...s.mis, list: s.mis.list.map(m => ({ ...m })) }, gain = Math.max(1000, Math.floor(perSec(s) * 300));
+        const mis = { ...s.mis, list: s.mis.list.map(m => ({ ...m })) }, gain = Math.max(1000, Math.floor(basePS(s) * BAL.mis));
         mis.list.forEach(m => { if (!m.done && progress(s, m) >= m.goal) { m.done = 1; s.rp += 1; s.score += gain; s.run += gain; s.total += gain; s.misHit = { k: m.k, gain, t: s.clock }; } });
         if (!mis.all && mis.list.every(m => m.done)) { mis.all = 1; s.tickets += 1; s.misAll += 1; s.misHit = { ...s.misHit, all: 1 }; }
         s.mis = mis;
@@ -110,7 +110,7 @@ export function reducer(st, a) {
     }
     case 'CLAIM': { // 주간 목표 보상
       const g = WEEKLY.find(x => x.id === a.id); if (!g || st.week.done[g.id] || (st.week.prog[g.k] || 0) < g.goal) return st;
-      return { ...earn(st, Math.max(2000, Math.floor(perSec(st) * 1800))), tickets: st.tickets + 1, week: { ...st.week, done: { ...st.week.done, [g.id]: 1 } } };
+      return { ...earn(st, Math.max(2000, Math.floor(basePS(st) * 1800))), tickets: st.tickets + 1, week: { ...st.week, done: { ...st.week.done, [g.id]: 1 } } };
     }
     case 'WEEK': { // 주간 목표 초기화 + 이번 주 한정 이벤트 시작
       const wev = st.wev && st.wev.key === a.key ? st.wev : { key: a.key, id: weekFor(a.key).id, p: 0, done: 0 };
@@ -120,7 +120,7 @@ export function reducer(st, a) {
       if (st.login.last === a.day) return st;
       const streak = st.login.last && dn(a.day) - dn(st.login.last) === 1 ? st.login.streak + 1 : 1;
       // 첫 출석(처음 시작한 날)은 작게: 시작하자마자 큰 보상이 들어오면 해금·승진이 한꺼번에 터져 혼란스럽다
-      const gain = !st.login.last ? 300 : Math.max(500, Math.floor(perSec(st) * 600)) * Math.min(streak, 7), tk = streak % 7 === 0 ? 1 : 0;
+      const gain = !st.login.last ? 300 : Math.max(500, Math.floor(basePS(st) * 600)) * Math.min(streak, 7), tk = streak % 7 === 0 ? 1 : 0;
       return { ...earn(st, gain), tickets: st.tickets + tk, login: { last: a.day, streak }, daily: { streak, gain, tk } };
     }
     case 'RESEARCH': {

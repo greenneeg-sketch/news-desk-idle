@@ -8,7 +8,7 @@ import { scoutCost } from './systems/cards.js';
 import { seasonKey } from './systems/season.js';
 import { toEntry } from './systems/ranking.js';
 import { checkName } from './systems/nameFilter.js';
-import { UPGRADES, MILESTONES, RANKS, MANAGER, CHIEF, STAGES, ACHIEVEMENTS, LEADERBOARD, CARDS, RARITY, WEEKLY, CHALLENGES, TIERS, RIVAL, JOBS } from './data/config.js';
+import { BAL, UPGRADES, MILESTONES, RANKS, MANAGER, CHIEF, STAGES, ACHIEVEMENTS, LEADERBOARD, CARDS, RARITY, WEEKLY, CHALLENGES, TIERS, RIVAL, JOBS } from './data/config.js';
 import { Repo } from './services/storage.js';
 import { createBoard } from './services/leaderboard.js';
 import { Sfx } from './services/audio.js';
@@ -329,7 +329,7 @@ bus.on('reset', () => { Repo.clear(); store.dispatch({ type: 'RESET' }); ui.toas
 bus.on('gold', () => {
   const s = store.getState(); if (!s.gold) return;
   const r = Math.random(), g = goldReward(s, r); store.dispatch({ type: 'GOLD', r }); Sfx.play('rank');
-  ui.toast(g.frenzy ? '특종 터졌다! 20초 동안 점수 x7' : `특종! 점수 +${fmt(g.cash)}`);
+  ui.toast(g.frenzy ? `특종 터졌다! 20초 동안 점수 x${BAL.frenzy}` : `특종! 점수 +${fmt(g.cash)}`);
 });
 bus.on('spd', () => {
   const s = store.getState(); if (s.clock < s.spdReady) return ui.toast('부스트는 잠시 후 다시 쓸 수 있어요.');

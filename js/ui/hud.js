@@ -1,4 +1,4 @@
-import { RANKS, UPGRADES, MILESTONES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, CARDS, RARITY, WEEKLY, ODDS, PITY, TIERS, CHALLENGES, RIVAL, DILEMMAS, SCOOP_P, RESEARCH, DECOS, JOBS, jobOf, careerOf, CAREER_AT } from '../data/config.js';
+import { RANKS, UPGRADES, MILESTONES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, CARDS, RARITY, WEEKLY, ODDS, PITY, TIERS, CHALLENGES, RIVAL, DILEMMAS, SCOOP_P, RESEARCH, DECOS, JOBS, jobOf, careerOf, CAREER_AT, BAL } from '../data/config.js';
 import { weekEvent, heroCount } from '../systems/weekly.js';
 import { progress, missionText } from '../systems/missions.js';
 import { seasonPts, tierOf, themeOf } from '../systems/season.js';
@@ -123,7 +123,7 @@ export function Hud(bus) {
       cur = s;
       const r = rates(s); let w = -1, wv = 4.99;
       $('score').textContent = fmt(s.score); $('ps').textContent = `+${fmt(perSec(s))}/s`;
-      { const rk = rank(s), nx = RANKS[rk + 1]; $('rank').textContent = `${RANKS[rk].n} (x${2 ** rk})` + (nx ? ` → ${nx.n} ${fmt(nx.at - s.run)}점` : ' · 최종 단계'); $('rkb').style.width = (nx ? (s.run - RANKS[rk].at) / (nx.at - RANKS[rk].at) * 100 : 100) + '%'; } $('pt').textContent = s.pts > 0 ? `개편 x${prestigeBonus(s).toFixed(2)}` : '';
+      { const rk = rank(s), nx = RANKS[rk + 1]; $('rank').textContent = `${RANKS[rk].n} (x${+(BAL.rank ** rk).toFixed(2)})` + (nx ? ` → ${nx.n} ${fmt(nx.at - s.run)}점` : ' · 최종 단계'); $('rkb').style.width = (nx ? (s.run - RANKS[rk].at) / (nx.at - RANKS[rk].at) * 100 : 100) + '%'; } $('pt').textContent = s.pts > 0 ? `개편 x${prestigeBonus(s).toFixed(2)}` : '';
       document.querySelectorAll('#seg [data-n]').forEach(b => b.classList.toggle('on', b.dataset.n === s.buyN));
       const U_ = id => isUnlocked(s, id);
       $('spdb').hidden = !U_('spd'); $('misp').hidden = !U_('mis'); $('hqsec').hidden = !U_('hq'); $('flc').hidden = !U_('chief');

@@ -8,7 +8,7 @@ export const UPGRADES = [
   { id: 'edit', n: '편집기자 충원', d: '편집 속도 +15%', base: 200, g: 1.15, st: 2, pct: .15 },
   { id: 'cg', n: 'CG 템플릿', d: 'CG 처리 +12%', base: 800, g: 1.15, st: 3, pct: .12 },
   { id: 'out', n: '송출 자동화', d: '송출 처리 +10%', base: 3000, g: 1.17, st: 4, pct: .10 },
-  { id: 'live', n: '중계 장비', d: '속보 보상 +10%', base: 4000, g: 1.18, st: -1, pct: .10 },
+  { id: 'live', n: '중계 장비', d: '속보 보상 +5%', base: 4000, g: 1.18, st: -1, pct: .05, nm: true },
   { id: 'crew', n: '취재팀 확장', d: '취재 유입 +15%', base: 15000, g: 1.2, st: 0, pct: .15 },
   { id: 'qual', n: '방송 품질', d: '점수 +20%', base: 300, g: 1.4, st: -1, pct: .2, nm: true },
 ];
@@ -125,22 +125,22 @@ export const RESEARCH = [
 // 사무실 꾸미기: 하나당 점수 +2% (개편해도 유지). at = 점수 가격, need = 해금 조건
 // 사무실 꾸미기: 하나당 점수 +2%. fl = 놓이는 층(0 취재 1 인제스트 2 편집 3 CG 4 송출 5 중계 6 품질 7 팀장), at = 가격, need = 조건 달성 시 무료
 export const DECOS = [
-  { id: 'plant', n: '편집실 화분', fl: 2, at: 2e4 },
-  { id: 'lamp', n: '취재 거리 가로등', fl: 0, at: 5e4 },
-  { id: 'coffee', n: '인제스트실 커피 머신', fl: 1, at: 2e5 },
-  { id: 'tape', n: '테이프 아카이브 선반', fl: 1, at: 5e5 },
-  { id: 'cat', n: '보도국 고양이', fl: 7, at: 2e6 },
-  { id: 'fridge', n: '편집실 미니 냉장고', fl: 2, at: 5e6 },
-  { id: 'sofa', n: 'CG실 야근 소파', fl: 3, at: 2e7 },
-  { id: 'poster', n: '편집실 영화 포스터', fl: 2, at: 5e7 },
-  { id: 'neon', n: '스튜디오 네온 간판', fl: 4, at: 2e8 },
-  { id: 'figure', n: 'CG실 피규어 진열장', fl: 3, at: 5e8 },
-  { id: 'tank', n: '로비 수족관', fl: 6, at: 2e9 },
-  { id: 'clock', n: '인제스트실 세계 시계', fl: 1, at: 5e9 },
-  { id: 'light', n: '스튜디오 조명 스탠드', fl: 4, at: 2e10 },
-  { id: 'parasol', n: '중계 현장 파라솔', fl: 5, at: 1e11 },
-  { id: 'swatch', n: 'CG실 컬러칩 벽보', fl: 3, at: 5e11 },
-  { id: 'bike', n: '취재 오토바이', fl: 0, at: 2e12 },
+  { id: 'plant', n: '편집실 화분', fl: 2, at: 50000 },
+  { id: 'lamp', n: '취재 거리 가로등', fl: 0, at: 200000 },
+  { id: 'coffee', n: '인제스트실 커피 머신', fl: 1, at: 600000 },
+  { id: 'tape', n: '테이프 아카이브 선반', fl: 1, at: 2e06 },
+  { id: 'cat', n: '보도국 고양이', fl: 7, at: 6e06 },
+  { id: 'fridge', n: '편집실 미니 냉장고', fl: 2, at: 2e07 },
+  { id: 'sofa', n: 'CG실 야근 소파', fl: 3, at: 7e07 },
+  { id: 'poster', n: '편집실 영화 포스터', fl: 2, at: 2e08 },
+  { id: 'neon', n: '스튜디오 네온 간판', fl: 4, at: 8e08 },
+  { id: 'figure', n: 'CG실 피규어 진열장', fl: 3, at: 3e09 },
+  { id: 'tank', n: '로비 수족관', fl: 6, at: 9e09 },
+  { id: 'clock', n: '인제스트실 세계 시계', fl: 1, at: 3e10 },
+  { id: 'light', n: '스튜디오 조명 스탠드', fl: 4, at: 1e11 },
+  { id: 'parasol', n: '중계 현장 파라솔', fl: 5, at: 4e11 },
+  { id: 'swatch', n: 'CG실 컬러칩 벽보', fl: 3, at: 1e12 },
+  { id: 'bike', n: '취재 오토바이', fl: 0, at: 4e12 },
   { id: 'board', n: '팀장실 화이트보드', fl: 7, at: 1e13 },
   { id: 'drone', n: '중계 드론', fl: 5, at: 5e13 },
   { id: 'bonsai', n: '팀장실 분재', fl: 7, at: 2e14 },
@@ -154,13 +154,13 @@ export const DECOS = [
 // 개설·확장 비용 = at x 1.6^레벨. 개편하면 지국 레벨은 처음으로 돌아간다. x·y는 지도 좌표(320x150)
 export const BRANCHES = [
   { id: 'busan', n: '부산 지국', k: '국내', ev: 'weather', at: 3e4, pct: .08, x: 84, y: 98 },
-  { id: 'daejeon', n: '대전 지국', k: '국내', ev: 'tech', at: 3e5, pct: .08, x: 66, y: 80 },
-  { id: 'gwangju', n: '광주 지국', k: '국내', ev: 'culture', at: 3e6, pct: .08, x: 58, y: 100 },
-  { id: 'jeju', n: '제주 지국', k: '국내', ev: 'society', at: 3e7, pct: .08, x: 60, y: 128 },
-  { id: 'tokyo', n: '도쿄 특파원', k: '해외', ev: 'economy', at: 3e8, pct: .1, x: 124, y: 88 },
-  { id: 'beijing', n: '베이징 특파원', k: '해외', ev: 'world', at: 3e9, pct: .1, x: 18, y: 40 },
-  { id: 'dc', n: '워싱턴 특파원', k: '해외', ev: 'politics', at: 3e10, pct: .12, x: 206, y: 62 },
-  { id: 'paris', n: '파리 특파원', k: '해외', ev: 'sports', at: 3e11, pct: .12, x: 276, y: 44 },
+  { id: 'daejeon', n: '대전 지국', k: '국내', ev: 'tech', at: 1e6, pct: .08, x: 66, y: 80 },
+  { id: 'gwangju', n: '광주 지국', k: '국내', ev: 'culture', at: 2e7, pct: .08, x: 58, y: 100 },
+  { id: 'jeju', n: '제주 지국', k: '국내', ev: 'society', at: 5e8, pct: .08, x: 60, y: 128 },
+  { id: 'tokyo', n: '도쿄 특파원', k: '해외', ev: 'economy', at: 1e10, pct: .1, x: 124, y: 88 },
+  { id: 'beijing', n: '베이징 특파원', k: '해외', ev: 'world', at: 2e11, pct: .1, x: 18, y: 40 },
+  { id: 'dc', n: '워싱턴 특파원', k: '해외', ev: 'politics', at: 3e12, pct: .12, x: 206, y: 62 },
+  { id: 'paris', n: '파리 특파원', k: '해외', ev: 'sports', at: 3e13, pct: .12, x: 276, y: 44 },
 ];
 export const BR_MAX = 20;
 export const brCost = (b, lv) => Math.floor(b.at * 1.6 ** lv);
@@ -227,4 +227,7 @@ export const WEEK_EVENTS = [
 ];
 // 개편(프레스티지): 포인트 = floor((이번 회차 점수 / div) ^ pow), 점수 배율 = 1 + per x 보유 포인트
 // 예전(√(점수/5000), 포인트당 +5%)은 점수가 커질수록 포인트가 폭증해 2시간 만에 1800경까지 갔다 → 세제곱근·+2%로 완만하게
+// 성장 속도 조절(밸런스): 한두 달에 걸쳐 콘텐츠가 열리도록 맞춘 값
+// mile: 업그레이드 10·25·50·100레벨 달성마다 곱하는 배수, rank: 승급 단계마다 배수, gold: 특종 현금(생산량 N초치), frenzy: 특종 배속, gAdd: 업그레이드 비용 증가율 가산
+export const BAL = { mile: 1.5, rank: 1.5, gold: 180, frenzy: 3, gAdd: 0.1, mis: 120 };
 export const PRESTIGE = { div: 1e6, pow: 1 / 3, per: .02 };

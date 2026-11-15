@@ -455,7 +455,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-2150</span>
+  <span class="iver">v2026.11.15-2202</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -479,7 +479,7 @@ const UPGRADES = [
   { id: 'edit', n: '편집기자 충원', d: '편집 속도 +15%', base: 200, g: 1.15, st: 2, pct: .15 },
   { id: 'cg', n: 'CG 템플릿', d: 'CG 처리 +12%', base: 800, g: 1.15, st: 3, pct: .12 },
   { id: 'out', n: '송출 자동화', d: '송출 처리 +10%', base: 3000, g: 1.17, st: 4, pct: .10 },
-  { id: 'live', n: '중계 장비', d: '속보 보상 +10%', base: 4000, g: 1.18, st: -1, pct: .10 },
+  { id: 'live', n: '중계 장비', d: '속보 보상 +5%', base: 4000, g: 1.18, st: -1, pct: .05, nm: true },
   { id: 'crew', n: '취재팀 확장', d: '취재 유입 +15%', base: 15000, g: 1.2, st: 0, pct: .15 },
   { id: 'qual', n: '방송 품질', d: '점수 +20%', base: 300, g: 1.4, st: -1, pct: .2, nm: true },
 ];
@@ -596,22 +596,22 @@ const RESEARCH = [
 // 사무실 꾸미기: 하나당 점수 +2% (개편해도 유지). at = 점수 가격, need = 해금 조건
 // 사무실 꾸미기: 하나당 점수 +2%. fl = 놓이는 층(0 취재 1 인제스트 2 편집 3 CG 4 송출 5 중계 6 품질 7 팀장), at = 가격, need = 조건 달성 시 무료
 const DECOS = [
-  { id: 'plant', n: '편집실 화분', fl: 2, at: 2e4 },
-  { id: 'lamp', n: '취재 거리 가로등', fl: 0, at: 5e4 },
-  { id: 'coffee', n: '인제스트실 커피 머신', fl: 1, at: 2e5 },
-  { id: 'tape', n: '테이프 아카이브 선반', fl: 1, at: 5e5 },
-  { id: 'cat', n: '보도국 고양이', fl: 7, at: 2e6 },
-  { id: 'fridge', n: '편집실 미니 냉장고', fl: 2, at: 5e6 },
-  { id: 'sofa', n: 'CG실 야근 소파', fl: 3, at: 2e7 },
-  { id: 'poster', n: '편집실 영화 포스터', fl: 2, at: 5e7 },
-  { id: 'neon', n: '스튜디오 네온 간판', fl: 4, at: 2e8 },
-  { id: 'figure', n: 'CG실 피규어 진열장', fl: 3, at: 5e8 },
-  { id: 'tank', n: '로비 수족관', fl: 6, at: 2e9 },
-  { id: 'clock', n: '인제스트실 세계 시계', fl: 1, at: 5e9 },
-  { id: 'light', n: '스튜디오 조명 스탠드', fl: 4, at: 2e10 },
-  { id: 'parasol', n: '중계 현장 파라솔', fl: 5, at: 1e11 },
-  { id: 'swatch', n: 'CG실 컬러칩 벽보', fl: 3, at: 5e11 },
-  { id: 'bike', n: '취재 오토바이', fl: 0, at: 2e12 },
+  { id: 'plant', n: '편집실 화분', fl: 2, at: 50000 },
+  { id: 'lamp', n: '취재 거리 가로등', fl: 0, at: 200000 },
+  { id: 'coffee', n: '인제스트실 커피 머신', fl: 1, at: 600000 },
+  { id: 'tape', n: '테이프 아카이브 선반', fl: 1, at: 2e06 },
+  { id: 'cat', n: '보도국 고양이', fl: 7, at: 6e06 },
+  { id: 'fridge', n: '편집실 미니 냉장고', fl: 2, at: 2e07 },
+  { id: 'sofa', n: 'CG실 야근 소파', fl: 3, at: 7e07 },
+  { id: 'poster', n: '편집실 영화 포스터', fl: 2, at: 2e08 },
+  { id: 'neon', n: '스튜디오 네온 간판', fl: 4, at: 8e08 },
+  { id: 'figure', n: 'CG실 피규어 진열장', fl: 3, at: 3e09 },
+  { id: 'tank', n: '로비 수족관', fl: 6, at: 9e09 },
+  { id: 'clock', n: '인제스트실 세계 시계', fl: 1, at: 3e10 },
+  { id: 'light', n: '스튜디오 조명 스탠드', fl: 4, at: 1e11 },
+  { id: 'parasol', n: '중계 현장 파라솔', fl: 5, at: 4e11 },
+  { id: 'swatch', n: 'CG실 컬러칩 벽보', fl: 3, at: 1e12 },
+  { id: 'bike', n: '취재 오토바이', fl: 0, at: 4e12 },
   { id: 'board', n: '팀장실 화이트보드', fl: 7, at: 1e13 },
   { id: 'drone', n: '중계 드론', fl: 5, at: 5e13 },
   { id: 'bonsai', n: '팀장실 분재', fl: 7, at: 2e14 },
@@ -625,13 +625,13 @@ const DECOS = [
 // 개설·확장 비용 = at x 1.6^레벨. 개편하면 지국 레벨은 처음으로 돌아간다. x·y는 지도 좌표(320x150)
 const BRANCHES = [
   { id: 'busan', n: '부산 지국', k: '국내', ev: 'weather', at: 3e4, pct: .08, x: 84, y: 98 },
-  { id: 'daejeon', n: '대전 지국', k: '국내', ev: 'tech', at: 3e5, pct: .08, x: 66, y: 80 },
-  { id: 'gwangju', n: '광주 지국', k: '국내', ev: 'culture', at: 3e6, pct: .08, x: 58, y: 100 },
-  { id: 'jeju', n: '제주 지국', k: '국내', ev: 'society', at: 3e7, pct: .08, x: 60, y: 128 },
-  { id: 'tokyo', n: '도쿄 특파원', k: '해외', ev: 'economy', at: 3e8, pct: .1, x: 124, y: 88 },
-  { id: 'beijing', n: '베이징 특파원', k: '해외', ev: 'world', at: 3e9, pct: .1, x: 18, y: 40 },
-  { id: 'dc', n: '워싱턴 특파원', k: '해외', ev: 'politics', at: 3e10, pct: .12, x: 206, y: 62 },
-  { id: 'paris', n: '파리 특파원', k: '해외', ev: 'sports', at: 3e11, pct: .12, x: 276, y: 44 },
+  { id: 'daejeon', n: '대전 지국', k: '국내', ev: 'tech', at: 1e6, pct: .08, x: 66, y: 80 },
+  { id: 'gwangju', n: '광주 지국', k: '국내', ev: 'culture', at: 2e7, pct: .08, x: 58, y: 100 },
+  { id: 'jeju', n: '제주 지국', k: '국내', ev: 'society', at: 5e8, pct: .08, x: 60, y: 128 },
+  { id: 'tokyo', n: '도쿄 특파원', k: '해외', ev: 'economy', at: 1e10, pct: .1, x: 124, y: 88 },
+  { id: 'beijing', n: '베이징 특파원', k: '해외', ev: 'world', at: 2e11, pct: .1, x: 18, y: 40 },
+  { id: 'dc', n: '워싱턴 특파원', k: '해외', ev: 'politics', at: 3e12, pct: .12, x: 206, y: 62 },
+  { id: 'paris', n: '파리 특파원', k: '해외', ev: 'sports', at: 3e13, pct: .12, x: 276, y: 44 },
 ];
 const BR_MAX = 20;
 const brCost = (b, lv) => Math.floor(b.at * 1.6 ** lv);
@@ -698,6 +698,9 @@ const WEEK_EVENTS = [
 ];
 // 개편(프레스티지): 포인트 = floor((이번 회차 점수 / div) ^ pow), 점수 배율 = 1 + per x 보유 포인트
 // 예전(√(점수/5000), 포인트당 +5%)은 점수가 커질수록 포인트가 폭증해 2시간 만에 1800경까지 갔다 → 세제곱근·+2%로 완만하게
+// 성장 속도 조절(밸런스): 한두 달에 걸쳐 콘텐츠가 열리도록 맞춘 값
+// mile: 업그레이드 10·25·50·100레벨 달성마다 곱하는 배수, rank: 승급 단계마다 배수, gold: 특종 현금(생산량 N초치), frenzy: 특종 배속, gAdd: 업그레이드 비용 증가율 가산
+const BAL = { mile: 1.5, rank: 1.5, gold: 180, frenzy: 3, gAdd: 0.1, mis: 120 };
 const PRESTIGE = { div: 1e6, pow: 1 / 3, per: .02 };
 
 // 층별 말풍선 대사 (데이터). 인덱스: 0취재 1인제스트 2편집 3CG 4송출 5중계 6방송품질 7영상편집팀장
@@ -763,13 +766,13 @@ const rl = (s, id) => (s.res && s.res[id]) || 0; // 연구 레벨
 const cm = s => 1 - .03 * rl(s, 'cost');
 const cmU = (s, u) => cm(s) * (u.st >= 0 && u.st === jobOf(s).st ? .8 : 1); // 내 직업 주력 층 업그레이드는 20% 싸다
 const boost = (m, k) => k ? 1 + (m - 1) * k : m;                              // 직업 특기로 효과 키우기
-const mult = (s, u) => { const l = s.lv[u.id], b = 1 + u.pct * l; return u.nm ? b : b * 2 ** MILESTONES.filter(m => l >= m).length; };
-const cost = (s, u) => Math.ceil(u.base * u.g ** s.lv[u.id] * cmU(s, u));
+const mult = (s, u) => { const l = s.lv[u.id], b = 1 + u.pct * l; return u.nm ? b : b * BAL.mile ** MILESTONES.filter(m => l >= m).length; };
+const cost = (s, u) => Math.ceil(u.base * (u.g + BAL.gAdd) ** s.lv[u.id] * cmU(s, u));
 // 구매 수량(x1/x10/MAX)에 따른 레벨 수와 총 비용
 function bulk(s, u, n) {
   const l = s.lv[u.id], lim = n === 'max' ? 1000 : +n; let k = 0, tot = 0;
-  while (k < lim) { const c = Math.ceil(u.base * u.g ** (l + k) * cmU(s, u)); if (n === 'max' && s.score < tot + c) break; tot += c; k++; }
-  if (!k) { k = 1; tot = Math.ceil(u.base * u.g ** l * cmU(s, u)); }
+  while (k < lim) { const c = Math.ceil(u.base * (u.g + BAL.gAdd) ** (l + k) * cmU(s, u)); if (n === 'max' && s.score < tot + c) break; tot += c; k++; }
+  if (!k) { k = 1; tot = Math.ceil(u.base * (u.g + BAL.gAdd) ** l * cmU(s, u)); }
   return { k, total: tot };
 }
 const rank = s => RANKS.filter(r => s.run >= r.at).length - 1;
@@ -790,21 +793,22 @@ const brMul = s => 1 + BRANCHES.reduce((a, b) => a + ((s.br || {})[b.id] || 0) *
 const brEv = (s, id) => BRANCHES.reduce((m, b) => { const lv = (s.br || {})[b.id] || 0; return lv && b.ev === id ? m * (1.2 + .02 * lv) : m; }, 1);
 function scoreMul(s) {
   const jb = jobOf(s);
-  let m = prestigeBonus(s) * boost(mult(s, U.live), jb.live) * boost(mult(s, U.qual), jb.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? 7 : 1) * brMul(s) * (s.guild ? 1 + .02 * Math.min(10, s.guild.n || 1) : 1);
-  if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s); e *= jb.ev || 1; e *= brEv(s, s.ev.id); m *= e * (1 + .15 * rl(s, 'event')); }
+  let m = prestigeBonus(s) * boost(mult(s, U.qual), jb.qual) * BAL.rank ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? BAL.frenzy : 1) * brMul(s) * (s.guild ? 1 + .02 * Math.min(10, s.guild.n || 1) : 1);
+  if (s.ev) { let e = s.ev.sc * boost(mult(s, U.live), jb.live); if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s); e *= jb.ev || 1; e *= brEv(s, s.ev.id); m *= e * (1 + .15 * rl(s, 'event')); }
   return m;
 }
 const goldGap = (s, r) => (60 + r * 60) * (1 - .08 * rl(s, 'gold')) * ((weekEvent(s) || {}).gold || 1);
 const perSec = s => Math.min(...rates(s)) * 10 * scoreMul(s);
+const basePS = s => perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0 }); // 보상 계산용: 속보·부스트·특종 배수를 뺀 평소 생산량
 // 특종(Cookie Clicker의 황금 쿠키): 10분치 점수 또는 20초간 점수 x7
-const goldReward = (s, r) => r < .5 ? { cash: Math.max(100, Math.floor(perSec(s) * 600)) } : { frenzy: true };
+const goldReward = (s, r) => r < .5 ? { cash: Math.max(100, Math.floor(basePS(s) * BAL.gold)) } : { frenzy: true };
 // 도감 보너스: 층(i)에 해당하는 카드(또는 전 층 카드)의 등급 보너스 x 별 배율의 합
 const cardBonus = (s, i) => CARDS.reduce((a, c) => a + ((c.st === i || c.st < 0) && s.cards[c.id] ? RARITY[c.rar].b * (1 + .5 * (s.cards[c.id] - 1)) : 0), 0);
 
 
 
 // 스카우트 가격: 횟수마다 15%씩 계속 오르고(상한 없음), 최소한 평소 수입 10분치는 되게 한다(속보·특종 배율 제외)
-const scoutCost = s => Math.floor(Math.max(5000 * 1.15 ** s.pulls, perSec({ ...s, ev: null, gbEnd: 0, spdEnd: 0 }) * 600));
+const scoutCost = s => Math.floor(Math.max(5000 * 1.22 ** s.pulls, perSec({ ...s, ev: null, gbEnd: 0, spdEnd: 0 }) * 600));
 // r: 등급 추첨, r2: 같은 등급 안의 카드 추첨. 확률 합계를 넘으면 꽝(null). pity가 차면 영웅 이상 보장
 function rollCard(r, r2, pity, heroBoost = 1) {
   let rar = null, acc = 0;
@@ -854,7 +858,7 @@ function evaluateDay(s, r, r2, r3 = .5) {
   const lr = s.lr && s.lr.rating > 0 ? s.lr : null, rn = lr ? lr.name : RIVAL;
   const rival = lr ? Math.round(lr.rating * (.95 + .1 * r3) * 10) / 10 : Math.round(base * (.85 + .35 * r3) * 10) / 10, won = rating > rival, win = won ? (s.win || 0) + 1 : 0, wm = won ? (1.4 + .1 * Math.min(win, 10)) * ((weekEvent(s) || {}).rival || 1) : 1;
   const views = Math.floor((s.dOut * 8 + s.dEv * 400) * (1 + rating / 10) * (viral ? 5 : 1));
-  return { rating, views, viral, rival, rn, real: !!lr, oppId: lr ? lr.id : null, won, win, bonus: Math.floor((perSec(s) * rating * 10 + views * .05) * wm * (jobOf(s).ad || 1)) };
+  return { rating, views, viral, rival, rn, real: !!lr, oppId: lr ? lr.id : null, won, win, bonus: Math.floor((basePS(s) * rating * 10 + views * .05) * wm * (jobOf(s).ad || 1)) };
 }
 
 
@@ -965,7 +969,7 @@ function reducer(st, a) {
       }
       if (!s.mis || s.mis.day !== s.day) s.mis = newMissions(s, a.r2);
       else if (s.mis.list.some(m => !m.done && progress(s, m) >= m.goal)) { // 미션 달성: 즉시 보상, 3개 모두 달성 시 티켓
-        const mis = { ...s.mis, list: s.mis.list.map(m => ({ ...m })) }, gain = Math.max(1000, Math.floor(perSec(s) * 300));
+        const mis = { ...s.mis, list: s.mis.list.map(m => ({ ...m })) }, gain = Math.max(1000, Math.floor(basePS(s) * BAL.mis));
         mis.list.forEach(m => { if (!m.done && progress(s, m) >= m.goal) { m.done = 1; s.rp += 1; s.score += gain; s.run += gain; s.total += gain; s.misHit = { k: m.k, gain, t: s.clock }; } });
         if (!mis.all && mis.list.every(m => m.done)) { mis.all = 1; s.tickets += 1; s.misAll += 1; s.misHit = { ...s.misHit, all: 1 }; }
         s.mis = mis;
@@ -1011,7 +1015,7 @@ function reducer(st, a) {
     }
     case 'CLAIM': { // 주간 목표 보상
       const g = WEEKLY.find(x => x.id === a.id); if (!g || st.week.done[g.id] || (st.week.prog[g.k] || 0) < g.goal) return st;
-      return { ...earn(st, Math.max(2000, Math.floor(perSec(st) * 1800))), tickets: st.tickets + 1, week: { ...st.week, done: { ...st.week.done, [g.id]: 1 } } };
+      return { ...earn(st, Math.max(2000, Math.floor(basePS(st) * 1800))), tickets: st.tickets + 1, week: { ...st.week, done: { ...st.week.done, [g.id]: 1 } } };
     }
     case 'WEEK': { // 주간 목표 초기화 + 이번 주 한정 이벤트 시작
       const wev = st.wev && st.wev.key === a.key ? st.wev : { key: a.key, id: weekFor(a.key).id, p: 0, done: 0 };
@@ -1021,7 +1025,7 @@ function reducer(st, a) {
       if (st.login.last === a.day) return st;
       const streak = st.login.last && dn(a.day) - dn(st.login.last) === 1 ? st.login.streak + 1 : 1;
       // 첫 출석(처음 시작한 날)은 작게: 시작하자마자 큰 보상이 들어오면 해금·승진이 한꺼번에 터져 혼란스럽다
-      const gain = !st.login.last ? 300 : Math.max(500, Math.floor(perSec(st) * 600)) * Math.min(streak, 7), tk = streak % 7 === 0 ? 1 : 0;
+      const gain = !st.login.last ? 300 : Math.max(500, Math.floor(basePS(st) * 600)) * Math.min(streak, 7), tk = streak % 7 === 0 ? 1 : 0;
       return { ...earn(st, gain), tickets: st.tickets + tk, login: { last: a.day, streak }, daily: { streak, gain, tk } };
     }
     case 'RESEARCH': {
@@ -2452,7 +2456,7 @@ function Hud(bus) {
       cur = s;
       const r = rates(s); let w = -1, wv = 4.99;
       $('score').textContent = fmt(s.score); $('ps').textContent = `+${fmt(perSec(s))}/s`;
-      { const rk = rank(s), nx = RANKS[rk + 1]; $('rank').textContent = `${RANKS[rk].n} (x${2 ** rk})` + (nx ? ` → ${nx.n} ${fmt(nx.at - s.run)}점` : ' · 최종 단계'); $('rkb').style.width = (nx ? (s.run - RANKS[rk].at) / (nx.at - RANKS[rk].at) * 100 : 100) + '%'; } $('pt').textContent = s.pts > 0 ? `개편 x${prestigeBonus(s).toFixed(2)}` : '';
+      { const rk = rank(s), nx = RANKS[rk + 1]; $('rank').textContent = `${RANKS[rk].n} (x${+(BAL.rank ** rk).toFixed(2)})` + (nx ? ` → ${nx.n} ${fmt(nx.at - s.run)}점` : ' · 최종 단계'); $('rkb').style.width = (nx ? (s.run - RANKS[rk].at) / (nx.at - RANKS[rk].at) * 100 : 100) + '%'; } $('pt').textContent = s.pts > 0 ? `개편 x${prestigeBonus(s).toFixed(2)}` : '';
       document.querySelectorAll('#seg [data-n]').forEach(b => b.classList.toggle('on', b.dataset.n === s.buyN));
       const U_ = id => isUnlocked(s, id);
       $('spdb').hidden = !U_('spd'); $('misp').hidden = !U_('mis'); $('hqsec').hidden = !U_('hq'); $('flc').hidden = !U_('chief');
@@ -3013,7 +3017,7 @@ bus.on('reset', () => { Repo.clear(); store.dispatch({ type: 'RESET' }); ui.toas
 bus.on('gold', () => {
   const s = store.getState(); if (!s.gold) return;
   const r = Math.random(), g = goldReward(s, r); store.dispatch({ type: 'GOLD', r }); Sfx.play('rank');
-  ui.toast(g.frenzy ? '특종 터졌다! 20초 동안 점수 x7' : `특종! 점수 +${fmt(g.cash)}`);
+  ui.toast(g.frenzy ? `특종 터졌다! 20초 동안 점수 x${BAL.frenzy}` : `특종! 점수 +${fmt(g.cash)}`);
 });
 bus.on('spd', () => {
   const s = store.getState(); if (s.clock < s.spdReady) return ui.toast('부스트는 잠시 후 다시 쓸 수 있어요.');

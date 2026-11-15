@@ -1,5 +1,5 @@
 import { UPGRADES, RIVAL } from '../data/config.js';
-import { mult, rank, perSec, rl } from './economy.js';
+import { mult, rank, perSec, basePS, rl } from './economy.js';
 import { jobOf } from '../data/config.js';
 import { weekEvent } from './weekly.js';
 const QUAL = UPGRADES.find(u => u.id === 'qual');
@@ -13,5 +13,5 @@ export function evaluateDay(s, r, r2, r3 = .5) {
   const lr = s.lr && s.lr.rating > 0 ? s.lr : null, rn = lr ? lr.name : RIVAL;
   const rival = lr ? Math.round(lr.rating * (.95 + .1 * r3) * 10) / 10 : Math.round(base * (.85 + .35 * r3) * 10) / 10, won = rating > rival, win = won ? (s.win || 0) + 1 : 0, wm = won ? (1.4 + .1 * Math.min(win, 10)) * ((weekEvent(s) || {}).rival || 1) : 1;
   const views = Math.floor((s.dOut * 8 + s.dEv * 400) * (1 + rating / 10) * (viral ? 5 : 1));
-  return { rating, views, viral, rival, rn, real: !!lr, oppId: lr ? lr.id : null, won, win, bonus: Math.floor((perSec(s) * rating * 10 + views * .05) * wm * (jobOf(s).ad || 1)) };
+  return { rating, views, viral, rival, rn, real: !!lr, oppId: lr ? lr.id : null, won, win, bonus: Math.floor((basePS(s) * rating * 10 + views * .05) * wm * (jobOf(s).ad || 1)) };
 }
