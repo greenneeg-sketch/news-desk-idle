@@ -63,6 +63,31 @@ $i('iinstall').onclick = async () => {
   else $i('iosins').hidden = false;
 };
 $i('iosok').onclick = () => { $i('iosins').hidden = true; };
+// 푸시 알림: 앱을 닫을 때 '야간 근무 수익이 가득 차는 시각'에 알림을 예약하고, 다시 열면 예약을 취소한다
+const PUSH_KEY = 'newsDeskPush';
+let pushSub = null; try { pushSub = JSON.parse(localStorage.getItem(PUSH_KEY)); } catch (e) { }
+const pushLabel = () => { $i('pushb').textContent = pushSub ? '알림 끄기' : '알림 켜기'; };
+const b64u8 = b => { const s = atob((b + '='.repeat((4 - b.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(s, c => c.charCodeAt(0)); };
+async function enablePush() {
+  if (isIOS && !standalone) return ui.toast('아이폰은 홈 화면에 추가한 앱에서만 알림을 받을 수 있어요. 타이틀의 "앱 설치"를 먼저 해 주세요.');
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return ui.toast('이 브라우저는 알림을 지원하지 않아요.');
+  if (!board || board.mode !== 'server') return ui.toast('순위 서버에 연결된 뒤 다시 시도해 주세요.');
+  if (await Notification.requestPermission() !== 'granted') return ui.toast('알림이 허용되지 않았어요. 브라우저 설정에서 허용할 수 있어요.');
+  const reg = await navigator.serviceWorker.ready, key = await board.vapid();
+  const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u8(key) });
+  await refresh(); // 서버에 방송국 기록(기기 열쇠)이 먼저 등록돼 있어야 한다
+  pushSub = sub.toJSON(); await board.pushSet(pushSub, null);
+  try { localStorage.setItem(PUSH_KEY, JSON.stringify(pushSub)); } catch (e) { }
+  pushLabel(); ui.toast('알림을 켰어요. 야간 근무 수익이 가득 차면 알려 드려요.');
+}
+async function disablePush() {
+  try { const reg = await navigator.serviceWorker.ready, s = await reg.pushManager.getSubscription(); if (s) await s.unsubscribe(); } catch (e) { }
+  try { await board.pushSet(null, null); } catch (e) { }
+  pushSub = null; try { localStorage.removeItem(PUSH_KEY); } catch (e) { } pushLabel(); ui.toast('알림을 껐어요.');
+}
+$i('pushb').onclick = () => (pushSub ? disablePush() : enablePush()).catch(() => ui.toast('알림을 켜지 못했어요. 잠시 후 다시 시도해 주세요.'));
+pushLabel();
+const pushSchedule = hidden => { if (!pushSub || !board || !store.getState().name) return; const cap = (8 + ((store.getState().res || {}).night || 0)) * 3600e3; board.pushSet(pushSub, hidden ? new Date(Date.now() + clockOff + cap).toISOString() : null, hidden).catch(() => { }); };
 // 새로 시작: 모든 기록을 지우므로 두 번 눌러야 실행. 이름 변경: 기록은 그대로 두고 방송국 이름만 바꾼다
 let newT = 0;
 $i('inew').onclick = () => {
@@ -188,7 +213,7 @@ GameLoop({
 }).start();
 setInterval(() => Repo.save(store.getState()), 5000); // 자동 저장: 5초마다
 // 앱을 닫거나 다른 앱으로 넘어갈 때도 즉시 저장
-document.addEventListener('visibilitychange', () => { if (document.hidden) { Repo.save(store.getState()); Music.pause(); } else Music.resume(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { Repo.save(store.getState()); Music.pause(); pushSchedule(true); } else { Music.resume(); pushSchedule(false); } });
 addEventListener('pagehide', () => Repo.save(store.getState()));
 setInterval(refresh, 60000);
 setInterval(checkDates, 60000);

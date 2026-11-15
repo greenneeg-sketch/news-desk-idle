@@ -253,7 +253,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
     <section class="panel"><div class="fh"><b>업적</b><span class="cnt" id="achd"></span></div><div class="ach" id="ach"></div><p class="note" id="achn"></p></section>
     <section class="panel">
       <div class="fh"><b>설정</b></div>
-      <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="bgmb">BGM ON</button><button class="btn alt" id="renameb">이름 변경</button><button class="btn alt" id="titleb">타이틀</button><button class="btn alt" id="resetb">RESET</button></div>
+      <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="bgmb">BGM ON</button><button class="btn alt" id="pushb">알림 켜기</button><button class="btn alt" id="renameb">이름 변경</button><button class="btn alt" id="titleb">타이틀</button><button class="btn alt" id="resetb">RESET</button></div>
     </section>
   </div>
 </main>
@@ -299,7 +299,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-0907</span>
+  <span class="iver">v2026.11.15-0915</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -825,7 +825,7 @@ const SupabaseAdapter = ({ url, key }) => {
   let dev = null; try { dev = JSON.parse(localStorage.getItem(SB_KEY)); } catch (e) { }
   if (!dev || !dev.id || !dev.key) { dev = { id: uuid(), key: rand(32) }; try { localStorage.setItem(SB_KEY, JSON.stringify(dev)); } catch (e) { } }
   const H = { apikey: key, 'Content-Type': 'application/json' };
-  const rpc = async (fn, body) => { const r = await fetch(`${url}/rest/v1/rpc/${fn}`, { method: 'POST', headers: H, body: JSON.stringify(body) }); if (!r.ok) throw new Error(fn + ' ' + r.status + ' ' + (await r.text()).slice(0, 120)); return r.json(); };
+  const rpc = async (fn, body, keepalive = false) => { const r = await fetch(`${url}/rest/v1/rpc/${fn}`, { method: 'POST', headers: H, body: JSON.stringify(body), keepalive }); if (!r.ok) throw new Error(fn + ' ' + r.status + ' ' + (await r.text()).slice(0, 120)); return r.json(); };
   const COLS = 'id,name,total,max_lv,best_rating,views,rank_score,season,season_pts';
   const row = x => clean({ uid: x.id, name: x.name, total: x.total, maxLv: x.max_lv, bestRating: x.best_rating, views: x.views, rankScore: x.rank_score, season: x.season, seasonPts: x.season_pts });
   return {
@@ -833,6 +833,9 @@ const SupabaseAdapter = ({ url, key }) => {
     submit: e => rpc('nd_submit', { p_id: dev.id, p_key: dev.key, p_name: e.name, p_total: e.total, p_max_lv: e.maxLv, p_best: Math.min(30, e.bestRating), p_views: e.views, p_season: e.season, p_season_pts: e.seasonPts }),
     async top(n) { const r = await fetch(`${url}/rest/v1/nd_leaderboard?select=${COLS}&order=rank_score.desc&limit=${n}`, { headers: H }); if (!r.ok) throw new Error('top ' + r.status); return (await r.json()).map(row); },
     now: async () => Date.parse(await rpc('nd_server_time', {})),
+    vapid: () => rpc('nd_vapid_public', {}),
+    // 푸시 알림 구독·예약: at(ISO 시각)에 알림, at=null이면 예약 취소, sub=null이면 구독 해제. 앱을 닫는 순간에도 보내지게 keepalive
+    pushSet: (sub, at, keep = false) => rpc('nd_push_set', { p_id: dev.id, p_key: dev.key, p_sub: sub, p_at: at, p_kind: 'offline' }, keep),
   };
 };
 async function createBoard(cfg) {
@@ -845,6 +848,8 @@ async function createBoard(cfg) {
     async submit(e) { const k = JSON.stringify([e.name, e.rankScore]); if (k === last) return; await ad.submit(ad.me ? { ...e, uid: ad.me } : e); last = k; },
     top: (n, own) => ad.top(n, own),
     now: () => ad.now ? ad.now() : Promise.resolve(Date.now()),
+    vapid: () => ad.vapid ? ad.vapid() : Promise.reject(new Error('no server')),
+    pushSet: (...a) => ad.pushSet ? ad.pushSet(...a) : Promise.reject(new Error('no server')),
   };
 }
 
@@ -1767,6 +1772,31 @@ $i('iinstall').onclick = async () => {
   else $i('iosins').hidden = false;
 };
 $i('iosok').onclick = () => { $i('iosins').hidden = true; };
+// 푸시 알림: 앱을 닫을 때 '야간 근무 수익이 가득 차는 시각'에 알림을 예약하고, 다시 열면 예약을 취소한다
+const PUSH_KEY = 'newsDeskPush';
+let pushSub = null; try { pushSub = JSON.parse(localStorage.getItem(PUSH_KEY)); } catch (e) { }
+const pushLabel = () => { $i('pushb').textContent = pushSub ? '알림 끄기' : '알림 켜기'; };
+const b64u8 = b => { const s = atob((b + '='.repeat((4 - b.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(s, c => c.charCodeAt(0)); };
+async function enablePush() {
+  if (isIOS && !standalone) return ui.toast('아이폰은 홈 화면에 추가한 앱에서만 알림을 받을 수 있어요. 타이틀의 "앱 설치"를 먼저 해 주세요.');
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return ui.toast('이 브라우저는 알림을 지원하지 않아요.');
+  if (!board || board.mode !== 'server') return ui.toast('순위 서버에 연결된 뒤 다시 시도해 주세요.');
+  if (await Notification.requestPermission() !== 'granted') return ui.toast('알림이 허용되지 않았어요. 브라우저 설정에서 허용할 수 있어요.');
+  const reg = await navigator.serviceWorker.ready, key = await board.vapid();
+  const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u8(key) });
+  await refresh(); // 서버에 방송국 기록(기기 열쇠)이 먼저 등록돼 있어야 한다
+  pushSub = sub.toJSON(); await board.pushSet(pushSub, null);
+  try { localStorage.setItem(PUSH_KEY, JSON.stringify(pushSub)); } catch (e) { }
+  pushLabel(); ui.toast('알림을 켰어요. 야간 근무 수익이 가득 차면 알려 드려요.');
+}
+async function disablePush() {
+  try { const reg = await navigator.serviceWorker.ready, s = await reg.pushManager.getSubscription(); if (s) await s.unsubscribe(); } catch (e) { }
+  try { await board.pushSet(null, null); } catch (e) { }
+  pushSub = null; try { localStorage.removeItem(PUSH_KEY); } catch (e) { } pushLabel(); ui.toast('알림을 껐어요.');
+}
+$i('pushb').onclick = () => (pushSub ? disablePush() : enablePush()).catch(() => ui.toast('알림을 켜지 못했어요. 잠시 후 다시 시도해 주세요.'));
+pushLabel();
+const pushSchedule = hidden => { if (!pushSub || !board || !store.getState().name) return; const cap = (8 + ((store.getState().res || {}).night || 0)) * 3600e3; board.pushSet(pushSub, hidden ? new Date(Date.now() + clockOff + cap).toISOString() : null, hidden).catch(() => { }); };
 // 새로 시작: 모든 기록을 지우므로 두 번 눌러야 실행. 이름 변경: 기록은 그대로 두고 방송국 이름만 바꾼다
 let newT = 0;
 $i('inew').onclick = () => {
@@ -1892,7 +1922,7 @@ GameLoop({
 }).start();
 setInterval(() => Repo.save(store.getState()), 5000); // 자동 저장: 5초마다
 // 앱을 닫거나 다른 앱으로 넘어갈 때도 즉시 저장
-document.addEventListener('visibilitychange', () => { if (document.hidden) { Repo.save(store.getState()); Music.pause(); } else Music.resume(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { Repo.save(store.getState()); Music.pause(); pushSchedule(true); } else { Music.resume(); pushSchedule(false); } });
 addEventListener('pagehide', () => Repo.save(store.getState()));
 setInterval(refresh, 60000);
 setInterval(checkDates, 60000);

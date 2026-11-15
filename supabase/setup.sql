@@ -75,3 +75,91 @@ grant execute on function public.nd_submit(uuid, text, text, double precision, i
 
 create or replace function public.nd_server_time() returns timestamptz language sql stable set search_path = '' as $$ select now() $$;
 grant execute on function public.nd_server_time() to anon, authenticated;
+
+-- ============================================================
+-- 푸시 알림 (선택). 서명 열쇠(VAPID)는 서버 함수 nd-push가 처음 실행될 때 만들어 Vault에 넣는다.
+-- 함께 배포: supabase/functions/nd-push/index.ts (verify_jwt = true)
+-- ============================================================
+create extension if not exists pg_net with schema extensions;
+create extension if not exists pg_cron;
+
+create table if not exists public.nd_push (
+  id        uuid primary key references public.nd_lb_keys(id) on delete cascade,
+  sub       jsonb not null,
+  kind      text not null default 'offline',
+  notify_at timestamptz,
+  sent_at   timestamptz,
+  updated_at timestamptz not null default now()
+);
+create index if not exists nd_push_due_idx on public.nd_push (notify_at) where notify_at is not null;
+alter table public.nd_push enable row level security;                  -- 정책 없음: 함수로만 접근
+revoke all on public.nd_push from anon, authenticated;
+
+-- 기기 열쇠를 확인하고 알림 구독/예약을 저장 (p_sub null이면 구독 해제, p_at null이면 예약 취소)
+create or replace function public.nd_push_set(p_id uuid, p_key text, p_sub jsonb, p_at timestamptz, p_kind text default 'offline')
+returns boolean language plpgsql security definer set search_path = '' as $$
+declare h text; ok boolean;
+begin
+  if p_id is null or p_key is null then raise exception 'bad key'; end if;
+  h := encode(pg_catalog.sha256(convert_to(p_key, 'UTF8')), 'hex');
+  select k.key_hash = h into ok from public.nd_lb_keys k where k.id = p_id;
+  if ok is null then raise exception 'no key yet'; end if;
+  if not ok then raise exception 'forbidden'; end if;
+  if p_sub is null then delete from public.nd_push where id = p_id; return true; end if;
+  if left(p_sub->>'endpoint', 8) <> 'https://' or length(p_sub::text) > 2000 or (p_sub->'keys'->>'p256dh') is null or (p_sub->'keys'->>'auth') is null then raise exception 'bad subscription'; end if;
+  if p_kind not in ('offline') then raise exception 'bad kind'; end if;
+  insert into public.nd_push(id, sub, kind, notify_at, updated_at)
+    values (p_id, p_sub, p_kind, case when p_at is null then null else least(greatest(p_at, now() + interval '1 minute'), now() + interval '2 days') end, now())
+  on conflict (id) do update set sub = excluded.sub, kind = excluded.kind, notify_at = excluded.notify_at, updated_at = now();
+  return true;
+end $$;
+revoke execute on function public.nd_push_set(uuid, text, jsonb, timestamptz, text) from public;
+grant execute on function public.nd_push_set(uuid, text, jsonb, timestamptz, text) to anon, authenticated;
+
+create or replace function public.nd_vapid_public() returns text language sql stable security definer set search_path = '' as $$
+  select (decrypted_secret::jsonb)->>'public' from vault.decrypted_secrets where name = 'nd_vapid' limit 1
+$$;
+revoke execute on function public.nd_vapid_public() from public;
+grant execute on function public.nd_vapid_public() to anon, authenticated;
+
+-- 아래는 서버 함수(service_role) 전용
+create or replace function public.nd_vapid() returns jsonb language sql stable security definer set search_path = '' as $$
+  select decrypted_secret::jsonb from vault.decrypted_secrets where name = 'nd_vapid' limit 1
+$$;
+create or replace function public.nd_vapid_init(p_public text, p_private text) returns text language plpgsql security definer set search_path = '' as $$
+begin
+  if exists (select 1 from vault.secrets where name = 'nd_vapid') then
+    return (select (decrypted_secret::jsonb)->>'public' from vault.decrypted_secrets where name = 'nd_vapid' limit 1);
+  end if;
+  perform vault.create_secret(jsonb_build_object('public', p_public, 'private', p_private)::text, 'nd_vapid', 'NEWS DESK web push VAPID keys');
+  return p_public;
+end $$;
+create or replace function public.nd_push_due() returns table(id uuid, sub jsonb, kind text) language sql security definer set search_path = '' as $$
+  update public.nd_push p set notify_at = null, sent_at = now()
+  where p.id in (select q.id from public.nd_push q where q.notify_at is not null and q.notify_at <= now() order by q.notify_at limit 200 for update skip locked)
+  returning p.id, p.sub, p.kind
+$$;
+create or replace function public.nd_push_gone(p_id uuid) returns void language sql security definer set search_path = '' as $$
+  delete from public.nd_push where id = p_id
+$$;
+revoke execute on function public.nd_vapid() from public, anon, authenticated;
+revoke execute on function public.nd_vapid_init(text, text) from public, anon, authenticated;
+revoke execute on function public.nd_push_due() from public, anon, authenticated;
+revoke execute on function public.nd_push_gone(uuid) from public, anon, authenticated;
+grant execute on function public.nd_vapid() to service_role;
+grant execute on function public.nd_vapid_init(text, text) to service_role;
+grant execute on function public.nd_push_due() to service_role;
+grant execute on function public.nd_push_gone(uuid) to service_role;
+
+-- 10분마다 보낼 알림이 있을 때만 nd-push 호출 (URL과 anon 키는 자기 프로젝트 값으로 바꿀 것)
+create or replace function public.nd_push_tick() returns void language plpgsql security definer set search_path = '' as $$
+begin
+  if exists (select 1 from public.nd_push where notify_at is not null and notify_at <= now()) then
+    perform net.http_post(
+      url := 'https://ndyiuefcvhnqnfdziacv.supabase.co/functions/v1/nd-push',
+      headers := jsonb_build_object('Content-Type', 'application/json', 'Authorization', 'Bearer <ANON_KEY>'),
+      body := '{}'::jsonb, timeout_milliseconds := 20000);
+  end if;
+end $$;
+revoke execute on function public.nd_push_tick() from public, anon, authenticated;
+select cron.schedule('nd-push', '*/10 * * * *', 'select public.nd_push_tick()');
