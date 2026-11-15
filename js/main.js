@@ -23,13 +23,14 @@ import { Intro } from './ui/intro.js';
 import { Hud, fmt } from './ui/hud.js';
 import { MINI } from './ui/minigame.js';
 import { Branches } from './ui/branches.js';
+import { Social } from './ui/social.js';
 import { perSec } from './systems/economy.js';
 import { jobOf } from './data/config.js';
 import { isUnlocked } from './data/tips.js';
 
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
-const ui = Hud(bus), branches = Branches(bus), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
+const ui = Hud(bus), branches = Branches(bus), social = Social(bus), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
 let pending = 0, board = null;
 const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -176,7 +177,7 @@ MINI.init({
   combo(t) { $i('mcc').textContent = t; },
   done(r) {
     const { g, practice } = mgPlay, s = store.getState(), MIN = { S: 4, A: 3, B: 2, C: 1 }[r.grade], job = mgMine(s, g) ? 1.5 : 1, per = Math.max(perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0 }), 5); // 속보·부스트·특종 배수는 빼고 평소 생산량 기준
-    const prev = (s.mgBest || {})[g.id]; store.dispatch({ type: 'MGREC', id: g.id, grade: r.grade, practice });
+    const prev = (s.mgBest || {})[g.id]; store.dispatch({ type: 'MGREC', id: g.id, grade: r.grade, practice }); if (!practice) gExtra += 5; // 연합 공동 특보 기여
     $i('mcgr').textContent = r.grade; $i('mcst').textContent = r.stat; $i('mcshot').hidden = true;
     $i('mcl').textContent = r.perfect ? '완벽!' : '완료'; $i('mcs').textContent = '';
     if (practice) { mgReward = 0; $i('mcrw').textContent = `연습 모드 · 최고 기록 ${store.getState().mgBest[g.id]}${prev && prev !== store.getState().mgBest[g.id] ? ' (신기록!)' : ''}`; }
@@ -251,7 +252,33 @@ async function refresh(manual = false) {
 }
 // 서버가 있으면 서버 시각으로 출석·주간·시즌을 계산한다(기기 시계 조작 방지)
 const syncClock = () => board && board.now().then(t => { if (t) { clockOff = t - Date.now(); checkDates(); } }).catch(() => { });
-createBoard(LEADERBOARD).then(b => { board = b; refresh(); syncClock(); });
+createBoard(LEADERBOARD).then(b => { board = b; refresh(); syncClock(); setTimeout(() => { duelRefresh(); guildRefresh(); }, 3000); });
+// ───── 시청률 대결 · 방송국 연합 (서버 모드에서만) ─────
+const online = () => board && board.mode === 'server' && store.getState().name;
+let duelLog = null, gInfo = null, gSentEv = null, gExtra = 0;
+const perNow = () => Math.max(5, perSec({ ...store.getState(), ev: null, spdEnd: 0, gbEnd: 0 }));
+function duelRefresh() {
+  if (!online()) { social.offline(true); return; } social.offline(false);
+  board.call('rival').then(r => { store.dispatch({ type: 'SETLR', lr: r ? { id: r.id, name: String(r.name).slice(0, 12), rating: +r.rating, live: !!r.live, w: r.w, l: r.l } : null }); social.duel(store.getState(), duelLog); }).catch(() => { });
+  board.call('duels').then(d => { duelLog = d; social.duel(store.getState(), d); }).catch(() => { });
+}
+function guildRefresh() {
+  if (!online()) return;
+  board.call('guild').then(g => { gInfo = g; store.dispatch({ type: 'SETGUILD', g: g ? { id: g.id, name: g.name, n: g.n } : null }); social.guild(g, perNow()); }).catch(() => { });
+}
+function guildSend() { // 공동 특보 기여: 지난번 이후 대응한 속보 수(+미니게임 5건씩)를 보낸다
+  const s = store.getState(); if (!online() || !s.guild) { gSentEv = s.evCount; return; }
+  if (gSentEv == null) gSentEv = s.evCount;
+  const d = Math.min(40, s.evCount - gSentEv + gExtra); if (d <= 0) return;
+  board.call('guildAdd', d).then(n => { if (n > 0) { const fromEv = Math.min(n, s.evCount - gSentEv); gSentEv += fromEv; gExtra = Math.max(0, gExtra - (n - fromEv)); guildRefresh(); } }).catch(() => { });
+}
+setInterval(guildSend, 60000); setInterval(guildRefresh, 120000); setInterval(duelRefresh, 600000);
+$i('tab-rank').addEventListener('click', () => { duelRefresh(); guildRefresh(); });
+bus.on('gcreate', n => { if (!online()) return ui.toast('온라인 서버에 연결된 뒤 할 수 있어요.'); const c = checkName(n); if (c.err) return ui.toast(c.err); board.call('guildCreate', c.name || n).then(g => { Sfx.play('rank'); ui.toast(`연합 "${g.name}"을 만들었어요! 초대 코드 ${g.code}를 친구에게 알려 주세요.`); guildRefresh(); }).catch(err => ui.toast(/name not allowed/.test(err.message) ? '쓸 수 없는 이름이에요.' : '연합을 만들지 못했어요.')); });
+bus.on('gjoin', c => { if (!online()) return ui.toast('온라인 서버에 연결된 뒤 할 수 있어요.'); if (!/^[A-Z0-9]{6}$/.test(c)) return ui.toast('초대 코드 6자리를 확인해 주세요.'); board.call('guildJoin', c).then(g => { Sfx.play('rank'); ui.toast(`"${g.name}" 연합에 가입했어요!`); guildRefresh(); }).catch(err => ui.toast(/guild full/.test(err.message) ? '연합이 가득 찼어요(20명).' : /no such/.test(err.message) ? '없는 초대 코드예요.' : '가입하지 못했어요.')); });
+bus.on('gleave', () => { board.call('guildLeave').then(() => { ui.toast('연합에서 탈퇴했어요.'); gInfo = null; store.dispatch({ type: 'SETGUILD', g: null }); social.guild(null); }).catch(() => ui.toast('탈퇴하지 못했어요.')); });
+bus.on('gcopy', () => { const c = gInfo && gInfo.code; if (!c) return; (navigator.clipboard ? navigator.clipboard.writeText(c) : Promise.reject()).then(() => ui.toast('초대 코드를 복사했어요.'), () => ui.toast(`초대 코드: ${c}`)); });
+bus.on('gclaim', () => { board.call('guildClaim').then(ok => { if (!ok) return ui.toast('아직 받을 수 없어요.'); const n = Math.floor(perNow() * 1800); store.dispatch({ type: 'GREWARD', n, tk: 3 }); Sfx.play('rank'); ui.toast(`공동 특보 성공! 티켓 3장 + ${fmt(n)}점`); guildRefresh(); }).catch(() => ui.toast('보상을 받지 못했어요.')); });
 setInterval(syncClock, 600000);
 
 // Command 핸들러: 사용자 의도 -> 상태 변경 + 피드백
@@ -336,6 +363,7 @@ store.subscribe((s, p) => {
   if (s.chalWin && s.chalWin !== p.chalWin) { const c = CHALLENGES.find(x => x.id === s.chalWin.split(':')[0]); Sfx.play('rank'); ui.toast(`챌린지 완료: ${c.n}! 영구 점수 +10%`); }
   if (s.lastSeason && s.lastSeason !== p.lastSeason) { const l = s.lastSeason; Sfx.play('rank'); ui.toast(`시즌 종료: ${TIERS[l.tier].n} 달성 · 스카우트 티켓 +${l.tk}장`); }
   if (s.daily && s.daily !== p.daily) { const d = s.daily; Sfx.play('rank'); ui.toast(`출석 ${d.streak}일째! 보너스 +${fmt(d.gain)}점${d.tk ? ' · 스카우트 티켓 +1' : ''}`); }
+  if (s.report && s.report !== p.report && online()) { const r = s.report; board.call('rate', r.rating, r.real ? r.oppId : null, r.real ? r.rival : null).catch(() => { }).then(() => setTimeout(duelRefresh, 1500)); }
   if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; paperNow = paper(s.name, r); ui.paperReady(true); ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}%${r.rival != null ? (r.won ? ' · 라이벌에 승리!' : ' · 라이벌에 패배') : ''} · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
   if (s.judge && s.judge !== p.judge) { const j = s.judge.res; Sfx.play(j === 'fail' ? 'fail' : j === 'win' ? 'rank' : 'buy'); ui.toast(j === 'win' ? '단독 성공! 이번 속보 점수 x2 · 오늘 시청률 +0.8' : j === 'fail' ? '오보! 정정 보도 나갑니다... 오늘 시청률 -1.2' : '팩트 체크 완료, 안전하게 송출 (점수 x1.2)'); }
   if (s.misHit && s.misHit !== p.misHit) { const m = s.misHit; Sfx.play('rank'); ui.toast(m.all ? `오늘의 미션 올클리어! +${fmt(m.gain)}점 · 스카우트 티켓 +1` : `미션 달성! +${fmt(m.gain)}점`); }

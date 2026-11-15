@@ -185,8 +185,10 @@ export function Hud(bus) {
         const rp = s.report, w = s.win || 0;
         $('vs').innerHTML = '';
         const line = (t, cls) => { const e = document.createElement('div'); e.textContent = t; if (cls) e.className = cls; $('vs').appendChild(e); };
-        if (rp && rp.rival != null) { line(`VS ${RIVAL} ${rp.rival.toFixed(1)}% → ${rp.won ? '승리!' : '패배'}`, rp.won ? 'w' : 'l'); line(w ? `${w}연승 중 · 오늘 이기면 광고 수입 x${(1.4 + .1 * Math.min(w + 1, 10)).toFixed(1)}` : `오늘 8시에 ${RIVAL}을(를) 이기면 광고 수입 x1.5`); }
-        else line(`오늘 8시 뉴스에서 라이벌 ${RIVAL}과 시청률 대결!`);
+        const nx = s.lr && s.lr.rating > 0 ? s.lr : null, nn = nx ? nx.name : RIVAL; // 오늘의 상대(실제 플레이어 또는 가상)
+        if (rp && rp.rival != null) line(`어제 VS ${rp.rn || RIVAL} ${rp.rival.toFixed(1)}% → ${rp.won ? '승리!' : '패배'}`, rp.won ? 'w' : 'l');
+        line(nx ? `오늘의 상대: ${nn} (실제 플레이어${nx.live ? ' · 지금 방송 중' : ''}) · 최근 ${nx.rating.toFixed(1)}%` : `오늘의 상대: ${nn} (가상 방송국)`, nx ? 'w' : '');
+        line(w ? `${w}연승 중 · 오늘 이기면 광고 수입 x${(1.4 + .1 * Math.min(w + 1, 10)).toFixed(1)}` : `오늘 8시에 이기면 광고 수입 x1.5`);
         if (s.dAdj) line(`오늘 단독 보도 효과: 시청률 ${s.dAdj > 0 ? '+' : ''}${s.dAdj.toFixed(1)}`, s.dAdj > 0 ? 'w' : 'l');
       }
       if (s.mis) {

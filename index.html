@@ -90,6 +90,8 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .mgi{display:flex;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--ink)}.mgi>div{flex:1}.mgi b{display:block}.mgi small{display:block;color:var(--sub);font-size:12px;margin-top:2px}.mgi .bg{font:12px "Press Start 2P",monospace;color:var(--y);min-width:22px;text-align:center}.mgi.my b::after{content:' · 내 직업';color:var(--g);font-size:11px}
 .mcrw{font-size:15px;margin:4px 0 10px}.mcx{width:100%;margin-top:8px;min-height:34px}
 #brmap{display:block;width:100%;image-rendering:pixelated;margin:6px 0;box-shadow:0 0 0 3px var(--ink)}.brrow.off{opacity:.45}.brk{color:var(--y)}
+.opp{display:flex;flex-direction:column;gap:2px;padding:8px;background:var(--ink);margin:6px 0}.opp b{font-size:17px;color:var(--y)}.opp small{color:var(--sub);font-size:12px}
+.dlog li.w b{color:#a7f070}.dlog li.l b{color:#ff8a8a}.gcode{font-size:12px;color:var(--sub)}.gcode b{font:12px "Press Start 2P",monospace;color:var(--y);letter-spacing:1px}.gstory{color:#ff8a8a;font-weight:700;margin:8px 0 4px}#gin .rt{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}#gin .rt strong{font-size:18px}#gname,#gcode{flex:1;margin:4px 0}#glv{margin-top:6px}
 .lbpg{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0}.lbpg span{min-width:56px;text-align:center;font-size:13px}.lbpg .btn:disabled{opacity:.4}
 #cards{cursor:pointer}
 .wg{margin:10px 0}.row2{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}.row2 span:first-child{flex:1}
@@ -277,6 +279,34 @@ section.gh{display:none!important}
   </div>
 
   <div class="pane" data-tab="rank" hidden>
+    <section class="panel" id="duelp">
+      <div class="fh"><b>실시간 시청률 대결</b><span class="cnt" id="drec"></span></div>
+      <p class="note" id="dueloff" hidden>온라인 서버에 연결되면 실제 플레이어와 대결해요. 지금은 가상 방송국과 대결 중이에요.</p>
+      <div id="duelx">
+        <div class="opp"><small>오늘의 상대</small><b id="dopp"></b><small id="doppd"></small></div>
+        <p class="note">매일(게임 속 하루 5분) 8시 뉴스 시청률로 겨뤄요. 이기면 광고 수입이 커지고 연승이 쌓여요.</p>
+        <ul class="lb dlog" id="dlog"></ul>
+      </div>
+    </section>
+    <section class="panel" id="guildp">
+      <div class="fh"><b>방송국 연합</b><span class="cnt" id="gcnt"></span></div>
+      <p class="note" id="guildoff" hidden>온라인 서버에 연결되면 연합을 만들거나 가입할 수 있어요.</p>
+      <div id="guildx">
+        <div id="gnone">
+          <p class="note">친구들과 연합을 만들어 매주 "공동 특보"를 함께 막아요. 멤버 한 명당 점수 +2%(최대 +20%).</p>
+          <div class="row"><input id="gname" maxlength="12" placeholder="연합 이름 (12자)" autocomplete="off"><button class="btn" id="gmk">만들기</button></div>
+          <div class="row"><input id="gcode" maxlength="6" placeholder="초대 코드 6자리" autocomplete="off" autocapitalize="characters"><button class="btn alt" id="gjn">가입</button></div>
+        </div>
+        <div id="gin" hidden>
+          <div class="rt"><strong id="gtitle"></strong><span class="gcode">초대 코드 <b id="gcodev"></b> <button class="btn mini alt" id="gcp">복사</button></span></div>
+          <p class="gstory" id="gstory"></p>
+          <div class="ms"><i id="gbar"></i></div><p class="note" id="gprog"></p>
+          <button class="btn warn" id="gcl" style="width:100%"></button>
+          <ul class="lb" id="gmem"></ul>
+          <button class="btn alt mini" id="glv">탈퇴</button>
+        </div>
+      </div>
+    </section>
     <section class="panel" id="seasonp">
       <div class="fh"><b id="sn">시즌</b><span class="cnt" id="sleft"></span></div>
       <p class="note" id="sth"></p>
@@ -425,7 +455,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-2059</span>
+  <span class="iver">v2026.11.15-2103</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -760,7 +790,7 @@ const brMul = s => 1 + BRANCHES.reduce((a, b) => a + ((s.br || {})[b.id] || 0) *
 const brEv = (s, id) => BRANCHES.reduce((m, b) => { const lv = (s.br || {})[b.id] || 0; return lv && b.ev === id ? m * (1.2 + .02 * lv) : m; }, 1);
 function scoreMul(s) {
   const jb = jobOf(s);
-  let m = prestigeBonus(s) * boost(mult(s, U.live), jb.live) * boost(mult(s, U.qual), jb.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? 7 : 1) * brMul(s);
+  let m = prestigeBonus(s) * boost(mult(s, U.live), jb.live) * boost(mult(s, U.qual), jb.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? 7 : 1) * brMul(s) * (s.guild ? 1 + .02 * Math.min(10, s.guild.n || 1) : 1);
   if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s); e *= jb.ev || 1; e *= brEv(s, s.ev.id); m *= e * (1 + .15 * rl(s, 'event')); }
   return m;
 }
@@ -820,9 +850,11 @@ const QUAL = UPGRADES.find(u => u.id === 'qual');
 function evaluateDay(s, r, r2, r3 = .5) {
   const base = 2 + 1.1 * Math.log10(1 + s.dOut) + .6 * Math.min(s.dEv, 5) + 1.2 * Math.sqrt(mult(s, QUAL) - 1) + .4 * rank(s);
   const rating = Math.max(.5, Math.min(30, Math.round((base * (.8 + .4 * r) + (s.dAdj || 0) + .3 * rl(s, 'rating') + (jobOf(s).rating || 0)) * 10) / 10)), viral = r2 < .12;
-  const rival = Math.round(base * (.85 + .35 * r3) * 10) / 10, won = rating > rival, win = won ? (s.win || 0) + 1 : 0, wm = won ? (1.4 + .1 * Math.min(win, 10)) * ((weekEvent(s) || {}).rival || 1) : 1;
+  // 상대: 실제 플레이어(s.lr, 서버에서 받은 최근 8시 뉴스 시청률 ±5%)가 있으면 그 사람, 없으면 가상 라이벌
+  const lr = s.lr && s.lr.rating > 0 ? s.lr : null, rn = lr ? lr.name : RIVAL;
+  const rival = lr ? Math.round(lr.rating * (.95 + .1 * r3) * 10) / 10 : Math.round(base * (.85 + .35 * r3) * 10) / 10, won = rating > rival, win = won ? (s.win || 0) + 1 : 0, wm = won ? (1.4 + .1 * Math.min(win, 10)) * ((weekEvent(s) || {}).rival || 1) : 1;
   const views = Math.floor((s.dOut * 8 + s.dEv * 400) * (1 + rating / 10) * (viral ? 5 : 1));
-  return { rating, views, viral, rival, won, win, bonus: Math.floor((perSec(s) * rating * 10 + views * .05) * wm * (jobOf(s).ad || 1)) };
+  return { rating, views, viral, rival, rn, real: !!lr, oppId: lr ? lr.id : null, won, win, bonus: Math.floor((perSec(s) * rating * 10 + views * .05) * wm * (jobOf(s).ad || 1)) };
 }
 
 
@@ -883,10 +915,10 @@ const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0, br: {},
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0, br: {}, lr: null, guild: null,
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -1006,6 +1038,9 @@ function reducer(st, a) {
     case 'TIP': return { ...st, tips: { ...st.tips, [a.id]: 1 } };
     case 'SETN': return { ...st, buyN: a.n };
     case 'GAIN': return earn(st, a.n);
+    case 'SETLR': return { ...st, lr: a.lr || null }; // 오늘의 실제 플레이어 상대
+    case 'SETGUILD': return { ...st, guild: a.g || null }; // 연합 정보(버프 계산용)
+    case 'GREWARD': return { ...earn(st, a.n), tickets: st.tickets + (a.tk || 0) }; // 공동 특보 보상
     case 'BRUP': { // 지국 개설·확장
       const b = BRANCHES.find(x => x.id === a.id), lv = (st.br || {})[a.id] || 0; if (!b || lv >= BR_MAX) return st;
       const c = brCost(b, lv); if (st.score < c) return st;
@@ -1058,7 +1093,7 @@ const EventScheduler = store => ({
 
 
 
-const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'br'];
+const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'br', 'lr', 'guild'];
 // Repository 패턴: 저장 매체(localStorage)를 이 모듈 안에 가둔다
 const Repo = {
   snapshot: s => ({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() }), // 클라우드 저장에도 같은 모양을 쓴다
@@ -1119,6 +1154,16 @@ const SupabaseAdapter = ({ url, key }) => {
       return { all: all + 1, season: season + 1 };
     },
     now: async () => Date.parse(await rpc('nd_server_time', {})),
+    // 시청률 대결 · 방송국 연합 (모두 기기 열쇠로 본인 확인)
+    rival: () => rpc('nd_rival', { p_id: dev.id, p_key: dev.key }),
+    rate: (r, opp, oppR) => rpc('nd_rate', { p_id: dev.id, p_key: dev.key, p_rating: r, p_opp: opp || null, p_opp_rating: oppR == null ? null : oppR }),
+    duels: () => rpc('nd_duels', { p_id: dev.id, p_key: dev.key }),
+    guild: () => rpc('nd_guild_info', { p_id: dev.id, p_key: dev.key }),
+    guildCreate: n => rpc('nd_guild_create', { p_id: dev.id, p_key: dev.key, p_name: n }),
+    guildJoin: c => rpc('nd_guild_join', { p_id: dev.id, p_key: dev.key, p_code: c }),
+    guildLeave: () => rpc('nd_guild_leave', { p_id: dev.id, p_key: dev.key }),
+    guildAdd: n => rpc('nd_guild_add', { p_id: dev.id, p_key: dev.key, p_n: n }),
+    guildClaim: () => rpc('nd_guild_claim', { p_id: dev.id, p_key: dev.key }),
     vapid: () => rpc('nd_vapid_public', {}),
     // 클라우드 저장: 저장본을 올리고 복구 코드를 받는다
     savePut: (data, keep = false) => rpc('nd_save_put', { p_id: dev.id, p_key: dev.key, p_data: data }, keep),
@@ -1146,6 +1191,7 @@ async function createBoard(cfg) {
     pushSet: (...a) => ad.pushSet ? ad.pushSet(...a) : Promise.reject(new Error('no server')),
     savePut: (...a) => ad.savePut ? ad.savePut(...a) : Promise.reject(new Error('no server')),
     restore: c => ad.restore ? ad.restore(c) : Promise.reject(new Error('no server')),
+    call: (fn, ...a) => ad[fn] ? ad[fn](...a) : Promise.reject(new Error('no server')), // 대결·연합
   };
 }
 
@@ -1582,10 +1628,11 @@ function Bubbles(canvases) {
 
 // 오늘의 헤드라인: 하루 결과(report)를 신문 1면 문구로 바꾼다 (순수 함수)
 function paper(name, r) {
+  const RV = r.rn || RIVAL;
   const diff = Math.abs(r.rating - r.rival).toFixed(1), rt = r.rating.toFixed(1) + '%';
   const head = r.rec ? `${name}, 역대 최고 시청률 ${rt} 경신`
-    : r.won ? (r.win >= 3 ? `${name}, ${r.win}일 연속 동시간대 1위` : `${name} 8시 뉴스 ${rt}… ${RIVAL} 제쳤다`)
-    : `${RIVAL}에 ${diff}%p 차 석패… "내일은 다르다"`;
+    : r.won ? (r.win >= 3 ? `${name}, ${r.win}일 연속 동시간대 1위` : `${name} 8시 뉴스 ${rt}… ${RV} 제쳤다`)
+    : `${RV}에 ${diff}%p 차 석패… "내일은 다르다"`;
   const subs = [];
   if (r.log && r.log.length) subs.push(`[속보] ${r.log.join(' · ')}`);
   if (r.dW) subs.push(`[단독] 보도국 단독 보도 ${r.dW}건 적중`);
@@ -1595,7 +1642,7 @@ function paper(name, r) {
   const q = QUOTES[2], who = ['영상편집기자', '그래픽 디자이너', '영상편집팀장'], k = r.day % 3, pool = [q, QUOTES[3], QUOTES[7]][k];
   subs.push(`[인터뷰] ${who[k]} "${pool[(r.day * 7) % pool.length]}"`);
   return { mast: `${name} 일보`, no: `D+${r.day} · 제${r.day}호`, head, subs: subs.slice(0, 5),
-    foot: `시청률 ${rt} vs ${RIVAL} ${r.rival.toFixed(1)}% · 광고 수입 +${fmt(r.bonus)}점 · 연구 포인트 +${r.rp}` };
+    foot: `시청률 ${rt} vs ${RV}${r.real ? '(실제 플레이어)' : ''} ${r.rival.toFixed(1)}% · 광고 수입 +${fmt(r.bonus)}점 · 연구 포인트 +${r.rp}` };
 }
 
 // 인트로 타이틀: 픽셀 방송국 건물 타임랩스(4계절·밤낮·노을·날씨)
@@ -2466,8 +2513,10 @@ function Hud(bus) {
         const rp = s.report, w = s.win || 0;
         $('vs').innerHTML = '';
         const line = (t, cls) => { const e = document.createElement('div'); e.textContent = t; if (cls) e.className = cls; $('vs').appendChild(e); };
-        if (rp && rp.rival != null) { line(`VS ${RIVAL} ${rp.rival.toFixed(1)}% → ${rp.won ? '승리!' : '패배'}`, rp.won ? 'w' : 'l'); line(w ? `${w}연승 중 · 오늘 이기면 광고 수입 x${(1.4 + .1 * Math.min(w + 1, 10)).toFixed(1)}` : `오늘 8시에 ${RIVAL}을(를) 이기면 광고 수입 x1.5`); }
-        else line(`오늘 8시 뉴스에서 라이벌 ${RIVAL}과 시청률 대결!`);
+        const nx = s.lr && s.lr.rating > 0 ? s.lr : null, nn = nx ? nx.name : RIVAL; // 오늘의 상대(실제 플레이어 또는 가상)
+        if (rp && rp.rival != null) line(`어제 VS ${rp.rn || RIVAL} ${rp.rival.toFixed(1)}% → ${rp.won ? '승리!' : '패배'}`, rp.won ? 'w' : 'l');
+        line(nx ? `오늘의 상대: ${nn} (실제 플레이어${nx.live ? ' · 지금 방송 중' : ''}) · 최근 ${nx.rating.toFixed(1)}%` : `오늘의 상대: ${nn} (가상 방송국)`, nx ? 'w' : '');
+        line(w ? `${w}연승 중 · 오늘 이기면 광고 수입 x${(1.4 + .1 * Math.min(w + 1, 10)).toFixed(1)}` : `오늘 8시에 이기면 광고 수입 x1.5`);
         if (s.dAdj) line(`오늘 단독 보도 효과: 시청률 ${s.dAdj > 0 ? '+' : ''}${s.dAdj.toFixed(1)}`, s.dAdj > 0 ? 'w' : 'l');
       }
       if (s.mis) {
@@ -2592,6 +2641,47 @@ function Branches(bus) {
   };
 }
 
+// 순위 탭의 소셜 화면: 시청률 대결(실제 플레이어 상대·전적·최근 기록), 방송국 연합(만들기·가입·멤버·공동 특보)
+// 다른 사람의 이름은 textContent로만 넣는다(XSS 방지)
+
+
+const SO_STORIES = ['초대형 태풍 상륙', '전국 동시 정전', '거대 로봇 도심 출현', '정체불명 UFO 편대', '세기의 결승전 생중계', '대규모 선거 개표', '사상 최대 한파', '국가 비상 브리핑'];
+function Social(bus) {
+  const $s = id => document.getElementById(id), el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  $s('gmk').onclick = () => bus.emit('gcreate', $s('gname').value.trim());
+  $s('gjn').onclick = () => bus.emit('gjoin', $s('gcode').value.trim().toUpperCase());
+  $s('gcp').onclick = () => bus.emit('gcopy');
+  $s('gcl').onclick = () => bus.emit('gclaim');
+  let armLeave = 0; $s('glv').onclick = () => { if (Date.now() - armLeave < 3000) { armLeave = 0; $s('glv').textContent = '탈퇴'; bus.emit('gleave'); } else { armLeave = Date.now(); $s('glv').textContent = '한 번 더 누르면 탈퇴'; } };
+  return {
+    offline(on) { $s('duelx').hidden = $s('guildx').hidden = on; $s('dueloff').hidden = $s('guildoff').hidden = !on; },
+    duel(s, d) { // d: { list, w, l }
+      const lr = s.lr && s.lr.rating > 0 ? s.lr : null;
+      $s('dopp').textContent = lr ? `${lr.name}` : '상대를 찾는 중… (지금은 가상 방송국과 대결)';
+      $s('doppd').textContent = lr ? `실제 플레이어 · 최근 8시 뉴스 ${lr.rating.toFixed(1)}%${lr.live ? ' · 지금 방송 중!' : ''} · 전적 ${lr.w || 0}승 ${lr.l || 0}패` : '최근 3일 안에 8시 뉴스를 한 플레이어 중 순위가 비슷한 방송국과 붙어요.';
+      if (!d) return;
+      $s('drec').textContent = `내 전적 ${d.w || 0}승 ${d.l || 0}패`;
+      const ul = $s('dlog'); ul.replaceChildren();
+      (d.list || []).forEach(x => {
+        const won = x.me_r > x.opp_r, li = el('li', won ? 'w' : 'l');
+        li.append(el('b', null, `${won ? '승' : '패'} vs ${String(x.opp).slice(0, 12)}`), el('small', null, `${x.mine ? '내가 도전' : '상대가 도전'} · ${(+x.me_r).toFixed(1)}% : ${(+x.opp_r).toFixed(1)}% · ${new Date(x.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`));
+        ul.append(li);
+      });
+      if (!(d.list || []).length) ul.append(el('li', null, '아직 대결 기록이 없어요. 8시 뉴스가 끝나면 기록돼요.'));
+    },
+    guild(g, perSec) {
+      $s('gnone').hidden = !!g; $s('gin').hidden = !g; if (!g) return;
+      $s('gtitle').textContent = g.name; $s('gcnt').textContent = `${g.n}/20명 · 연합 버프 점수 +${Math.min(10, g.n) * 2}%`; $s('gcodev').textContent = g.code;
+      const wk = +String(g.week).slice(-2) || 0, story = SO_STORIES[wk % SO_STORIES.length], pr = Math.min(1, g.total / g.goal);
+      $s('gstory').textContent = `이번 주 공동 특보: ${story}`; $s('gprog').textContent = `연합 속보 대응 ${fmt(g.total)} / ${fmt(g.goal)}건`; $s('gbar').style.width = pr * 100 + '%';
+      $s('gcl').disabled = g.claimed || pr < 1; $s('gcl').textContent = g.claimed ? '이번 주 보상 받음 ✓' : pr < 1 ? `목표 달성 시 티켓 3장 + ${fmt(perSec * 1800)}점` : `보상 받기: 티켓 3장 + ${fmt(perSec * 1800)}점`;
+      const ul = $s('gmem'); ul.replaceChildren();
+      (g.members || []).forEach((m, i) => { const li = el('li', m.me ? 'me' : null); li.append(el('b', null, `${i + 1}. ${String(m.name).slice(0, 12)}${m.owner ? ' ★' : ''}`), el('small', null, `이번 주 속보 대응 ${m.c}건`)); ul.append(li); });
+    },
+  };
+}
+
+
 
 
 
@@ -2623,7 +2713,7 @@ function Branches(bus) {
 
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
-const ui = Hud(bus), branches = Branches(bus), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
+const ui = Hud(bus), branches = Branches(bus), social = Social(bus), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
 let pending = 0, board = null;
 const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -2770,7 +2860,7 @@ MINI.init({
   combo(t) { $i('mcc').textContent = t; },
   done(r) {
     const { g, practice } = mgPlay, s = store.getState(), MIN = { S: 4, A: 3, B: 2, C: 1 }[r.grade], job = mgMine(s, g) ? 1.5 : 1, per = Math.max(perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0 }), 5); // 속보·부스트·특종 배수는 빼고 평소 생산량 기준
-    const prev = (s.mgBest || {})[g.id]; store.dispatch({ type: 'MGREC', id: g.id, grade: r.grade, practice });
+    const prev = (s.mgBest || {})[g.id]; store.dispatch({ type: 'MGREC', id: g.id, grade: r.grade, practice }); if (!practice) gExtra += 5; // 연합 공동 특보 기여
     $i('mcgr').textContent = r.grade; $i('mcst').textContent = r.stat; $i('mcshot').hidden = true;
     $i('mcl').textContent = r.perfect ? '완벽!' : '완료'; $i('mcs').textContent = '';
     if (practice) { mgReward = 0; $i('mcrw').textContent = `연습 모드 · 최고 기록 ${store.getState().mgBest[g.id]}${prev && prev !== store.getState().mgBest[g.id] ? ' (신기록!)' : ''}`; }
@@ -2845,7 +2935,33 @@ async function refresh(manual = false) {
 }
 // 서버가 있으면 서버 시각으로 출석·주간·시즌을 계산한다(기기 시계 조작 방지)
 const syncClock = () => board && board.now().then(t => { if (t) { clockOff = t - Date.now(); checkDates(); } }).catch(() => { });
-createBoard(LEADERBOARD).then(b => { board = b; refresh(); syncClock(); });
+createBoard(LEADERBOARD).then(b => { board = b; refresh(); syncClock(); setTimeout(() => { duelRefresh(); guildRefresh(); }, 3000); });
+// ───── 시청률 대결 · 방송국 연합 (서버 모드에서만) ─────
+const online = () => board && board.mode === 'server' && store.getState().name;
+let duelLog = null, gInfo = null, gSentEv = null, gExtra = 0;
+const perNow = () => Math.max(5, perSec({ ...store.getState(), ev: null, spdEnd: 0, gbEnd: 0 }));
+function duelRefresh() {
+  if (!online()) { social.offline(true); return; } social.offline(false);
+  board.call('rival').then(r => { store.dispatch({ type: 'SETLR', lr: r ? { id: r.id, name: String(r.name).slice(0, 12), rating: +r.rating, live: !!r.live, w: r.w, l: r.l } : null }); social.duel(store.getState(), duelLog); }).catch(() => { });
+  board.call('duels').then(d => { duelLog = d; social.duel(store.getState(), d); }).catch(() => { });
+}
+function guildRefresh() {
+  if (!online()) return;
+  board.call('guild').then(g => { gInfo = g; store.dispatch({ type: 'SETGUILD', g: g ? { id: g.id, name: g.name, n: g.n } : null }); social.guild(g, perNow()); }).catch(() => { });
+}
+function guildSend() { // 공동 특보 기여: 지난번 이후 대응한 속보 수(+미니게임 5건씩)를 보낸다
+  const s = store.getState(); if (!online() || !s.guild) { gSentEv = s.evCount; return; }
+  if (gSentEv == null) gSentEv = s.evCount;
+  const d = Math.min(40, s.evCount - gSentEv + gExtra); if (d <= 0) return;
+  board.call('guildAdd', d).then(n => { if (n > 0) { const fromEv = Math.min(n, s.evCount - gSentEv); gSentEv += fromEv; gExtra = Math.max(0, gExtra - (n - fromEv)); guildRefresh(); } }).catch(() => { });
+}
+setInterval(guildSend, 60000); setInterval(guildRefresh, 120000); setInterval(duelRefresh, 600000);
+$i('tab-rank').addEventListener('click', () => { duelRefresh(); guildRefresh(); });
+bus.on('gcreate', n => { if (!online()) return ui.toast('온라인 서버에 연결된 뒤 할 수 있어요.'); const c = checkName(n); if (c.err) return ui.toast(c.err); board.call('guildCreate', c.name || n).then(g => { Sfx.play('rank'); ui.toast(`연합 "${g.name}"을 만들었어요! 초대 코드 ${g.code}를 친구에게 알려 주세요.`); guildRefresh(); }).catch(err => ui.toast(/name not allowed/.test(err.message) ? '쓸 수 없는 이름이에요.' : '연합을 만들지 못했어요.')); });
+bus.on('gjoin', c => { if (!online()) return ui.toast('온라인 서버에 연결된 뒤 할 수 있어요.'); if (!/^[A-Z0-9]{6}$/.test(c)) return ui.toast('초대 코드 6자리를 확인해 주세요.'); board.call('guildJoin', c).then(g => { Sfx.play('rank'); ui.toast(`"${g.name}" 연합에 가입했어요!`); guildRefresh(); }).catch(err => ui.toast(/guild full/.test(err.message) ? '연합이 가득 찼어요(20명).' : /no such/.test(err.message) ? '없는 초대 코드예요.' : '가입하지 못했어요.')); });
+bus.on('gleave', () => { board.call('guildLeave').then(() => { ui.toast('연합에서 탈퇴했어요.'); gInfo = null; store.dispatch({ type: 'SETGUILD', g: null }); social.guild(null); }).catch(() => ui.toast('탈퇴하지 못했어요.')); });
+bus.on('gcopy', () => { const c = gInfo && gInfo.code; if (!c) return; (navigator.clipboard ? navigator.clipboard.writeText(c) : Promise.reject()).then(() => ui.toast('초대 코드를 복사했어요.'), () => ui.toast(`초대 코드: ${c}`)); });
+bus.on('gclaim', () => { board.call('guildClaim').then(ok => { if (!ok) return ui.toast('아직 받을 수 없어요.'); const n = Math.floor(perNow() * 1800); store.dispatch({ type: 'GREWARD', n, tk: 3 }); Sfx.play('rank'); ui.toast(`공동 특보 성공! 티켓 3장 + ${fmt(n)}점`); guildRefresh(); }).catch(() => ui.toast('보상을 받지 못했어요.')); });
 setInterval(syncClock, 600000);
 
 // Command 핸들러: 사용자 의도 -> 상태 변경 + 피드백
@@ -2930,6 +3046,7 @@ store.subscribe((s, p) => {
   if (s.chalWin && s.chalWin !== p.chalWin) { const c = CHALLENGES.find(x => x.id === s.chalWin.split(':')[0]); Sfx.play('rank'); ui.toast(`챌린지 완료: ${c.n}! 영구 점수 +10%`); }
   if (s.lastSeason && s.lastSeason !== p.lastSeason) { const l = s.lastSeason; Sfx.play('rank'); ui.toast(`시즌 종료: ${TIERS[l.tier].n} 달성 · 스카우트 티켓 +${l.tk}장`); }
   if (s.daily && s.daily !== p.daily) { const d = s.daily; Sfx.play('rank'); ui.toast(`출석 ${d.streak}일째! 보너스 +${fmt(d.gain)}점${d.tk ? ' · 스카우트 티켓 +1' : ''}`); }
+  if (s.report && s.report !== p.report && online()) { const r = s.report; board.call('rate', r.rating, r.real ? r.oppId : null, r.real ? r.rival : null).catch(() => { }).then(() => setTimeout(duelRefresh, 1500)); }
   if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; paperNow = paper(s.name, r); ui.paperReady(true); ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}%${r.rival != null ? (r.won ? ' · 라이벌에 승리!' : ' · 라이벌에 패배') : ''} · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
   if (s.judge && s.judge !== p.judge) { const j = s.judge.res; Sfx.play(j === 'fail' ? 'fail' : j === 'win' ? 'rank' : 'buy'); ui.toast(j === 'win' ? '단독 성공! 이번 속보 점수 x2 · 오늘 시청률 +0.8' : j === 'fail' ? '오보! 정정 보도 나갑니다... 오늘 시청률 -1.2' : '팩트 체크 완료, 안전하게 송출 (점수 x1.2)'); }
   if (s.misHit && s.misHit !== p.misHit) { const m = s.misHit; Sfx.play('rank'); ui.toast(m.all ? `오늘의 미션 올클리어! +${fmt(m.gain)}점 · 스카우트 티켓 +1` : `미션 달성! +${fmt(m.gain)}점`); }

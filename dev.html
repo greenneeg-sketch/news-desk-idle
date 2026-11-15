@@ -80,6 +80,34 @@
   </div>
 
   <div class="pane" data-tab="rank" hidden>
+    <section class="panel" id="duelp">
+      <div class="fh"><b>실시간 시청률 대결</b><span class="cnt" id="drec"></span></div>
+      <p class="note" id="dueloff" hidden>온라인 서버에 연결되면 실제 플레이어와 대결해요. 지금은 가상 방송국과 대결 중이에요.</p>
+      <div id="duelx">
+        <div class="opp"><small>오늘의 상대</small><b id="dopp"></b><small id="doppd"></small></div>
+        <p class="note">매일(게임 속 하루 5분) 8시 뉴스 시청률로 겨뤄요. 이기면 광고 수입이 커지고 연승이 쌓여요.</p>
+        <ul class="lb dlog" id="dlog"></ul>
+      </div>
+    </section>
+    <section class="panel" id="guildp">
+      <div class="fh"><b>방송국 연합</b><span class="cnt" id="gcnt"></span></div>
+      <p class="note" id="guildoff" hidden>온라인 서버에 연결되면 연합을 만들거나 가입할 수 있어요.</p>
+      <div id="guildx">
+        <div id="gnone">
+          <p class="note">친구들과 연합을 만들어 매주 "공동 특보"를 함께 막아요. 멤버 한 명당 점수 +2%(최대 +20%).</p>
+          <div class="row"><input id="gname" maxlength="12" placeholder="연합 이름 (12자)" autocomplete="off"><button class="btn" id="gmk">만들기</button></div>
+          <div class="row"><input id="gcode" maxlength="6" placeholder="초대 코드 6자리" autocomplete="off" autocapitalize="characters"><button class="btn alt" id="gjn">가입</button></div>
+        </div>
+        <div id="gin" hidden>
+          <div class="rt"><strong id="gtitle"></strong><span class="gcode">초대 코드 <b id="gcodev"></b> <button class="btn mini alt" id="gcp">복사</button></span></div>
+          <p class="gstory" id="gstory"></p>
+          <div class="ms"><i id="gbar"></i></div><p class="note" id="gprog"></p>
+          <button class="btn warn" id="gcl" style="width:100%"></button>
+          <ul class="lb" id="gmem"></ul>
+          <button class="btn alt mini" id="glv">탈퇴</button>
+        </div>
+      </div>
+    </section>
     <section class="panel" id="seasonp">
       <div class="fh"><b id="sn">시즌</b><span class="cnt" id="sleft"></span></div>
       <p class="note" id="sth"></p>

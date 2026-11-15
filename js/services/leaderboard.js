@@ -38,6 +38,16 @@ const SupabaseAdapter = ({ url, key }) => {
       return { all: all + 1, season: season + 1 };
     },
     now: async () => Date.parse(await rpc('nd_server_time', {})),
+    // 시청률 대결 · 방송국 연합 (모두 기기 열쇠로 본인 확인)
+    rival: () => rpc('nd_rival', { p_id: dev.id, p_key: dev.key }),
+    rate: (r, opp, oppR) => rpc('nd_rate', { p_id: dev.id, p_key: dev.key, p_rating: r, p_opp: opp || null, p_opp_rating: oppR == null ? null : oppR }),
+    duels: () => rpc('nd_duels', { p_id: dev.id, p_key: dev.key }),
+    guild: () => rpc('nd_guild_info', { p_id: dev.id, p_key: dev.key }),
+    guildCreate: n => rpc('nd_guild_create', { p_id: dev.id, p_key: dev.key, p_name: n }),
+    guildJoin: c => rpc('nd_guild_join', { p_id: dev.id, p_key: dev.key, p_code: c }),
+    guildLeave: () => rpc('nd_guild_leave', { p_id: dev.id, p_key: dev.key }),
+    guildAdd: n => rpc('nd_guild_add', { p_id: dev.id, p_key: dev.key, p_n: n }),
+    guildClaim: () => rpc('nd_guild_claim', { p_id: dev.id, p_key: dev.key }),
     vapid: () => rpc('nd_vapid_public', {}),
     // 클라우드 저장: 저장본을 올리고 복구 코드를 받는다
     savePut: (data, keep = false) => rpc('nd_save_put', { p_id: dev.id, p_key: dev.key, p_data: data }, keep),
@@ -65,5 +75,6 @@ export async function createBoard(cfg) {
     pushSet: (...a) => ad.pushSet ? ad.pushSet(...a) : Promise.reject(new Error('no server')),
     savePut: (...a) => ad.savePut ? ad.savePut(...a) : Promise.reject(new Error('no server')),
     restore: c => ad.restore ? ad.restore(c) : Promise.reject(new Error('no server')),
+    call: (fn, ...a) => ad[fn] ? ad[fn](...a) : Promise.reject(new Error('no server')), // 대결·연합
   };
 }

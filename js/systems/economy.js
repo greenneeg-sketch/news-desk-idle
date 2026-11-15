@@ -33,7 +33,7 @@ export const brMul = s => 1 + BRANCHES.reduce((a, b) => a + ((s.br || {})[b.id] 
 export const brEv = (s, id) => BRANCHES.reduce((m, b) => { const lv = (s.br || {})[b.id] || 0; return lv && b.ev === id ? m * (1.2 + .02 * lv) : m; }, 1);
 export function scoreMul(s) {
   const jb = jobOf(s);
-  let m = prestigeBonus(s) * boost(mult(s, U.live), jb.live) * boost(mult(s, U.qual), jb.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? 7 : 1) * brMul(s);
+  let m = prestigeBonus(s) * boost(mult(s, U.live), jb.live) * boost(mult(s, U.qual), jb.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? 7 : 1) * brMul(s) * (s.guild ? 1 + .02 * Math.min(10, s.guild.n || 1) : 1);
   if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s); e *= jb.ev || 1; e *= brEv(s, s.ev.id); m *= e * (1 + .15 * rl(s, 'event')); }
   return m;
 }
