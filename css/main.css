@@ -61,6 +61,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .rt{display:flex;align-items:baseline;gap:8px}.rt strong{font:18px "Press Start 2P",monospace}.rt small{color:var(--sub)}
 .bars{display:flex;align-items:flex-end;gap:4px;height:36px;margin:6px 0}.bars i{flex:1;background:var(--b);min-height:2px;height:0}
 .lb{list-style:none;margin:8px 0;padding:0}.lb li{padding:6px 4px;border-bottom:1px solid var(--ink)}.lb li.me{background:#41507a}.lb b{display:block}.lb small{color:var(--sub);font-size:12px}
+.lbpg{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0}.lbpg span{min-width:56px;text-align:center;font-size:13px}.lbpg .btn:disabled{opacity:.4}
 #cards{cursor:pointer}
 .wg{margin:10px 0}.row2{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}.row2 span:first-child{flex:1}
 .app{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}

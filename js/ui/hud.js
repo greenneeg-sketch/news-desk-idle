@@ -21,7 +21,7 @@ export function Hud(bus) {
   $('floors').onclick = click; $('hq').onclick = click;
   $('seg').onclick = e => { const b = e.target.closest('[data-n]'); if (b) bus.emit('setn', b.dataset.n); };
   $('ach').innerHTML = ACHIEVEMENTS.map(() => '<i></i>').join(''); $('gold').onclick = () => bus.emit('gold'); $('spdb').onclick = () => bus.emit('spd');
-  let selCard = 0, armedCh = '', armT, cur = null, bd = null, view = 'all', tab = 'desk', hiId = null, tutShown = -2;
+  let selCard = 0, armedCh = '', armT, cur = null, bd = null, view = 'all', pg = 0, PG = 10, tab = 'desk', hiId = null, tutShown = -2;
   // 탭: 보도국 / 스카우트 / 순위 / 성장. 마지막으로 연 탭을 이 브라우저에 기억한다
   // 잠긴 탭: 해당 기능이 해금돼야 열린다
   const TAB_UNL = { scout: 'scout', grow: 'grow', rank: 'rank' }, need = id => UNLOCKS.find(u => u.id === id);
@@ -54,18 +54,23 @@ export function Hud(bus) {
     if (armedCh !== key) { armedCh = key; clearTimeout(armT); armT = setTimeout(() => { armedCh = ''; }, 3000); return; }
     armedCh = ''; bus.emit(key[0] === 'q' ? 'chalquit' : 'chal', id);
   };
-  $('lbseg').onclick = e => { const b = e.target.closest('[data-v]'); if (b) { view = b.dataset.v; drawBoard(); } };
+  $('lbseg').onclick = e => { const b = e.target.closest('[data-v]'); if (b) { view = b.dataset.v; pg = 0; drawBoard(); } };
+  const lbList = () => !bd ? [] : view === 'season' ? bd.list.filter(e => e.season === bd.season).sort((a, b) => b.seasonPts - a.seasonPts).slice(0, 100) : [...bd.list].sort((a, b) => b.rankScore - a.rankScore).slice(0, 100);
+  $('lbprev').onclick = () => { pg--; drawBoard(); }; $('lbnext').onclick = () => { pg++; drawBoard(); };
+  $('lbme').onclick = () => { if (!bd) return; const i = lbList().findIndex(e => e.uid === bd.me); if (i >= 0) { pg = Math.floor(i / PG); drawBoard(); } else { const r = bd.my && bd.my[view]; toastL(r ? `내 순위는 ${r}위예요. 100위 안에 들면 목록에 보여요.` : '아직 순위에 기록이 없어요.'); } };
   function drawBoard() { // 다른 사용자의 이름은 textContent로만 넣는다 (XSS 방지)
     document.querySelectorAll('#lbseg [data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === view));
     if (!bd) return; const { me, mode, season } = bd;
-    const list = view === 'season' ? bd.list.filter(e => e.season === season).sort((a, b) => b.seasonPts - a.seasonPts) : bd.list;
-    const ol = $('lb'); ol.replaceChildren();
-    list.slice(0, 10).forEach((e, i) => {
+    const list = lbList(), pages = Math.max(1, Math.ceil(list.length / PG)); pg = Math.max(0, Math.min(pg, pages - 1));
+    const ol = $('lb'); ol.replaceChildren(); ol.start = pg * PG + 1;
+    list.slice(pg * PG, pg * PG + PG).forEach((e, j) => { const i = pg * PG + j;
       const li = document.createElement('li'), n = document.createElement('b'), d = document.createElement('small'); if (e.uid === me) li.className = 'me';
       n.textContent = `${i + 1}. ${isBlocked(e.name) ? '(숨김)' : String(e.name).slice(0, 12)}${e.sample ? ' (샘플)' : ''}`;
       d.textContent = view === 'season' ? `시즌 ${TIERS[tierOf(e.seasonPts)].n} · 시즌 점수 ${fmt(e.seasonPts)}` : `순위점수 ${e.rankScore} · 누적 ${fmt(e.total)}점 · 최대 Lv.${e.maxLv} · 최고 시청률 ${e.bestRating.toFixed(1)}% · 유튜브 ${fmt(e.views)}회`;
       li.append(n, d); ol.append(li);
     });
+    $('lbpn').textContent = `${pg + 1} / ${pages}`; $('lbprev').disabled = pg <= 0; $('lbnext').disabled = pg >= pages - 1; $('lbpg').hidden = list.length <= PG && !list.some(e => e.uid === me) && !(bd.my && bd.my[view]);
+    { const r = bd.my && bd.my[view], i = list.findIndex(e => e.uid === me); $('lbmy').textContent = i >= 0 ? `내 순위 ${i + 1}위` : r ? `내 순위 ${r}위` : ''; }
     if (!list.length) { const li = document.createElement('li'); li.textContent = '아직 이번 시즌 기록이 없어요.'; ol.append(li); }
     $('lbn').textContent = { db: '공유 순위 (이 페이지를 연 사용자끼리)', server: '온라인 순위 (모든 플레이어)', local: '오프라인 모드: 샘플 방송국과 비교 중이에요. 서버를 연결하면 사용자 간 순위가 돼요.' }[mode];
   }
@@ -101,7 +106,7 @@ export function Hud(bus) {
     showTab, canvases: [...document.querySelectorAll('.floor canvas')], cardCanvas: $('cards'), sel: () => selCard,
     askName(cur = '', job = 'editor') { jobSel = job || 'editor'; showJob(); $('nameIn').value = cur; $('nameErr').textContent = ''; $('cancelb').hidden = !cur; $('startb').textContent = cur ? '저장' : '방송 시작'; $('start').hidden = false; setTimeout(() => $('nameIn').focus(), 0); },
     closeName() { $('start').hidden = true; },
-    board(list, me, mode, season) { bd = { list, me, mode, season }; drawBoard(); },
+    board(list, me, mode, season, my) { bd = { list, me, mode, season, my }; drawBoard(); },
     toast(m) { const e = $('toast'); e.textContent = m; clearTimeout(tt); tt = setTimeout(() => e.textContent = '', 3500); },
     offline(o) { $('offd').textContent = `${o.min}분 동안 야간 근무로 ${fmt(o.n)}점을 벌었어요.`; $('offline').hidden = false; },
     showPaper(p) { $('pmast').textContent = p.mast; $('pno').textContent = p.no; $('phead').textContent = p.head; $('pfoot').textContent = p.foot; $('psubs').innerHTML = ''; p.subs.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('psubs').appendChild(li); }); $('pad').disabled = false; $('pad').textContent = '광고 보고 수입 2배'; $('paper').hidden = false; },

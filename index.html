@@ -78,6 +78,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .rt{display:flex;align-items:baseline;gap:8px}.rt strong{font:18px "Press Start 2P",monospace}.rt small{color:var(--sub)}
 .bars{display:flex;align-items:flex-end;gap:4px;height:36px;margin:6px 0}.bars i{flex:1;background:var(--b);min-height:2px;height:0}
 .lb{list-style:none;margin:8px 0;padding:0}.lb li{padding:6px 4px;border-bottom:1px solid var(--ink)}.lb li.me{background:#41507a}.lb b{display:block}.lb small{color:var(--sub);font-size:12px}
+.lbpg{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0}.lbpg span{min-width:56px;text-align:center;font-size:13px}.lbpg .btn:disabled{opacity:.4}
 #cards{cursor:pointer}
 .wg{margin:10px 0}.row2{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}.row2 span:first-child{flex:1}
 .app{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
@@ -275,7 +276,7 @@ section.gh{display:none!important}
       <div class="fh"><b>방송국 순위</b><button class="btn mini" id="boardb">새로고침</button></div>
       <div class="seg" id="lbseg"><button data-v="all">전체</button><button data-v="season">이번 시즌</button></div>
       <p class="note">순위 점수 = 누적 점수 + 최대 레벨 + 최고 시청률 + 유튜브 조회수</p>
-      <ol class="lb" id="lb"></ol><p class="note" id="lbn"></p>
+      <ol class="lb" id="lb"></ol><div class="lbpg" id="lbpg" hidden><button class="btn mini alt" id="lbprev">◀ 이전</button><span id="lbpn">1 / 1</span><button class="btn mini alt" id="lbnext">다음 ▶</button><button class="btn mini" id="lbme">내 순위</button></div><p class="note" id="lbmy"></p><p class="note" id="lbn"></p>
     </section>
   </div>
 
@@ -376,7 +377,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-1357</span>
+  <span class="iver">v2026.11.15-1657</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -1004,7 +1005,19 @@ const SupabaseAdapter = ({ url, key }) => {
   return {
     mode: 'server', get me() { return dev.id; },
     submit: e => rpc('nd_submit', { p_id: dev.id, p_key: dev.key, p_name: e.name, p_total: e.total, p_max_lv: e.maxLv, p_best: Math.min(30, e.bestRating), p_views: e.views, p_season: e.season, p_season_pts: e.seasonPts }),
-    async top(n) { const r = await fetch(`${url}/rest/v1/nd_leaderboard?select=${COLS}&order=rank_score.desc&limit=${n}`, { headers: H }); if (!r.ok) throw new Error('top ' + r.status); return (await r.json()).map(row); },
+    // 전체 상위 n명 + 이번 시즌 상위 n명을 함께 받아 합친다 (시즌 탭이 전체 순위 밖의 사람도 보이게)
+    async top(n, own) {
+      const q = p => fetch(`${url}/rest/v1/nd_leaderboard?select=${COLS}&${p}&limit=${n}`, { headers: H }).then(r => { if (!r.ok) throw new Error('top ' + r.status); return r.json(); });
+      const sk = own && own.season ? encodeURIComponent(own.season) : '';
+      const [a, b] = await Promise.all([q('order=rank_score.desc'), sk ? q(`season=eq.${sk}&order=season_pts.desc`) : []]);
+      const m = new Map(); [...a, ...b].forEach(x => m.set(x.id, x)); return [...m.values()].map(row);
+    },
+    // 내 순위(목록 밖이어도): 나보다 점수가 높은 사람 수 + 1
+    async myRank(own) {
+      const cnt = async p => { const r = await fetch(`${url}/rest/v1/nd_leaderboard?select=id&${p}`, { method: 'HEAD', headers: { ...H, Prefer: 'count=exact', Range: '0-0' } }); const m = /\/(\d+)/.exec(r.headers.get('content-range') || ''); if (!m) throw new Error('count'); return +m[1]; };
+      const [all, season] = await Promise.all([cnt(`rank_score=gt.${+own.rankScore || 0}`), cnt(`season=eq.${encodeURIComponent(own.season)}&season_pts=gt.${+own.seasonPts || 0}`)]);
+      return { all: all + 1, season: season + 1 };
+    },
     now: async () => Date.parse(await rpc('nd_server_time', {})),
     vapid: () => rpc('nd_vapid_public', {}),
     // 클라우드 저장: 저장본을 올리고 복구 코드를 받는다
@@ -1027,6 +1040,7 @@ async function createBoard(cfg) {
     get mode() { return ad.mode; }, get me() { return ad.me; },
     async submit(e) { const k = JSON.stringify([e.name, e.rankScore]); if (k === last) return; await ad.submit(ad.me ? { ...e, uid: ad.me } : e); last = k; },
     top: (n, own) => ad.top(n, own),
+    myRank: own => ad.myRank ? ad.myRank(own) : Promise.resolve(null),
     now: () => ad.now ? ad.now() : Promise.resolve(Date.now()),
     vapid: () => ad.vapid ? ad.vapid() : Promise.reject(new Error('no server')),
     pushSet: (...a) => ad.pushSet ? ad.pushSet(...a) : Promise.reject(new Error('no server')),
@@ -1807,7 +1821,7 @@ function Hud(bus) {
   $('floors').onclick = click; $('hq').onclick = click;
   $('seg').onclick = e => { const b = e.target.closest('[data-n]'); if (b) bus.emit('setn', b.dataset.n); };
   $('ach').innerHTML = ACHIEVEMENTS.map(() => '<i></i>').join(''); $('gold').onclick = () => bus.emit('gold'); $('spdb').onclick = () => bus.emit('spd');
-  let selCard = 0, armedCh = '', armT, cur = null, bd = null, view = 'all', tab = 'desk', hiId = null, tutShown = -2;
+  let selCard = 0, armedCh = '', armT, cur = null, bd = null, view = 'all', pg = 0, PG = 10, tab = 'desk', hiId = null, tutShown = -2;
   // 탭: 보도국 / 스카우트 / 순위 / 성장. 마지막으로 연 탭을 이 브라우저에 기억한다
   // 잠긴 탭: 해당 기능이 해금돼야 열린다
   const TAB_UNL = { scout: 'scout', grow: 'grow', rank: 'rank' }, need = id => UNLOCKS.find(u => u.id === id);
@@ -1840,18 +1854,23 @@ function Hud(bus) {
     if (armedCh !== key) { armedCh = key; clearTimeout(armT); armT = setTimeout(() => { armedCh = ''; }, 3000); return; }
     armedCh = ''; bus.emit(key[0] === 'q' ? 'chalquit' : 'chal', id);
   };
-  $('lbseg').onclick = e => { const b = e.target.closest('[data-v]'); if (b) { view = b.dataset.v; drawBoard(); } };
+  $('lbseg').onclick = e => { const b = e.target.closest('[data-v]'); if (b) { view = b.dataset.v; pg = 0; drawBoard(); } };
+  const lbList = () => !bd ? [] : view === 'season' ? bd.list.filter(e => e.season === bd.season).sort((a, b) => b.seasonPts - a.seasonPts).slice(0, 100) : [...bd.list].sort((a, b) => b.rankScore - a.rankScore).slice(0, 100);
+  $('lbprev').onclick = () => { pg--; drawBoard(); }; $('lbnext').onclick = () => { pg++; drawBoard(); };
+  $('lbme').onclick = () => { if (!bd) return; const i = lbList().findIndex(e => e.uid === bd.me); if (i >= 0) { pg = Math.floor(i / PG); drawBoard(); } else { const r = bd.my && bd.my[view]; toastL(r ? `내 순위는 ${r}위예요. 100위 안에 들면 목록에 보여요.` : '아직 순위에 기록이 없어요.'); } };
   function drawBoard() { // 다른 사용자의 이름은 textContent로만 넣는다 (XSS 방지)
     document.querySelectorAll('#lbseg [data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === view));
     if (!bd) return; const { me, mode, season } = bd;
-    const list = view === 'season' ? bd.list.filter(e => e.season === season).sort((a, b) => b.seasonPts - a.seasonPts) : bd.list;
-    const ol = $('lb'); ol.replaceChildren();
-    list.slice(0, 10).forEach((e, i) => {
+    const list = lbList(), pages = Math.max(1, Math.ceil(list.length / PG)); pg = Math.max(0, Math.min(pg, pages - 1));
+    const ol = $('lb'); ol.replaceChildren(); ol.start = pg * PG + 1;
+    list.slice(pg * PG, pg * PG + PG).forEach((e, j) => { const i = pg * PG + j;
       const li = document.createElement('li'), n = document.createElement('b'), d = document.createElement('small'); if (e.uid === me) li.className = 'me';
       n.textContent = `${i + 1}. ${isBlocked(e.name) ? '(숨김)' : String(e.name).slice(0, 12)}${e.sample ? ' (샘플)' : ''}`;
       d.textContent = view === 'season' ? `시즌 ${TIERS[tierOf(e.seasonPts)].n} · 시즌 점수 ${fmt(e.seasonPts)}` : `순위점수 ${e.rankScore} · 누적 ${fmt(e.total)}점 · 최대 Lv.${e.maxLv} · 최고 시청률 ${e.bestRating.toFixed(1)}% · 유튜브 ${fmt(e.views)}회`;
       li.append(n, d); ol.append(li);
     });
+    $('lbpn').textContent = `${pg + 1} / ${pages}`; $('lbprev').disabled = pg <= 0; $('lbnext').disabled = pg >= pages - 1; $('lbpg').hidden = list.length <= PG && !list.some(e => e.uid === me) && !(bd.my && bd.my[view]);
+    { const r = bd.my && bd.my[view], i = list.findIndex(e => e.uid === me); $('lbmy').textContent = i >= 0 ? `내 순위 ${i + 1}위` : r ? `내 순위 ${r}위` : ''; }
     if (!list.length) { const li = document.createElement('li'); li.textContent = '아직 이번 시즌 기록이 없어요.'; ol.append(li); }
     $('lbn').textContent = { db: '공유 순위 (이 페이지를 연 사용자끼리)', server: '온라인 순위 (모든 플레이어)', local: '오프라인 모드: 샘플 방송국과 비교 중이에요. 서버를 연결하면 사용자 간 순위가 돼요.' }[mode];
   }
@@ -1887,7 +1906,7 @@ function Hud(bus) {
     showTab, canvases: [...document.querySelectorAll('.floor canvas')], cardCanvas: $('cards'), sel: () => selCard,
     askName(cur = '', job = 'editor') { jobSel = job || 'editor'; showJob(); $('nameIn').value = cur; $('nameErr').textContent = ''; $('cancelb').hidden = !cur; $('startb').textContent = cur ? '저장' : '방송 시작'; $('start').hidden = false; setTimeout(() => $('nameIn').focus(), 0); },
     closeName() { $('start').hidden = true; },
-    board(list, me, mode, season) { bd = { list, me, mode, season }; drawBoard(); },
+    board(list, me, mode, season, my) { bd = { list, me, mode, season, my }; drawBoard(); },
     toast(m) { const e = $('toast'); e.textContent = m; clearTimeout(tt); tt = setTimeout(() => e.textContent = '', 3500); },
     offline(o) { $('offd').textContent = `${o.min}분 동안 야간 근무로 ${fmt(o.n)}점을 벌었어요.`; $('offline').hidden = false; },
     showPaper(p) { $('pmast').textContent = p.mast; $('pno').textContent = p.no; $('phead').textContent = p.head; $('pfoot').textContent = p.foot; $('psubs').innerHTML = ''; p.subs.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('psubs').appendChild(li); }); $('pad').disabled = false; $('pad').textContent = '광고 보고 수입 2배'; $('paper').hidden = false; },
@@ -2209,7 +2228,7 @@ showIntro();
 async function refresh(manual = false) {
   if (!board) return; const s = store.getState();
   if (s.name) try { await board.submit(toEntry(s)); } catch (e) { console.warn('순위 기록 실패', e); } // 기록 실패(검증 거부 등)여도 목록은 불러온다
-  try { ui.board(await board.top(50, toEntry(s)), board.me || s.uid, board.mode, s.season.key); } catch (e) { if (manual) ui.toast('순위를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.'); } // 자동 갱신 실패는 조용히
+  try { const e = toEntry(s), [list, my] = await Promise.all([board.top(100, e), s.name ? board.myRank(e).catch(() => null) : null]); ui.board(list, board.me || s.uid, board.mode, s.season.key, my); } catch (e) { if (manual) ui.toast('순위를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.'); } // 자동 갱신 실패는 조용히
 }
 // 서버가 있으면 서버 시각으로 출석·주간·시즌을 계산한다(기기 시계 조작 방지)
 const syncClock = () => board && board.now().then(t => { if (t) { clockOff = t - Date.now(); checkDates(); } }).catch(() => { });

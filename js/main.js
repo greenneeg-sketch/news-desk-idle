@@ -167,7 +167,7 @@ showIntro();
 async function refresh(manual = false) {
   if (!board) return; const s = store.getState();
   if (s.name) try { await board.submit(toEntry(s)); } catch (e) { console.warn('순위 기록 실패', e); } // 기록 실패(검증 거부 등)여도 목록은 불러온다
-  try { ui.board(await board.top(50, toEntry(s)), board.me || s.uid, board.mode, s.season.key); } catch (e) { if (manual) ui.toast('순위를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.'); } // 자동 갱신 실패는 조용히
+  try { const e = toEntry(s), [list, my] = await Promise.all([board.top(100, e), s.name ? board.myRank(e).catch(() => null) : null]); ui.board(list, board.me || s.uid, board.mode, s.season.key, my); } catch (e) { if (manual) ui.toast('순위를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.'); } // 자동 갱신 실패는 조용히
 }
 // 서버가 있으면 서버 시각으로 출석·주간·시즌을 계산한다(기기 시계 조작 방지)
 const syncClock = () => board && board.now().then(t => { if (t) { clockOff = t - Date.now(); checkDates(); } }).catch(() => { });

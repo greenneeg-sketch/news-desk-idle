@@ -24,7 +24,19 @@ const SupabaseAdapter = ({ url, key }) => {
   return {
     mode: 'server', get me() { return dev.id; },
     submit: e => rpc('nd_submit', { p_id: dev.id, p_key: dev.key, p_name: e.name, p_total: e.total, p_max_lv: e.maxLv, p_best: Math.min(30, e.bestRating), p_views: e.views, p_season: e.season, p_season_pts: e.seasonPts }),
-    async top(n) { const r = await fetch(`${url}/rest/v1/nd_leaderboard?select=${COLS}&order=rank_score.desc&limit=${n}`, { headers: H }); if (!r.ok) throw new Error('top ' + r.status); return (await r.json()).map(row); },
+    // 전체 상위 n명 + 이번 시즌 상위 n명을 함께 받아 합친다 (시즌 탭이 전체 순위 밖의 사람도 보이게)
+    async top(n, own) {
+      const q = p => fetch(`${url}/rest/v1/nd_leaderboard?select=${COLS}&${p}&limit=${n}`, { headers: H }).then(r => { if (!r.ok) throw new Error('top ' + r.status); return r.json(); });
+      const sk = own && own.season ? encodeURIComponent(own.season) : '';
+      const [a, b] = await Promise.all([q('order=rank_score.desc'), sk ? q(`season=eq.${sk}&order=season_pts.desc`) : []]);
+      const m = new Map(); [...a, ...b].forEach(x => m.set(x.id, x)); return [...m.values()].map(row);
+    },
+    // 내 순위(목록 밖이어도): 나보다 점수가 높은 사람 수 + 1
+    async myRank(own) {
+      const cnt = async p => { const r = await fetch(`${url}/rest/v1/nd_leaderboard?select=id&${p}`, { method: 'HEAD', headers: { ...H, Prefer: 'count=exact', Range: '0-0' } }); const m = /\/(\d+)/.exec(r.headers.get('content-range') || ''); if (!m) throw new Error('count'); return +m[1]; };
+      const [all, season] = await Promise.all([cnt(`rank_score=gt.${+own.rankScore || 0}`), cnt(`season=eq.${encodeURIComponent(own.season)}&season_pts=gt.${+own.seasonPts || 0}`)]);
+      return { all: all + 1, season: season + 1 };
+    },
     now: async () => Date.parse(await rpc('nd_server_time', {})),
     vapid: () => rpc('nd_vapid_public', {}),
     // 클라우드 저장: 저장본을 올리고 복구 코드를 받는다
@@ -47,6 +59,7 @@ export async function createBoard(cfg) {
     get mode() { return ad.mode; }, get me() { return ad.me; },
     async submit(e) { const k = JSON.stringify([e.name, e.rankScore]); if (k === last) return; await ad.submit(ad.me ? { ...e, uid: ad.me } : e); last = k; },
     top: (n, own) => ad.top(n, own),
+    myRank: own => ad.myRank ? ad.myRank(own) : Promise.resolve(null),
     now: () => ad.now ? ad.now() : Promise.resolve(Date.now()),
     vapid: () => ad.vapid ? ad.vapid() : Promise.reject(new Error('no server')),
     pushSet: (...a) => ad.pushSet ? ad.pushSet(...a) : Promise.reject(new Error('no server')),
