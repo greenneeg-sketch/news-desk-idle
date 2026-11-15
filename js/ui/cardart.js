@@ -15,6 +15,14 @@ const LOOK = {
   c10: { hair: 'pony', hc: '#c2c3c7', sk: 1, top: '#222633', acc: 'headset', acc2: 'glasses' },
   c11: { hair: 'neat', hc: '#14141f', sk: 0, top: '#1d3a6b', acc: 'mic', tie: '#e43b44' },
   c12: { hair: 'bald', hc: '#c2c3c7', sk: 2, top: '#2a2a3a', acc: 'badge', tie: '#ffd24a' },
+  c13: { hair: 'bob', hc: '#5d275d', sk: 3, top: '#a7f070', acc: 'tablet', acc2: 'glasses' },
+  c14: { hair: 'short', hc: '#14141f', sk: 2, top: '#333c57', acc: 'headset', beard: 1 },
+  c15: { hair: 'cap', hc: '#3b2a20', cap: '#ffcd75', sk: 1, top: '#ef7d57', acc: 'camera', acc2: 'glasses' },
+  c16: { hair: 'long', hc: '#8b5e3c', sk: 3, top: '#41a6f6', acc: 'mic' },
+  c17: { hair: 'curly', hc: '#3b2a20', sk: 0, top: '#a05ae0', acc: 'tablet', acc2: 'glasses' },
+  c18: { hair: 'beanie', hc: '#14141f', cap: '#b13e53', sk: 1, top: '#566c86', acc: 'headset', tired: 1 },
+  c19: { hair: 'neat', hc: '#5a3a20', sk: 3, top: '#257179', acc: 'badge', acc2: 'headset', tie: '#ffcd75' },
+  c20: { hair: 'fedora', hc: '#c2c3c7', cap: '#333c57', sk: 2, top: '#5a3a20', acc: 'script', beard: 1, tie: '#b13e53' },
   h1: { hair: 'goggles', hc: '#3b2a20', sk: 0, top: '#ffcd75', acc: 'cape', cape: '#38b764' },
   h2: { hair: 'hood', hc: '#14141f', hood: '#257179', sk: 1, top: '#257179', acc: 'scarf', mask: 1 },
   h3: { hair: 'helmet', hc: '#c2c3c7', sk: 0, top: '#94b0c2', acc: 'jet' },
@@ -25,7 +33,7 @@ const shade = (h, a) => '#' + hexn(h).map(v => Math.max(0, Math.min(255, Math.ro
 
 export function drawCards(c, s, t, sel) {
   const R = (x, y, w, h, k) => { c.fillStyle = k; c.fillRect(Math.round(x), Math.round(y), w, h); };
-  c.imageSmoothingEnabled = false; R(0, 0, 320, 384, '#1a1c2c');
+  c.imageSmoothingEnabled = false; R(0, 0, 320, Math.ceil(CARDS.length / 4) * 96, '#1a1c2c');
   CARDS.forEach((cd, i) => {
     const x = i % 4 * 80, y = (i / 4 | 0) * 96, n = s.cards[cd.id] || 0, rc = RARITY[cd.rar].c;
     drawCard(R, x, y, cd, n, rc, t, i);

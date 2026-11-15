@@ -101,7 +101,7 @@ export function Hud(bus) {
   $('dilR').onclick = () => bus.emit('judge', 'risk'); $('dilS').onclick = () => bus.emit('judge', 'safe');
   $('wlist').onclick = e => { const b = e.target.closest('[data-goal]'); if (b && !b.disabled) bus.emit('goal', b.dataset.goal); };
   $('scoutb').onclick = () => bus.emit('scout', 'paid'); $('scouta').onclick = () => bus.emit('scout', 'free');
-  $('cards').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); selCard = Math.floor((e.clientY - r.top) / r.height * 4) * 4 + Math.floor((e.clientX - r.left) / r.width * 4); };
+  $('cards').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); selCard = Math.floor((e.clientY - r.top) / r.height * Math.ceil(CARDS.length / 4)) * 4 + Math.floor((e.clientX - r.left) / r.width * 4); };
   $('hist').innerHTML = '<i></i>'.repeat(7); $('boardb').onclick = () => bus.emit('board');
   let jobSel = 'editor';
   const showJob = () => { document.querySelectorAll('#jobs button').forEach(b => b.classList.toggle('on', b.dataset.job === jobSel)); const j = JOBS.find(x => x.id === jobSel); $('jobd').textContent = `${j.d} · ${j.perk}`; };
