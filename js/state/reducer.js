@@ -7,6 +7,7 @@ import { tierOf } from '../systems/season.js';
 import { rates, scoreMul, bulk, prestigeGain, goldReward, perSec, basePS, rl, goldGap } from '../systems/economy.js';
 import { evaluateDay } from '../systems/ratings.js';
 import { rollCard, scoutCost } from '../systems/cards.js';
+import { STORY, stStatus } from '../data/story.js';
 export const initialState = () => ({
   score: 0, run: 0, pts: 0, clock: 0, nextEv: 15, ev: null, q: [0, 0, 0, 0, 0], buyN: '1', mg: [0, 0, 0, 0, 0], chief: 0,
   ach: [], evCount: 0, goldCount: 0, gold: null, nextGold: 60, gbEnd: 0, spdEnd: 0, spdReady: 0,
@@ -15,10 +16,10 @@ export const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0, br: {}, evH: 0, cofEnd: 0, perkN: 0, lr: null, guild: null,
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, story: { done: {}, mis: null }, mgBest: {}, mgN: 0, br: {}, evH: 0, cofEnd: 0, perkN: 0, lr: null, guild: null,
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild', 'evH', 'perkN'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild', 'evH', 'perkN', 'story'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -161,7 +162,17 @@ export function reducer(st, a) {
     }
     case 'MGREC': { // 미니게임 기록: 최고 등급(S>A>B>C), 실전 횟수
       const o = 'CBAS', b = (st.mgBest || {})[a.id];
-      return { ...st, mgBest: { ...st.mgBest, [a.id]: !b || o.indexOf(a.grade) > o.indexOf(b) ? a.grade : b }, mgN: (st.mgN || 0) + (a.practice ? 0 : 1) };
+      const sm = st.story && st.story.mis, sc = sm && STORY.find(c => c.id === sm.id), story = sc && sc.mis.k === 'mg' && sc.mis.g === a.id && (!sm.mg || o.indexOf(a.grade) > o.indexOf(sm.mg)) ? { ...st.story, mis: { ...sm, mg: a.grade } } : st.story; // 스토리 미션(미니게임 등급)
+      return { ...st, story, mgBest: { ...st.mgBest, [a.id]: !b || o.indexOf(a.grade) > o.indexOf(b) ? a.grade : b }, mgN: (st.mgN || 0) + (a.practice ? 0 : 1) };
+    }
+    case 'STORY_GO': { // 스토리 챕터를 보고 미션 시작(기준값 기록)
+      const ch = STORY.find(c => c.id === a.id); if (!ch || stStatus(st, ch) !== 'new') return st;
+      return { ...st, story: { ...(st.story || { done: {} }), mis: { id: ch.id, day0: st.day, evH0: st.evH || 0, ev0: st.evCount || 0, mg: '' } } };
+    }
+    case 'STORY_CLAIM': { // 미션 완료 보상: 티켓 + 평소 생산량 n분치
+      const ch = STORY.find(c => c.id === a.id); if (!ch || stStatus(st, ch) !== 'claim') return st;
+      const n = Math.floor(Math.max(basePS(st), 5) * 60 * ch.rw.min);
+      return { ...earn(st, n), tickets: st.tickets + ch.rw.tk, story: { ...st.story, done: { ...st.story.done, [ch.id]: 1 }, mis: null }, storyHit: { id: ch.id, n, tk: ch.rw.tk } };
     }
     case 'PRESTIGE': return { ...keep(st), pts: st.pts + prestigeGain(st) };
     case 'CHAL': return st.chalDone[a.id] || !CHALLENGES.some(c => c.id === a.id) ? st : { ...keep(st), pts: st.pts, chal: a.id };

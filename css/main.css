@@ -200,3 +200,16 @@ section.gh{display:none!important}
 /* 안내 카드 */
 .tip{animation:tipin .25s ease-out}@keyframes tipin{from{transform:translateY(-10px);opacity:0}to{transform:none;opacity:1}}
 .carb{height:6px;margin:6px 0 2px}.carb i{background:#a7f070}
+
+/* 스토리 모드 */
+.help.dot{position:relative}.help.dot::after{content:'';position:absolute;top:-3px;right:-3px;width:9px;height:9px;background:#e43b44;box-shadow:0 0 0 2px var(--ink)}
+.sthead{margin:10px 0 6px;padding:6px 8px;background:#29366f;border-left:6px solid var(--y)}.sthead b{display:block;color:var(--y)}.sthead small{color:var(--sub)}
+.strow{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 2px;border-bottom:2px solid #22325e}.strow small{display:block;color:var(--sub);font-size:12px;margin-top:2px}.strow.lock{opacity:.5}.strow.claim b,.strow.new b{color:#a7f070}
+.storyv{padding:0;align-items:flex-end;background:#0b0b14f2}.svwrap{width:100%;max-width:520px;padding:12px 10px 18px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.svtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.svtop b{color:var(--y)}
+#svcv{display:block;width:100%;image-rendering:pixelated;box-shadow:0 0 0 3px var(--ink)}
+.svbox{position:relative;display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:10px;min-height:110px;background:#f4f4f4;color:#14141f;box-shadow:0 0 0 3px var(--ink),0 6px 0 3px #0b0b14}
+.svbox.nar{background:#1d2b53;color:#dfe6ee}.svbox.nar #svt{font-style:italic}
+#svp{width:52px;height:52px;flex:none;image-rendering:pixelated;box-shadow:0 0 0 2px #14141f}.svtx{flex:1}#svn{display:block;color:#b13e53;margin-bottom:4px;min-height:1em}#svn.me{color:#257179}
+#svt{margin:0;font-size:16px;line-height:1.55;min-height:3.1em;word-break:keep-all}#svnext{position:absolute;right:10px;bottom:6px;font-style:normal;color:#b13e53;animation:svb 1s steps(2) infinite}@keyframes svb{50%{opacity:0}}
+.svmis{margin-top:10px;padding:12px;background:var(--pn);box-shadow:0 0 0 3px var(--y)}.svmis small{color:var(--y)}.svmis b{display:block;font-size:17px;margin:4px 0}.svmis p{margin:4px 0;color:var(--sub);font-size:13px}.svmis .svrw{color:#a7f070}

@@ -150,3 +150,12 @@ function figure(P0, L, n, t, dark, idx) {
   };
   if (A[L.acc]) A[L.acc](); if (A[L.acc2]) A[L.acc2]();
 }
+
+// 스토리 대화창 얼굴: 카드 인물의 상반신(가로 26칸 x 세로 26칸)을 한 칸 = px 픽셀로 그린다
+export function drawPortrait(c, id, px, t) {
+  const L = LOOK[id] || LOOK.c1, sz = 26 * px; c.setTransform(1, 0, 0, 1, 0, 0); c.imageSmoothingEnabled = false;
+  c.fillStyle = '#1d2b53'; c.fillRect(0, 0, sz, sz); c.fillStyle = '#29366f'; for (let y = 0; y < sz; y += px * 2) c.fillRect(0, y, sz, px);
+  c.save(); c.beginPath(); c.rect(0, 0, sz, sz); c.clip();
+  figure((gx, gy, w, h, col) => { c.fillStyle = col; c.fillRect((gx - 3) * px, (gy + 4) * px, w * px, h * px); }, L, 1, t, false, CARDS.findIndex(cd => cd.id === id));
+  c.restore();
+}

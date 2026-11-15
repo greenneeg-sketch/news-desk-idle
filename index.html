@@ -217,13 +217,26 @@ section.gh{display:none!important}
 /* 안내 카드 */
 .tip{animation:tipin .25s ease-out}@keyframes tipin{from{transform:translateY(-10px);opacity:0}to{transform:none;opacity:1}}
 .carb{height:6px;margin:6px 0 2px}.carb i{background:#a7f070}
+
+/* 스토리 모드 */
+.help.dot{position:relative}.help.dot::after{content:'';position:absolute;top:-3px;right:-3px;width:9px;height:9px;background:#e43b44;box-shadow:0 0 0 2px var(--ink)}
+.sthead{margin:10px 0 6px;padding:6px 8px;background:#29366f;border-left:6px solid var(--y)}.sthead b{display:block;color:var(--y)}.sthead small{color:var(--sub)}
+.strow{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 2px;border-bottom:2px solid #22325e}.strow small{display:block;color:var(--sub);font-size:12px;margin-top:2px}.strow.lock{opacity:.5}.strow.claim b,.strow.new b{color:#a7f070}
+.storyv{padding:0;align-items:flex-end;background:#0b0b14f2}.svwrap{width:100%;max-width:520px;padding:12px 10px 18px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.svtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.svtop b{color:var(--y)}
+#svcv{display:block;width:100%;image-rendering:pixelated;box-shadow:0 0 0 3px var(--ink)}
+.svbox{position:relative;display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:10px;min-height:110px;background:#f4f4f4;color:#14141f;box-shadow:0 0 0 3px var(--ink),0 6px 0 3px #0b0b14}
+.svbox.nar{background:#1d2b53;color:#dfe6ee}.svbox.nar #svt{font-style:italic}
+#svp{width:52px;height:52px;flex:none;image-rendering:pixelated;box-shadow:0 0 0 2px #14141f}.svtx{flex:1}#svn{display:block;color:#b13e53;margin-bottom:4px;min-height:1em}#svn.me{color:#257179}
+#svt{margin:0;font-size:16px;line-height:1.55;min-height:3.1em;word-break:keep-all}#svnext{position:absolute;right:10px;bottom:6px;font-style:normal;color:#b13e53;animation:svb 1s steps(2) infinite}@keyframes svb{50%{opacity:0}}
+.svmis{margin-top:10px;padding:12px;background:var(--pn);box-shadow:0 0 0 3px var(--y)}.svmis small{color:var(--y)}.svmis b{display:block;font-size:17px;margin:4px 0}.svmis p{margin:4px 0;color:var(--sub);font-size:13px}.svmis .svrw{color:#a7f070}
 </style>
 </head>
 <body>
 <main class="app">
   <header class="panel hud">
     <div><div class="sname" id="sname"></div><span class="px">SCORE</span><strong id="score">0</strong><small id="rank"></small><div class="ms"><i id="rkb"></i></div></div>
-    <div class="chips"><div class="hbtns"><button class="help home" id="homeb" aria-label="메인 화면으로">⌂</button><button class="help" id="helpb" aria-label="튜토리얼 다시 보기">?</button><button class="help gear" id="gearb" aria-label="설정">⚙</button><button class="help" id="mgmb" aria-label="미니게임" hidden>🎮</button></div><span id="ps"></span><span id="pt"></span></div>
+    <div class="chips"><div class="hbtns"><button class="help home" id="homeb" aria-label="메인 화면으로">⌂</button><button class="help" id="helpb" aria-label="튜토리얼 다시 보기">?</button><button class="help gear" id="gearb" aria-label="설정">⚙</button><button class="help" id="mgmb" aria-label="미니게임" hidden>🎮</button><button class="help" id="storyb" aria-label="스토리" hidden>📖</button></div><span id="ps"></span><span id="pt"></span></div>
   </header>
   <section class="panel offline" id="offline" hidden>
     <p id="offd"></p>
@@ -453,6 +466,22 @@ section.gh{display:none!important}
     <button class="btn alt" id="gdtut" style="width:100%;margin-top:8px">처음 안내 다시 보기</button>
   </div>
 </div>
+<div class="modal" id="story" hidden>
+  <div class="panel">
+    <div class="fh"><h1>스토리</h1><button class="btn mini" id="stok">닫기</button></div>
+    <p class="note">「8시 뉴스는 계속된다」 누적 점수가 오르면 다음 이야기가 열려요. 개편해도 진행은 남아요.</p>
+    <div id="stlist"></div>
+  </div>
+</div>
+<div class="modal storyv" id="storyv" hidden>
+  <div class="svwrap">
+    <div class="svtop"><b id="svtitle"></b><button class="btn mini alt" id="svskip">건너뛰기</button></div>
+    <canvas id="svcv" width="1920" height="384"></canvas>
+    <div class="svbox" id="svbox"><canvas id="svp" width="104" height="104"></canvas><div class="svtx"><b id="svn"></b><p id="svt"></p></div><i id="svnext">▼</i></div>
+    <div class="svmis" id="svmis" hidden><small>미션</small><b id="svmd"></b><p id="svmh"></p><p class="svrw" id="svrw"></p>
+      <div class="row"><button class="btn" id="svok">확인</button><button class="btn warn" id="svmini" hidden>바로 하기</button></div></div>
+  </div>
+</div>
 <div class="modal" id="mgmenu" hidden>
   <div class="panel">
     <div class="fh"><h1>미니게임</h1><button class="btn mini" id="mgmok">닫기</button></div>
@@ -476,7 +505,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.16-0824</span>
+  <span class="iver">v2026.11.16-0840</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -830,6 +859,81 @@ const GUIDE_GM = [
 // 층 번호 → 방송 이야기 항목
 const GUIDE_FLOOR = ['fl0', 'fl1', 'fl2', 'fl3', 'fl4', 'live', 'rating'];
 
+// 스토리 모드 "8시 뉴스는 계속된다" — 1부: 수습 시절 (챕터 1~3)
+// 챕터는 누적 점수(total)로 열리고, 앞 챕터를 끝내야 다음 챕터를 볼 수 있다. 개편해도 진행은 남는다.
+// 장면 한 줄: { who: 말하는 사람(카드 id·'me'·null=내레이션), t: 대사, bg: 배경 층(0 취재·1 인제스트·2 편집·3 CG·4 송출), fx: 'rain'|'alarm'|'night' }
+// 대사 안의 {name} = 플레이어 이름. 직업별 대사는 t 대신 { editor, reporter, camera }로 쓴다.
+// 미션 k: day(8시 뉴스 n회) · mg(미니게임 등급) · evh(속보 직접 대응 n회)
+const ST_WHO = { c12: '보도국장', c1: '신입 카메라기자', c2: '수습 인제스트 요원', c7: '야근 영상편집기자', c4: '인턴 그래픽 디자이너', c5: '신입 아나운서' };
+const ST_PARTS = [{ n: '1부 · 수습 시절', d: '첫 출근부터 첫 특보까지' }];
+const STORY = [
+  { id: 's1', part: 0, n: '첫 출근', at: 300, d: '보도국을 한 바퀴 돌며 뉴스가 나가는 길을 배운다',
+    lines: [
+      { who: null, bg: 0, t: '첫 출근 날. 목에 건 보도국 출입증이 아직 어색하다.' },
+      { who: 'c12', bg: 0, t: '{name}, 오늘부터 보도국 식구다. 우리 뉴스가 어떻게 나가는지 한 바퀴 돌아보자.' },
+      { who: 'c1', bg: 0, t: '뉴스는 여기서 시작해요. 기자들이 현장에서 찍고 쓴 게 전부 위층으로 올라가요.' },
+      { who: 'c2', bg: 1, t: '현장 영상은 인제스트로 먼저 들어와요. 파일 받고, 이름 붙이고, 편집실이 바로 찾을 수 있게 정리하죠.' },
+      { who: 'c7', bg: 2, t: '여기가 편집실. 1분 30초짜리 리포트 하나에 컷이 수십 개 들어가. 한 컷이 늦으면 뉴스 전체가 늦어.' },
+      { who: 'me', bg: 2, t: { editor: '(빈 편집석 모니터에 내 이름이 붙은 타임라인이 열려 있다.)', reporter: '(편집기자 옆에서 내 원고가 그림에 붙는 걸 처음 봤다.)', camera: '(내가 찍을 그림이 여기서 이렇게 잘리는구나.)' } },
+      { who: 'c4', bg: 3, t: '자막이랑 그래픽은 저희가 만들어요. 숫자 하나 틀리면 정정 방송이라 늘 두 번 봐요.' },
+      { who: 'c5', bg: 4, t: '그리고 마지막, 스튜디오와 송출실. 저녁 8시 정각에 이 모든 게 전파를 타요.' },
+      { who: 'c12', bg: 4, t: '어느 한 곳이라도 막히면 화면이 비어. 오늘 밤 8시 뉴스, 무사히 내보내 봐.' },
+    ],
+    mis: { k: 'day', n: 1, d: '오늘 밤 8시 뉴스 1회 내보내기', hint: '보도국 화면 위쪽 시계가 20:00이 되면 뉴스가 나가요.' },
+    end: [
+      { who: 'c5', bg: 4, t: '…지금까지 8시 뉴스였습니다.' },
+      { who: 'c12', bg: 4, t: '첫날치고 괜찮았어. 내일도 8시는 온다.' },
+    ],
+    rw: { tk: 1, min: 5 } },
+  { id: 's2', part: 0, n: '19시 55분', at: 5e3, d: '톱 리포트 렌더가 멈췄다. 남은 시간은 5분', clock: 0,
+    lines: [
+      { who: null, bg: 2, fx: 'alarm', t: '19시 55분. 톱 리포트 렌더 막대가 87%에서 멈춰 있다.' },
+      { who: 'c7', bg: 2, fx: 'alarm', t: '렌더 다시 걸면 늦어. 타임라인에서 바로 컷 잡아서 클린본으로 가자.' },
+      { who: 'me', bg: 2, fx: 'alarm', t: { editor: '컷 지점 표시해 둘게요. 플레이바 지나갈 때 바로 자를게요.', reporter: '원고 두 문장 줄였어요. 컷만 맞춰 주세요!', camera: '그림은 충분해요. 제일 센 컷부터 쓰세요!' } },
+      { who: 'c5', bg: 4, fx: 'alarm', t: '스튜디오 준비 끝났어요. 톱 리포트만 오면 돼요!' },
+      { who: 'c7', bg: 2, fx: 'alarm', t: '손 풀어. 다섯 라운드, 갈수록 빨라진다. 놓치면 화면에 블랙 나간다.' },
+    ],
+    mis: { k: 'mg', g: 'cut', grade: 'B', d: '미니게임 "속보 컷 편집" B등급 이상', hint: '아래 버튼으로 바로 할 수 있어요. 연습 모드도 인정돼요.' },
+    end: [
+      { who: null, bg: 4, t: '19시 59분 40초. 클린본이 송출 서버에 꽂혔다.' },
+      { who: 'c7', bg: 2, t: '…봤지? 이게 방송이야. 커피 한잔 사라.' },
+    ],
+    rw: { tk: 1, min: 10 } },
+  { id: 's3', part: 0, n: '첫 속보', at: 1e4, d: '밤 10시, 폭우 특보. 전원 복귀',
+    lines: [
+      { who: null, bg: 0, fx: 'rain', t: '밤 10시. 퇴근 버스 정류장에서 휴대폰이 울린다.' },
+      { who: 'c12', bg: 0, fx: 'rain', t: '중부지방에 시간당 80mm 폭우다. 전원 복귀, 특보 체제로 간다.' },
+      { who: 'c2', bg: 1, fx: 'night', t: '현장 영상이 한꺼번에 몰려와요! 서버 대기열이 꽉 찼어요!' },
+      { who: 'c7', bg: 2, fx: 'night', t: '오늘은 밤새는 날이다. 커피 두 잔 타 놨어.' },
+      { who: 'c4', bg: 3, fx: 'night', t: '강수량 지도 갱신했어요. 숫자 세 번 확인했어요!' },
+      { who: 'me', bg: 2, fx: 'night', t: { editor: '(다음 리포트 타임라인을 열었다. 손이 조금 떨린다.)', reporter: '(현장 기자 전화를 받아 원고를 고쳐 쓴다.)', camera: '(배터리 세 개를 챙겨 중계차로 뛰었다.)' } },
+      { who: 'c12', bg: 4, fx: 'night', t: '속보가 뜨면 "우선 편집"을 눌러 직접 챙겨. 오늘 밤은 네가 받는다.' },
+    ],
+    mis: { k: 'evh', n: 2, d: '속보에 직접 대응 2회', hint: '보도국 화면에 속보 띠가 뜨면 "우선 편집"(또는 데스크 판단)을 누르세요.' },
+    end: [
+      { who: 'c5', bg: 4, t: '새벽 5시, 폭우 특보를 마칩니다. 밤새 함께해 주셔서 감사합니다.' },
+      { who: 'c12', bg: 4, t: '수고했다. 다들 네 얘기 하더라. …이제 진짜 기자다.' },
+      { who: null, bg: 4, t: '1부 「수습 시절」 끝. 2부 「현장의 시간」은 준비 중이에요.' },
+    ],
+    rw: { tk: 2, min: 15 } },
+];
+const ST_ORD = 'CBAS';
+const stProg = (s, ch) => { // 지금 미션 진행도 [현재, 목표]
+  const m = s.story && s.story.mis, ms = ch.mis; if (!m || m.id !== ch.id) return [0, ms.n || 1];
+  if (ms.k === 'day') return [Math.min(ms.n, s.day - m.day0), ms.n];
+  if (ms.k === 'mg') return [m.mg && ST_ORD.indexOf(m.mg) >= ST_ORD.indexOf(ms.grade) ? 1 : 0, 1];
+  if (ms.k === 'evh') return [Math.min(ms.n, (s.evH || 0) - m.evH0 + (s.chief ? (s.evCount || 0) - m.ev0 : 0)), ms.n];
+  return [0, 1];
+};
+const stStatus = (s, ch) => { // lock · new · mis · claim · done
+  const st = s.story || {}, i = STORY.indexOf(ch);
+  if (st.done && st.done[ch.id]) return 'done';
+  if ((i > 0 && !(st.done && st.done[STORY[i - 1].id])) || s.total < ch.at) return 'lock';
+  if (!(st.mis && st.mis.id === ch.id)) return 'new';
+  const [a, b] = stProg(s, ch); return a >= b ? 'claim' : 'mis';
+};
+const stLine = (l, s) => { const t = typeof l.t === 'string' ? l.t : l.t[s.job] || l.t.editor; return t.replace(/\{name\}/g, s.name || '신입'); };
+
 
 // 이번 주 한정 이벤트와 히어로 카드 보유 수 (순수 함수)
 const weekEvent = s => (s.wev && WEEK_EVENTS.find(e => e.id === s.wev.id)) || null;
@@ -1022,6 +1126,7 @@ function GameLoop({ step, render, dt = .05 }) {
 
 
 
+
 const initialState = () => ({
   score: 0, run: 0, pts: 0, clock: 0, nextEv: 15, ev: null, q: [0, 0, 0, 0, 0], buyN: '1', mg: [0, 0, 0, 0, 0], chief: 0,
   ach: [], evCount: 0, goldCount: 0, gold: null, nextGold: 60, gbEnd: 0, spdEnd: 0, spdReady: 0,
@@ -1030,10 +1135,10 @@ const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0, br: {}, evH: 0, cofEnd: 0, perkN: 0, lr: null, guild: null,
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, story: { done: {}, mis: null }, mgBest: {}, mgN: 0, br: {}, evH: 0, cofEnd: 0, perkN: 0, lr: null, guild: null,
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild', 'evH', 'perkN'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild', 'evH', 'perkN', 'story'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -1176,7 +1281,17 @@ function reducer(st, a) {
     }
     case 'MGREC': { // 미니게임 기록: 최고 등급(S>A>B>C), 실전 횟수
       const o = 'CBAS', b = (st.mgBest || {})[a.id];
-      return { ...st, mgBest: { ...st.mgBest, [a.id]: !b || o.indexOf(a.grade) > o.indexOf(b) ? a.grade : b }, mgN: (st.mgN || 0) + (a.practice ? 0 : 1) };
+      const sm = st.story && st.story.mis, sc = sm && STORY.find(c => c.id === sm.id), story = sc && sc.mis.k === 'mg' && sc.mis.g === a.id && (!sm.mg || o.indexOf(a.grade) > o.indexOf(sm.mg)) ? { ...st.story, mis: { ...sm, mg: a.grade } } : st.story; // 스토리 미션(미니게임 등급)
+      return { ...st, story, mgBest: { ...st.mgBest, [a.id]: !b || o.indexOf(a.grade) > o.indexOf(b) ? a.grade : b }, mgN: (st.mgN || 0) + (a.practice ? 0 : 1) };
+    }
+    case 'STORY_GO': { // 스토리 챕터를 보고 미션 시작(기준값 기록)
+      const ch = STORY.find(c => c.id === a.id); if (!ch || stStatus(st, ch) !== 'new') return st;
+      return { ...st, story: { ...(st.story || { done: {} }), mis: { id: ch.id, day0: st.day, evH0: st.evH || 0, ev0: st.evCount || 0, mg: '' } } };
+    }
+    case 'STORY_CLAIM': { // 미션 완료 보상: 티켓 + 평소 생산량 n분치
+      const ch = STORY.find(c => c.id === a.id); if (!ch || stStatus(st, ch) !== 'claim') return st;
+      const n = Math.floor(Math.max(basePS(st), 5) * 60 * ch.rw.min);
+      return { ...earn(st, n), tickets: st.tickets + ch.rw.tk, story: { ...st.story, done: { ...st.story.done, [ch.id]: 1 }, mis: null }, storyHit: { id: ch.id, n, tk: ch.rw.tk } };
     }
     case 'PRESTIGE': return { ...keep(st), pts: st.pts + prestigeGain(st) };
     case 'CHAL': return st.chalDone[a.id] || !CHALLENGES.some(c => c.id === a.id) ? st : { ...keep(st), pts: st.pts, chal: a.id };
@@ -1222,7 +1337,7 @@ const EventScheduler = store => ({
 
 
 
-const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'br', 'lr', 'guild', 'evH', 'perkN', 'meet'];
+const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'br', 'lr', 'guild', 'evH', 'perkN', 'meet', 'story'];
 // Repository 패턴: 저장 매체(localStorage)를 이 모듈 안에 가둔다
 const Repo = {
   snapshot: s => ({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() }), // 클라우드 저장에도 같은 모양을 쓴다
@@ -1599,6 +1714,15 @@ function figure(P0, L, n, t, dark, idx) {
     scarf: () => { const k = '#f4f4f4'; P(9, 14, 14, 3, k); P(9, 16, 14, 1, '#c2c3c7'); P(21, 16, 3, 3, k); P(23 + f2, 18, 5, 2, k); P(26 + f2, 19, 3, 2, '#c2c3c7'); },
   };
   if (A[L.acc]) A[L.acc](); if (A[L.acc2]) A[L.acc2]();
+}
+
+// 스토리 대화창 얼굴: 카드 인물의 상반신(가로 26칸 x 세로 26칸)을 한 칸 = px 픽셀로 그린다
+function drawPortrait(c, id, px, t) {
+  const L = LOOK[id] || LOOK.c1, sz = 26 * px; c.setTransform(1, 0, 0, 1, 0, 0); c.imageSmoothingEnabled = false;
+  c.fillStyle = '#1d2b53'; c.fillRect(0, 0, sz, sz); c.fillStyle = '#29366f'; for (let y = 0; y < sz; y += px * 2) c.fillRect(0, y, sz, px);
+  c.save(); c.beginPath(); c.rect(0, 0, sz, sz); c.clip();
+  figure((gx, gy, w, h, col) => { c.fillStyle = col; c.fillRect((gx - 3) * px, (gy + 4) * px, w * px, h * px); }, L, 1, t, false, CARDS.findIndex(cd => cd.id === id));
+  c.restore();
 }
 
 // 편집실 고해상도 장면: 640x128칸 도트(캔버스는 3배 해상도로 그려 글씨가 선명하다)
@@ -3117,6 +3241,104 @@ function GuideUI(bus, getState) {
   return { open };
 }
 
+// 스토리 모드 화면: 챕터 목록(#story) + 장면 보기(#storyv: 위쪽 층 장면, 아래쪽 대화창)
+
+
+
+
+
+
+function StoryUI(bus, getS) {
+  const $s = id => document.getElementById(id), cv = $s('svcv'), c = cv.getContext('2d'), pc = $s('svp').getContext('2d');
+  cv.width = 1920; cv.height = 384; c.imageSmoothingEnabled = false;
+  let play = null, raf = 0, lastKey = '';
+  const statusTxt = (s, ch, st) => st === 'lock' ? (s.total < ch.at ? `누적 ${ch.at >= 1e4 ? ch.at / 1e4 + '만' : ch.at >= 1e3 ? ch.at / 1e3 + '천' : ch.at}점에 열려요` : '앞 이야기를 먼저 끝내세요')
+    : st === 'new' ? '새 이야기' : st === 'mis' ? (() => { const [a, b] = stProg(s, ch); return `미션 중 · ${ch.mis.d} (${a}/${b})`; })()
+    : st === 'claim' ? '미션 완료! 보상을 받으세요' : `완료 · 티켓 ${ch.rw.tk}장 받음`;
+  function list() {
+    const s = getS(), box = $s('stlist'); box.replaceChildren();
+    ST_PARTS.forEach((p, pi) => {
+      const h = document.createElement('div'); h.className = 'sthead'; h.innerHTML = `<b></b><small></small>`; h.querySelector('b').textContent = p.n; h.querySelector('small').textContent = p.d; box.append(h);
+      STORY.filter(ch => ch.part === pi).forEach((ch, i) => {
+        const st = stStatus(s, ch), row = document.createElement('div'), info = document.createElement('div'), b = document.createElement('b'), d = document.createElement('small'), btn = document.createElement('button');
+        row.className = 'strow ' + st; b.textContent = `${STORY.indexOf(ch) + 1}. ${st === 'lock' ? '???' : ch.n}`; d.textContent = (st === 'lock' ? '' : ch.d + ' · ') + statusTxt(s, ch, st);
+        btn.className = 'btn mini' + (st === 'new' || st === 'claim' ? ' can' : ' alt'); btn.disabled = st === 'lock';
+        btn.textContent = { lock: '잠김', new: '보기', mis: ch.mis.k === 'mg' ? '하러 가기' : '다시 보기', claim: '보상 받기', done: '다시 보기' }[st];
+        btn.onclick = () => {
+          if (st === 'new') view(ch, ch.lines, 'mission');
+          else if (st === 'mis') { if (ch.mis.k === 'mg') { close(); bus.emit('storyMini', ch.mis.g); } else view(ch, ch.lines, 'mission'); }
+          else if (st === 'claim') { bus.emit('storyClaim', ch.id); view(ch, ch.end, 'reward'); }
+          else if (st === 'done') view(ch, [...ch.lines, ...ch.end], 'replay');
+        };
+        info.append(b, d); row.append(info, btn); box.append(row);
+      });
+    });
+    const more = document.createElement('p'); more.className = 'note'; more.textContent = '2부 「현장의 시간」은 준비 중이에요.'; box.append(more);
+  }
+  const open = () => { list(); $s('story').hidden = false; };
+  const close = () => { $s('story').hidden = true; };
+  function view(ch, lines, mode) {
+    play = { ch, lines, i: 0, t0: performance.now(), mode }; $s('story').hidden = true; $s('storyv').hidden = false; $s('svmis').hidden = true; $s('svbox').hidden = false;
+    $s('svtitle').textContent = `${STORY.indexOf(ch) + 1}장 · ${ch.n}`; show(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
+  }
+  function show() {
+    const l = play.lines[play.i], s = getS(), me = l.who === 'me', nar = !l.who;
+    $s('svn').textContent = nar ? '' : me ? (s.name || '나') : ST_WHO[l.who] || ''; $s('svn').className = me ? 'me' : '';
+    $s('svbox').classList.toggle('nar', nar); $s('svp').hidden = nar || me; play.txt = stLine(l, s); play.t0 = performance.now();
+    $s('svt').textContent = ''; $s('svnext').textContent = play.i < play.lines.length - 1 ? '▼' : '■';
+  }
+  function next() {
+    if (!play || !$s('svmis').hidden) return;
+    const shown = Math.floor((performance.now() - play.t0) / 1000 * 40);
+    if (shown < play.txt.length) { play.t0 = -1e9; return; } // 글자가 다 안 나왔으면 먼저 다 보여 준다
+    if (play.i < play.lines.length - 1) { play.i++; show(); return; }
+    finish();
+  }
+  function finish() {
+    const { ch, mode } = play;
+    if (mode === 'mission') { // 미션 안내
+      $s('svbox').hidden = true; $s('svmis').hidden = false; $s('svmd').textContent = ch.mis.d; $s('svmh').textContent = ch.mis.hint; $s('svrw').textContent = `보상: 스카우트 티켓 ${ch.rw.tk}장 + 평소 생산량 ${ch.rw.min}분치`;
+      $s('svmini').hidden = ch.mis.k !== 'mg'; return;
+    }
+    const hit = mode === 'reward' && getS().storyHit; stop();
+    if (hit) bus.emit('storyReward', hit); else open();
+  }
+  function stop() { cancelAnimationFrame(raf); play = null; $s('storyv').hidden = true; }
+  function loop(now) {
+    if (!play) return; raf = requestAnimationFrame(loop);
+    const l = play.lines[play.i], s = getS(), t = now / 1000, ss = { ...s, dayT: play.ch.clock != null ? play.ch.clock * DAY_SEC : s.dayT };
+    c.setTransform(3, 0, 0, 3, 0, 0);
+    if (l.bg === 2) drawEditHD(c, ss, t, true, 3); else if (FloorsHD.has(l.bg)) FloorsHD.draw(l.bg, c, ss, t, true, 3);
+    c.setTransform(3, 0, 0, 3, 0, 0);
+    if (l.fx === 'night' || l.fx === 'rain') { c.fillStyle = 'rgba(10,16,64,.42)'; c.fillRect(0, 0, 640, 128); }
+    if (l.fx === 'rain') { c.fillStyle = 'rgba(180,210,255,.55)'; for (let i = 0; i < 70; i++) { const x = (i * 53 + t * 260) % 680 - 20, y = (i * 37 + t * 420) % 150 - 20; c.fillRect(x, y, 1, 7); } }
+    if (l.fx === 'alarm' && Math.floor(t * 2) % 2) { c.fillStyle = '#e43b44'; c.fillRect(0, 0, 640, 3); c.fillRect(0, 125, 640, 3); c.fillRect(0, 0, 3, 128); c.fillRect(637, 0, 3, 128); }
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    if (l.who && l.who !== 'me') drawPortrait(pc, l.who, 4, t);
+    const n = Math.min(play.txt.length, Math.floor((now - play.t0) / 1000 * 40)), txt = play.txt.slice(0, n);
+    if ($s('svt').textContent !== txt) $s('svt').textContent = txt;
+  }
+  $s('storyv').addEventListener('click', e => { if (!e.target.closest('button')) next(); });
+  $s('svskip').onclick = () => { if (!play) return; play.i = play.lines.length - 1; show(); play.t0 = -1e9; };
+  $s('svok').onclick = () => { const ch = play && play.ch; if (ch && stStatus(getS(), ch) === 'new') bus.emit('storyGo', ch.id); stop(); open(); };
+  $s('svmini').onclick = () => { const ch = play && play.ch; if (ch && stStatus(getS(), ch) === 'new') bus.emit('storyGo', ch.id); stop(); bus.emit('storyMini', ch.mis.g); };
+  $s('stok').onclick = () => { close(); bus.emit('storyClose'); };
+  $s('storyb').onclick = open;
+  return {
+    open,
+    busy: () => !$s('story').hidden || !$s('storyv').hidden,
+    refresh(s) { // 머리 버튼(📖) 표시·빨간 점, 목록이 열려 있으면 진행도 갱신
+      const on = s.total >= STORY[0].at, sts = STORY.map(ch => stStatus(s, ch)), dot = sts.some(x => x === 'new' || x === 'claim');
+      $s('storyb').hidden = !on; $s('storyb').classList.toggle('dot', dot);
+      const key = sts.join() + '|' + STORY.map(ch => stProg(s, ch).join('/')).join();
+      if (!$s('story').hidden && key !== lastKey) list(); lastKey = key;
+      return sts;
+    },
+  };
+}
+
+
+
 
 
 
@@ -3150,7 +3372,7 @@ function GuideUI(bus, getState) {
 
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
-const ui = Hud(bus), branches = Branches(bus), social = Social(bus), guide = GuideUI(bus, () => store.getState()), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
+const ui = Hud(bus), story = StoryUI(bus, () => store.getState()), branches = Branches(bus), social = Social(bus), guide = GuideUI(bus, () => store.getState()), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
 let pending = 0, board = null;
 const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -3283,8 +3505,9 @@ function mgTick() {
 }
 setInterval(mgTick, 250);
 if (location.hash === '#mini') mgSchedule(1500); // 테스트용: 주소 끝에 #mini
-function mgOpen(g, practice) {
-  mgPlay = { g, practice }; mgReward = 0;
+let mgStory = false; // 스토리 미션에서 연 미니게임이면 끝나고 스토리로 돌아간다
+function mgOpen(g, practice, fromStory) {
+  mgStory = !!fromStory; mgPlay = { g, practice }; mgReward = 0;
   $i('mctitle').textContent = g.n + (practice ? ' · 연습' : ''); $i('mcres').hidden = true; $i('mcquit').hidden = false; $i('mgmenu').hidden = true; $i('mcut').hidden = false;
   $i('mcj').textContent = ''; $i('mcc').textContent = '';
   const game = MINI.start(g.id); $i('mcshot').hidden = !game.shutter; Music.play('breaking');
@@ -3308,7 +3531,7 @@ MINI.init({
     $i('mcrow').hidden = practice; $i('mcprow').hidden = !practice; $i('mcres').hidden = false; $i('mcquit').hidden = true; Sfx.play(r.grade === 'C' ? 'fail' : 'rank');
   },
 });
-window.__mini = MINI; window.__intro = intro; // 테스트용
+window.__mini = MINI; window.__intro = intro; window.__store = store; // 테스트용
 { // 화면 입력: 누르기·문지르기를 캔버스 좌표로 바꿔 지금 게임에 넘긴다
   const st = $i('mcstage'), xy = e => { const r = st.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * 240, (e.clientY - r.top) / r.height * 150]; };
   $i('mcut').addEventListener('contextmenu', e => e.preventDefault()); // 길게 누르기 메뉴 막기
@@ -3321,9 +3544,9 @@ window.__mini = MINI; window.__intro = intro; // 테스트용
 }
 $i('mcok').onclick = () => { if (mgReward) store.dispatch({ type: 'GAIN', n: mgReward }); ui.toast(`${mgGrade}등급! ${fmt(mgReward)}점 획득`); mgReward = 0; mgClose(); };
 $i('mcad').onclick = () => { if (!mgReward) return; store.dispatch({ type: 'GAIN', n: mgReward * 2 }); ui.toast(`실제 앱에서는 보상형 광고가 나와요. ${fmt(mgReward * 2)}점 획득!`); mgReward = 0; Sfx.play('buy'); mgClose(); };
-$i('mcquit').onclick = () => { const p = mgPlay && mgPlay.practice; mgClose(); if (p) mgMenu(); };
+$i('mcquit').onclick = () => { const p = mgPlay && mgPlay.practice; mgClose(); if (mgStory) story.open(); else if (p) mgMenu(); };
 $i('mcagain').onclick = () => mgOpen(mgPlay.g, true);
-$i('mcback').onclick = () => { mgClose(); mgMenu(); };
+$i('mcback').onclick = () => { mgClose(); if (mgStory) story.open(); else mgMenu(); };
 // 미니게임 모음(연습)
 function mgMenu() {
   const s = store.getState(), box = $i('mglist'); box.replaceChildren();
@@ -3336,6 +3559,13 @@ function mgMenu() {
   $i('mgmenu').hidden = false;
 }
 $i('mgmb').onclick = () => mgMenu();
+// 스토리 모드
+bus.on('storyGo', id => store.dispatch({ type: 'STORY_GO', id }));
+bus.on('storyClaim', id => store.dispatch({ type: 'STORY_CLAIM', id }));
+bus.on('storyReward', h => { ui.toast(`스토리 보상: 스카우트 티켓 ${h.tk}장 + ${fmt(h.n)}점`); Sfx.play('rank'); story.open(); });
+bus.on('storyMini', id => { const g = MINI.LIST.find(x => x.id === id); if (g) mgOpen(g, true, true); });
+bus.on('storyClose', () => markPop());
+let stPrev = null;
 $i('imini').onclick = () => enter(mgMenu);
 $i('mgmok').onclick = () => { $i('mgmenu').hidden = true; markPop(); };
 // 소소한 이벤트(커피타임·야식·제보 전화…): 접속 중 4~7분마다 보도국 화면 위에 25초 동안 뜬다. 놓쳐도 손해 없음
@@ -3512,7 +3742,7 @@ store.subscribe((s, p) => {
 });
 
 GameLoop({
-  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
+  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
   render: t => { scene.draw(store.getState(), t, ui.sel()); if (!$i('brp').closest('.pane').hidden) branches.draw(store.getState(), t); },
 }).start();
 setInterval(() => { if (!restoring) Repo.save(store.getState()); }, 5000); // 자동 저장: 5초마다

@@ -25,13 +25,15 @@ import { MINI } from './ui/minigame.js';
 import { Branches } from './ui/branches.js';
 import { Social } from './ui/social.js';
 import { GuideUI } from './ui/guide.js';
+import { StoryUI } from './ui/story.js';
+import { STORY } from './data/story.js';
 import { perSec } from './systems/economy.js';
 import { jobOf } from './data/config.js';
 import { isUnlocked } from './data/tips.js';
 
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
-const ui = Hud(bus), branches = Branches(bus), social = Social(bus), guide = GuideUI(bus, () => store.getState()), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
+const ui = Hud(bus), story = StoryUI(bus, () => store.getState()), branches = Branches(bus), social = Social(bus), guide = GuideUI(bus, () => store.getState()), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
 let pending = 0, board = null;
 const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -164,8 +166,9 @@ function mgTick() {
 }
 setInterval(mgTick, 250);
 if (location.hash === '#mini') mgSchedule(1500); // 테스트용: 주소 끝에 #mini
-function mgOpen(g, practice) {
-  mgPlay = { g, practice }; mgReward = 0;
+let mgStory = false; // 스토리 미션에서 연 미니게임이면 끝나고 스토리로 돌아간다
+function mgOpen(g, practice, fromStory) {
+  mgStory = !!fromStory; mgPlay = { g, practice }; mgReward = 0;
   $i('mctitle').textContent = g.n + (practice ? ' · 연습' : ''); $i('mcres').hidden = true; $i('mcquit').hidden = false; $i('mgmenu').hidden = true; $i('mcut').hidden = false;
   $i('mcj').textContent = ''; $i('mcc').textContent = '';
   const game = MINI.start(g.id); $i('mcshot').hidden = !game.shutter; Music.play('breaking');
@@ -189,7 +192,7 @@ MINI.init({
     $i('mcrow').hidden = practice; $i('mcprow').hidden = !practice; $i('mcres').hidden = false; $i('mcquit').hidden = true; Sfx.play(r.grade === 'C' ? 'fail' : 'rank');
   },
 });
-window.__mini = MINI; window.__intro = intro; // 테스트용
+window.__mini = MINI; window.__intro = intro; window.__store = store; // 테스트용
 { // 화면 입력: 누르기·문지르기를 캔버스 좌표로 바꿔 지금 게임에 넘긴다
   const st = $i('mcstage'), xy = e => { const r = st.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * 240, (e.clientY - r.top) / r.height * 150]; };
   $i('mcut').addEventListener('contextmenu', e => e.preventDefault()); // 길게 누르기 메뉴 막기
@@ -202,9 +205,9 @@ window.__mini = MINI; window.__intro = intro; // 테스트용
 }
 $i('mcok').onclick = () => { if (mgReward) store.dispatch({ type: 'GAIN', n: mgReward }); ui.toast(`${mgGrade}등급! ${fmt(mgReward)}점 획득`); mgReward = 0; mgClose(); };
 $i('mcad').onclick = () => { if (!mgReward) return; store.dispatch({ type: 'GAIN', n: mgReward * 2 }); ui.toast(`실제 앱에서는 보상형 광고가 나와요. ${fmt(mgReward * 2)}점 획득!`); mgReward = 0; Sfx.play('buy'); mgClose(); };
-$i('mcquit').onclick = () => { const p = mgPlay && mgPlay.practice; mgClose(); if (p) mgMenu(); };
+$i('mcquit').onclick = () => { const p = mgPlay && mgPlay.practice; mgClose(); if (mgStory) story.open(); else if (p) mgMenu(); };
 $i('mcagain').onclick = () => mgOpen(mgPlay.g, true);
-$i('mcback').onclick = () => { mgClose(); mgMenu(); };
+$i('mcback').onclick = () => { mgClose(); if (mgStory) story.open(); else mgMenu(); };
 // 미니게임 모음(연습)
 function mgMenu() {
   const s = store.getState(), box = $i('mglist'); box.replaceChildren();
@@ -217,6 +220,13 @@ function mgMenu() {
   $i('mgmenu').hidden = false;
 }
 $i('mgmb').onclick = () => mgMenu();
+// 스토리 모드
+bus.on('storyGo', id => store.dispatch({ type: 'STORY_GO', id }));
+bus.on('storyClaim', id => store.dispatch({ type: 'STORY_CLAIM', id }));
+bus.on('storyReward', h => { ui.toast(`스토리 보상: 스카우트 티켓 ${h.tk}장 + ${fmt(h.n)}점`); Sfx.play('rank'); story.open(); });
+bus.on('storyMini', id => { const g = MINI.LIST.find(x => x.id === id); if (g) mgOpen(g, true, true); });
+bus.on('storyClose', () => markPop());
+let stPrev = null;
 $i('imini').onclick = () => enter(mgMenu);
 $i('mgmok').onclick = () => { $i('mgmenu').hidden = true; markPop(); };
 // 소소한 이벤트(커피타임·야식·제보 전화…): 접속 중 4~7분마다 보도국 화면 위에 25초 동안 뜬다. 놓쳐도 손해 없음
@@ -393,7 +403,7 @@ store.subscribe((s, p) => {
 });
 
 GameLoop({
-  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
+  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
   render: t => { scene.draw(store.getState(), t, ui.sel()); if (!$i('brp').closest('.pane').hidden) branches.draw(store.getState(), t); },
 }).start();
 setInterval(() => { if (!restoring) Repo.save(store.getState()); }, 5000); // 자동 저장: 5초마다
