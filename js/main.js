@@ -192,6 +192,7 @@ window.__mini = MINI; // 테스트용
   ['pointerup', 'pointercancel'].forEach(k => st.addEventListener(k, () => { const g = MINI.cur; if (g) g.up(); }));
   $i('mcshot').addEventListener('pointerdown', e => { e.preventDefault(); const g = MINI.cur; if (g) g.shot(); });
   addEventListener('keydown', e => { if (mgPlay && MINI.cur && ['ArrowLeft', 'ArrowRight', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); MINI.cur.key(e); } });
+  addEventListener('keyup', e => { if (mgPlay && MINI.cur && MINI.cur.id === 'signal') MINI.cur.key(e); }); // 송출 사고: 키를 떼면 레벨이 내려간다
 }
 $i('mcok').onclick = () => { if (mgReward) store.dispatch({ type: 'GAIN', n: mgReward }); ui.toast(`${mgGrade}등급! ${fmt(mgReward)}점 획득`); mgReward = 0; mgClose(); };
 $i('mcad').onclick = () => { if (!mgReward) return; store.dispatch({ type: 'GAIN', n: mgReward * 2 }); ui.toast(`실제 앱에서는 보상형 광고가 나와요. ${fmt(mgReward * 2)}점 획득!`); mgReward = 0; Sfx.play('buy'); mgClose(); };

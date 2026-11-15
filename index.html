@@ -413,7 +413,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-2005</span>
+  <span class="iver">v2026.11.15-2008</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -2113,14 +2113,90 @@ const MATCH = (() => {
   };
 })();
 
-const GAMES = { cut: CUT, focus: FOCUS, match: MATCH };
+// ───────── 4. 송출 사고 (방송 엔지니어) ─────────
+// 오른쪽 레벨 미터의 초록 구간(정상 신호)이 흔들린다. 화면을 누르고 있으면 노란 레벨 막대가 올라가고, 떼면 내려간다.
+// 막대가 초록 구간 안에 있으면 '송출 안정' 게이지가 차고, 벗어나면 줄어든다. 게이지를 채우면 복구! 사고 4건, 점점 어려워진다.
+const SIGNAL = (() => {
+  const CASES = [
+    { n: '영상 신호 끊김', band: .30, jump: [1.0, 1.8], ease: 2.0 },
+    { n: '오디오 레벨 폭주', band: .26, jump: [.8, 1.5], ease: 2.6 },
+    { n: '위성 링크 흔들림', band: .22, jump: [.7, 1.3], ease: 3.2 },
+    { n: '중계차 전송 장애', band: .19, jump: [.6, 1.1], ease: 3.8 },
+  ];
+  const LIM = 16, UP = 2.4, DOWN = 1.9, VMAX = 1.3, FILL = .17, DRAIN = .13;
+  const MX = 166, MY = 8, MW = 30, MH = 134, GX = 206, GW = 22;
+  let st = null;
+  function incident(i) {
+    st.i = i; st.c = CASES[i]; st.pos = .15; st.vel = 0; st.tgt = .55; st.goal = .55; st.nextJ = 0; st.gauge = .4; st.phase = 'ready'; st.t0 = performance.now() + 1200; st.last = 0; st.res = '';
+    ui.label(`사고 ${i + 1}/${CASES.length}`, `${st.c.n}! 화면을 누르고 있으면 레벨이 올라가요. 초록 구간 안에 붙잡아 두세요`); ui.sfx('alert');
+  }
+  function frame(now) {
+    const t = (now - st.t0) / 1000, dt = Math.min(.05, st.last ? (now - st.last) / 1000 : 0); st.last = now;
+    if (st.phase === 'ready' && t >= 0) { st.phase = 'play'; ui.label(`사고 ${st.i + 1}/${CASES.length}`, st.c.n); }
+    if (st.phase === 'play') {
+      // 정상 신호 구간: 가끔 새 목표로 튀고, 부드럽게 따라간다
+      if (t >= st.nextJ) { const c = st.c; st.goal = .12 + Math.random() * .76; st.nextJ = t + c.jump[0] + Math.random() * (c.jump[1] - c.jump[0]); }
+      st.tgt += (st.goal - st.tgt) * Math.min(1, dt * st.c.ease);
+      st.vel = Math.max(-VMAX, Math.min(VMAX, st.vel + (st.hold ? UP : -DOWN) * dt)); st.pos += st.vel * dt;
+      if (st.pos < 0) { st.pos = 0; st.vel = Math.max(0, -st.vel * .25); } if (st.pos > 1) { st.pos = 1; st.vel = Math.min(0, -st.vel * .25); }
+      st.in = Math.abs(st.pos - st.tgt) <= st.c.band / 2;
+      st.gauge = Math.max(0, Math.min(1, st.gauge + (st.in ? FILL : -DRAIN) * dt)); st.inT += st.in ? dt : 0; st.allT += dt;
+      if (st.gauge >= 1) { const left = Math.max(0, 1 - t / LIM); st.pts += 1 + left; st.ok++; st.fast += left; st.res = 'ok'; st.phase = 'end'; st.te = now; ui.pop('송출 정상화!', 'p'); ui.combo(`복구 ${t.toFixed(1)}초`); ui.sfx('rank'); }
+      else if (st.gauge <= 0 || t >= LIM) { st.fail++; st.res = 'fail'; st.phase = 'end'; st.te = now; ui.pop(st.gauge <= 0 ? '방송 사고!' : '시간 초과!', 'miss'); ui.combo(''); ui.sfx('fail'); }
+    }
+    if (st.phase === 'end' && now - st.te > 1000) {
+      if (st.i + 1 < CASES.length) incident(st.i + 1);
+      else { st.phase = 'done'; const ratio = st.pts / (CASES.length * 2) + .05 * (st.inT / Math.max(1, st.allT));
+        ui.done({ grade: ratio >= .75 ? 'S' : ratio >= .6 ? 'A' : ratio >= .4 ? 'B' : 'C', ratio, perfect: st.ok === CASES.length && st.fast / CASES.length > .5,
+          stat: `복구 ${st.ok}/${CASES.length}건 · 사고 ${st.fail} · 신호 유지 ${Math.round(st.inT / Math.max(.01, st.allT) * 100)}%` }); draw(now); return false; }
+    }
+    draw(now);
+  }
+  function draw(now) {
+    const noise = st.phase === 'play' ? (st.in ? .05 : .55) * (1 - st.gauge * .6) : st.res === 'ok' ? 0 : .7;
+    cx.fillStyle = '#0b0b14'; cx.fillRect(0, 0, MG_W, MG_H);
+    // 프로그램 모니터: 컬러바 + 자막. 신호가 나쁠수록 지지직
+    const bars = ['#f4f4f4', '#ffcd75', '#73eff7', '#38b764', '#a05ae0', '#b13e53', '#3b5dc9'];
+    cx.fillStyle = '#262b44'; cx.fillRect(4, 4, 152, 88);
+    bars.forEach((c, i) => { cx.fillStyle = c; cx.fillRect(8 + i * 20.6, 8, 20.6, 56); });
+    cx.fillStyle = '#1a1c2c'; cx.fillRect(8, 64, 144, 24); cx.fillStyle = '#b13e53'; cx.fillRect(8, 68, 40, 16); font(7); cx.fillStyle = '#f4f4f4'; cx.fillText('ON AIR', 52, 80);
+    if (noise > 0) { for (let i = 0; i < 260 * noise; i++) { cx.fillStyle = Math.random() < .5 ? '#f4f4f4' : '#0b0b14'; cx.fillRect(8 + Math.random() * 142, 8 + Math.random() * 78, 2 + Math.random() * 4, 1); }
+      if (noise > .4) { const y = 8 + (now / 4) % 78; cx.fillStyle = '#ffffff55'; cx.fillRect(8, y, 144, 3); } }
+    if (st.res === 'fail' && st.phase === 'end') { cx.fillStyle = '#0b0b14dd'; cx.fillRect(8, 30, 144, 22); font(8); cx.fillStyle = '#ff5050'; cx.fillText('NO SIGNAL', 44, 45); }
+    // 파형 모니터
+    cx.fillStyle = '#1a1c2c'; cx.fillRect(4, 98, 152, 48); cx.fillStyle = '#257179'; for (let y = 104; y < 146; y += 10) cx.fillRect(6, y, 148, 1);
+    cx.fillStyle = st.in || st.res === 'ok' ? '#a7f070' : '#ff5050';
+    for (let x = 0; x < 146; x += 2) { const base = 122 - (st.pos - .5) * 30, j = (Math.random() - .5) * 40 * noise, y = base + Math.sin(x * .25 + now / 120) * 6 + j; cx.fillRect(6 + x, Math.max(100, Math.min(144, y)), 2, 2); }
+    // 레벨 미터
+    cx.fillStyle = '#1a1c2c'; cx.fillRect(MX, MY, MW, MH); for (let i = 1; i < 10; i++) { cx.fillStyle = '#333c57'; cx.fillRect(MX, MY + i * MH / 10, MW, 1); }
+    const Y = v => MY + (1 - v) * MH, bh = st.c.band * MH;
+    cx.fillStyle = st.in ? '#38b764' : '#257179'; cx.fillRect(MX + 2, Y(st.tgt) - bh / 2, MW - 4, bh);
+    cx.fillStyle = '#a7f070'; cx.fillRect(MX + 2, Y(st.tgt) - bh / 2, MW - 4, 2); cx.fillRect(MX + 2, Y(st.tgt) + bh / 2 - 2, MW - 4, 2);
+    cx.fillStyle = st.in ? '#ffcd75' : '#ef7d57'; cx.fillRect(MX - 3, Y(st.pos) - 3, MW + 6, 6); cx.fillStyle = '#0b0b14'; cx.fillRect(MX - 3, Y(st.pos) - .5, MW + 6, 1);
+    // 송출 안정 게이지
+    cx.fillStyle = '#1a1c2c'; cx.fillRect(GX, MY, GW, MH); const gh = st.gauge * (MH - 4);
+    cx.fillStyle = st.gauge > .7 ? '#a7f070' : st.gauge > .3 ? '#ffcd75' : '#ff5050'; cx.fillRect(GX + 2, MY + MH - 2 - gh, GW - 4, gh);
+    if (st.phase === 'play') { const left = Math.max(0, LIM - (now - st.t0) / 1000); cx.fillStyle = '#0b0b14cc'; cx.fillRect(8, 8, 26, 14); font(7); cx.fillStyle = left < 4 ? '#ff5050' : '#f4f4f4'; cx.fillText(left.toFixed(0).padStart(2, '0'), 12, 19); }
+    if (st.hold && st.phase === 'play') { cx.fillStyle = '#ffcd75'; cx.fillRect(MX + MW / 2 - 3, MY + MH + 2, 6, 3); }
+  }
+  return {
+    id: 'signal', shutter: false,
+    start() { st = { i: 0, pts: 0, ok: 0, fail: 0, fast: 0, inT: 0, allT: 0, hold: false, in: false }; incident(0); loop(frame); },
+    stop() { st = null; },
+    down() { if (st) st.hold = true; }, up() { if (st) st.hold = false; }, move() { },
+    key(e) { if (st && (e.key === ' ' || e.key === 'Enter')) { st.hold = e.type === 'keydown'; } }, shot() { },
+    get debug() { return st && { phase: st.phase, pos: st.pos, tgt: st.tgt, vel: st.vel, band: st.c.band, gauge: st.gauge }; },
+  };
+})();
+
+const GAMES = { cut: CUT, focus: FOCUS, match: MATCH, signal: SIGNAL };
 return {
   // 게임 목록(메뉴·아이콘용). jobs: 이 직업이면 특기 보상 x1.5, 아이콘도 주로 이 게임
   LIST: [
     { id: 'cut', n: '속보 컷 편집', icon: '속보', sub: '컷 편집', jobs: ['editor'], d: '플레이바가 타임라인의 컷 지점을 지날 때 탭. 5라운드, 점점 빨라져요.' },
     { id: 'focus', n: '단독 입수', icon: '단독', sub: '입수', jobs: ['reporter', 'camera'], d: '화면을 좌우로 문질러 초점을 맞추고 셔터! 빨리 찍을수록 보너스. 5컷.' },
     { id: 'match', n: '긴급 수정', icon: '긴급', sub: '수정', jobs: ['designer'], d: '카드를 잠깐 보여 준 뒤 뒤집어요. 같은 그림끼리 짝 맞추기! 4단계, 마지막은 보도 용어 ↔ 뜻.' },
-    { id: 'signal', n: '송출 사고', icon: '송출', sub: '사고', jobs: ['engineer'], d: '흔들리는 신호 맞추기. 준비 중이에요.', soon: true },
+    { id: 'signal', n: '송출 사고', icon: '송출', sub: '사고', jobs: ['engineer'], d: '화면을 누르고 있으면 레벨이 올라가요. 흔들리는 초록 구간 안에 붙잡아 송출을 복구! 사고 4건.' },
   ],
   init(u) { ui = u; cx = u.canvas.getContext('2d'); cx.imageSmoothingEnabled = false; },
   start(id) { this.stop(); cur = GAMES[id]; cur.start(); return cur; },
@@ -2584,6 +2660,7 @@ window.__mini = MINI; // 테스트용
   ['pointerup', 'pointercancel'].forEach(k => st.addEventListener(k, () => { const g = MINI.cur; if (g) g.up(); }));
   $i('mcshot').addEventListener('pointerdown', e => { e.preventDefault(); const g = MINI.cur; if (g) g.shot(); });
   addEventListener('keydown', e => { if (mgPlay && MINI.cur && ['ArrowLeft', 'ArrowRight', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); MINI.cur.key(e); } });
+  addEventListener('keyup', e => { if (mgPlay && MINI.cur && MINI.cur.id === 'signal') MINI.cur.key(e); }); // 송출 사고: 키를 떼면 레벨이 내려간다
 }
 $i('mcok').onclick = () => { if (mgReward) store.dispatch({ type: 'GAIN', n: mgReward }); ui.toast(`${mgGrade}등급! ${fmt(mgReward)}점 획득`); mgReward = 0; mgClose(); };
 $i('mcad').onclick = () => { if (!mgReward) return; store.dispatch({ type: 'GAIN', n: mgReward * 2 }); ui.toast(`실제 앱에서는 보상형 광고가 나와요. ${fmt(mgReward * 2)}점 획득!`); mgReward = 0; Sfx.play('buy'); mgClose(); };
