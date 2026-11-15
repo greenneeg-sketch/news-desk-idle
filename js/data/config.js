@@ -18,6 +18,7 @@ export const EVENTS = [
   { id: 'politics', k: '정치', names: ['대선 개표 중계 (가상)'], dur: 180, inf: 2, sc: 3, min: 5e3 },
   { id: 'world', k: '국제', names: ['인접국 미사일 발사'], dur: 45, inf: 2.5, sc: 2.5, min: 2e5 },
   { id: 'sports', k: '스포츠', names: ['세계 종합 스포츠 대회 금메달'], dur: 120, inf: 4, sc: 4, min: 2e5 },
+  { id: 'robot', k: '특보', names: ['거대 로봇 도심 출현 (가상)'], dur: 40, inf: 3, sc: 4, min: 1e6, w: .35 }, // 히어로 카드 1장당 점수 +50%
 ];
 export const MANAGER = [2000, 8000, 30000, 120000, 500000];
 export const CHIEF = 40000;
@@ -52,6 +53,9 @@ export const CARDS = [
   { id: 'c4', n: '인턴 그래픽 디자이너', st: 3, rar: 0 }, { id: 'c5', n: '신입 아나운서', st: 4, rar: 0 }, { id: 'c6', n: '베테랑 영상기자', st: 0, rar: 1 },
   { id: 'c7', n: '야근 영상편집기자', st: 2, rar: 1 }, { id: 'c8', n: '모션 그래픽 전문가', st: 3, rar: 1 }, { id: 'c9', n: '탐사 취재기자', st: 0, rar: 2 },
   { id: 'c10', n: '편집 달인', st: 2, rar: 2 }, { id: 'c11', n: '메인 앵커', st: 4, rar: 2 }, { id: 'c12', n: '전설의 보도국장', st: -1, rar: 3 },
+  // 뉴스 디펜더즈(오리지널 히어로): 전설 등급. 거대 로봇 속보 때 1장당 점수 +50%
+  { id: 'h1', n: '캡틴 큐시트', st: -1, rar: 3, hero: 'cap' }, { id: 'h2', n: '프레임 닌자', st: 2, rar: 3, hero: 'ninja' },
+  { id: 'h3', n: '메카 앵커', st: 4, rar: 3, hero: 'mecha' }, { id: 'h4', n: '나이트 에디터', st: 3, rar: 3, hero: 'night' },
 ];
 // 주간 목표 (Egg Inc의 계약식): 매주 월요일에 초기화
 export const WEEKLY = [
@@ -59,7 +63,7 @@ export const WEEKLY = [
   { id: 'w4', n: '업그레이드 50레벨 구매', k: 'buy', goal: 50 }, { id: 'w5', n: '스카우트 3회', k: 'pull', goal: 3 },
 ];
 // 스카우트 확률(등급 순서: 일반, 희귀, 영웅, 전설). 합계의 나머지가 꽝이다. PITY번째 스카우트는 영웅 이상 보장
-export const ODDS = [.30, .17, .065, .015];
+export const ODDS = [.29, .17, .065, .025];
 export const PITY = 30;
 // 시즌(매월 1일 시작): 시즌 점수로 등급을 매기고, 시즌이 끝나면 등급에 따라 스카우트 티켓 1~5장 지급
 export const TIERS = [{ n: '브론즈', at: 0 }, { n: '실버', at: 1e5 }, { n: '골드', at: 1e6 }, { n: '플래티넘', at: 1e7 }, { n: '다이아', at: 1e8 }];
@@ -94,6 +98,7 @@ export const DILEMMAS = {
   politics: '출구조사 결과라는 문서가 들어왔어요.',
   world: '외신 단독 보도가 떴어요. 국내 확인 전이에요.',
   sports: '선수 독점 인터뷰 영상, 사용 허락 확인 중이에요.',
+  robot: '로봇 조종사가 누구라는 미확인 제보가 들어왔어요.',
 };
 export const SCOOP_P = .65, DIL_SEC = 15;
 // 방송 기술 연구소: 연구 포인트(RP)로 영구 강화 (개편해도 유지). req = [선행 연구, 필요 레벨]
@@ -117,4 +122,22 @@ export const DECOS = [
   { id: 'tank', n: '로비 수족관', fl: 6, at: 2e9 },
   { id: 'trophy', n: '동시간대 1위 트로피', fl: 4, need: s => (s.bestWin || 0) >= 3, nt: '라이벌 3연승' },
   { id: 'mic', n: '황금 마이크', fl: 0, need: s => s.bestRating >= 10, nt: '시청률 10% 돌파' },
+];
+// 커리어: 조건을 채우면 승진(개편해도 유지). 승진마다 영구 점수 +5%와 스카우트 티켓
+export const CAREER = [
+  { n: '수습 영상편집기자' },
+  { n: '영상편집기자', need: s => s.total >= 1e4, nd: '누적 1만 점', tk: 1, who: '영상편집팀장', say: ['수습 딱지 뗐다. 오늘부터 네 이름으로 리포트 붙는다.', '마감 5분 전에 올리는 버릇만 고치자.'] },
+  { n: '선임 영상편집기자', need: s => s.total >= 1e7 && s.evCount >= 30, nd: '누적 1천만 점 · 속보 30회 대응', tk: 1, who: '보도국장', say: ['속보 때 손 빠른 거 다들 봤어.', '이제 후배들 편집도 좀 봐 줘.'] },
+  { n: '영상편집 데스크', need: s => s.total >= 1e10 && s.bestRating >= 12 && s.evCount >= 80, nd: '누적 100억 점 · 최고 시청률 12% · 속보 80회', tk: 2, who: '보도국장', say: ['8시 뉴스 큐시트, 이제 자네가 챙기게.', '데스크는 모든 컷의 마지막 눈이야.'] },
+  { n: '영상편집부장', need: s => s.total >= 1e13 && s.pts >= 10, nd: '누적 10조 점 · 개편 포인트 10', tk: 2, who: '보도국장', say: ['영상편집부를 맡아 줘.', '사람이 먼저야. 장비는 그다음이고.'] },
+  { n: '보도국장', need: s => s.total >= 1e16 && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+];
+// 주간 한정 이벤트: 매주 월요일(서버 시각)마다 바뀐다. 목표 달성 시 티켓 2장 + 한정 배지
+export const WEEK_EVENTS = [
+  { id: 'vote', n: '대선 개표 방송 주간 (가상)', d: '정치 속보가 4배 자주, 점수 x1.5', ev: 'politics', w: 4, sc: 1.5, k: 'ev', goal: 8, gd: '정치 속보 8회 대응' },
+  { id: 'games', n: '세계 스포츠 대회 주간', d: '스포츠 속보가 4배 자주, 점수 x1.5', ev: 'sports', w: 4, sc: 1.5, k: 'ev', goal: 8, gd: '스포츠 속보 8회 대응' },
+  { id: 'storm', n: '태풍 특보 주간', d: '날씨 속보가 4배 자주, 점수 x1.5', ev: 'weather', w: 4, sc: 1.5, k: 'ev', goal: 10, gd: '날씨 속보 10회 대응' },
+  { id: 'robots', n: '로봇 출몰 주간 (가상)', d: '거대 로봇 속보가 자주, 히어로 카드 확률 2배', ev: 'robot', w: 4, sc: 1.5, hero: 2, k: 'ev', goal: 5, gd: '로봇 속보 5회 대응' },
+  { id: 'scoop', n: '특종 사냥 주간', d: '특종이 1.7배 자주 나타나요', gold: .6, k: 'gold', goal: 12, gd: '특종 12번 잡기' },
+  { id: 'war', n: '시청률 전쟁 주간', d: '라이벌을 이기면 광고 수입 2배 더', rival: 2, k: 'win', goal: 6, gd: '라이벌에게 6번 승리' },
 ];

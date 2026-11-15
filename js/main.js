@@ -12,6 +12,8 @@ import { UPGRADES, MILESTONES, RANKS, MANAGER, CHIEF, STAGES, ACHIEVEMENTS, LEAD
 import { Repo } from './services/storage.js';
 import { createBoard } from './services/leaderboard.js';
 import { Sfx } from './services/audio.js';
+import { Music } from './services/music.js';
+import { heroCount } from './systems/weekly.js';
 import { Scene } from './ui/scene.js';
 import { Bubbles } from './ui/bubbles.js';
 import { paper } from './ui/paper.js';
@@ -38,9 +40,9 @@ const $i = id => document.getElementById(id), intro = Intro($i('introcv'), $i('i
 function showIntro() {
   const n = store.getState().name; $i('istart').textContent = n ? '이어하기' : '게임 시작'; $i('iname').textContent = n ? `${n} 방송 중` : '';
   $i('inew').hidden = $i('iname2').hidden = !n; $i('inew').textContent = '새로 시작'; delete $i('inew').dataset.a;
-  $i('isound').textContent = $i('mute').textContent; $i('intro').classList.remove('open'); $i('intro').hidden = false; intro.start();
+  $i('isound').textContent = $i('mute').textContent; $i('intro').classList.remove('open'); $i('intro').hidden = false; intro.start(); Music.play('title');
 }
-function enter(after) { $i('intro').hidden = true; intro.stop(); Sfx.play('buy'); if (!store.getState().name) ui.askName(); else if (after) after(); }
+function enter(after) { $i('intro').hidden = true; intro.stop(); Sfx.play('buy'); Music.play(store.getState().ev ? 'breaking' : 'desk'); if (!store.getState().name) ui.askName(); else if (after) after(); }
 $i('istart').onclick = () => enter(() => ui.showTab('desk'));
 $i('irank').onclick = () => enter(() => { ui.showTab('rank'); refresh(); });
 $i('iguide').onclick = () => enter(() => bus.emit('tut', 0));
@@ -72,7 +74,11 @@ $i('iname2').onclick = () => enter(() => bus.emit('rename'));
 // 처음엔 PRESS START만. 화면을 누르면 타이틀이 위에서, 메뉴가 아래에서 나오고 5초 동안 조작이 없으면 역순으로 사라진다
 let itimer = 0;
 const openMenu = () => { $i('intro').classList.add('open'); clearTimeout(itimer); itimer = setTimeout(() => $i('intro').classList.remove('open'), 5000); };
-$i('intro').addEventListener('pointerdown', openMenu);
+$i('intro').addEventListener('pointerdown', () => { openMenu(); Music.play('title'); }); // 브라우저는 화면을 눌러야 소리를 낼 수 있다
+// 배경음악 켜기·끄기 (타이틀 메뉴, 성장 탭 설정)
+const bgmLabel = () => { const t = Music.on ? 'BGM ON' : 'BGM OFF'; $i('ibgm').textContent = t; $i('bgmb').textContent = t; };
+$i('ibgm').onclick = $i('bgmb').onclick = () => { Music.toggle(); if (Music.on) Music.play($i('intro').hidden ? (store.getState().ev ? 'breaking' : 'desk') : 'title'); bgmLabel(); };
+bgmLabel();
 addEventListener('keydown', e => { if (!$i('intro').hidden && (e.key === 'Enter' || e.key === ' ')) openMenu(); });
 showIntro();
 
@@ -161,6 +167,7 @@ bus.on('mute', () => ui.setMute(Sfx.toggle()));
 // 상태 변화 구독: 효과음과 알림
 store.subscribe((s, p) => {
   if (s.ev && (!p.ev || p.ev.id !== s.ev.id || p.ev.end !== s.ev.end)) Sfx.play('alert');
+  if (!!s.ev !== !!p.ev && $i('intro').hidden) Music.play(s.ev ? 'breaking' : 'desk'); // 속보 중에는 긴박한 곡
   if (s.gold && !p.gold) Sfx.play('alert');
   if (s.chalWin && s.chalWin !== p.chalWin) { const c = CHALLENGES.find(x => x.id === s.chalWin.split(':')[0]); Sfx.play('rank'); ui.toast(`챌린지 완료: ${c.n}! 영구 점수 +10%`); }
   if (s.lastSeason && s.lastSeason !== p.lastSeason) { const l = s.lastSeason; Sfx.play('rank'); ui.toast(`시즌 종료: ${TIERS[l.tier].n} 달성 · 스카우트 티켓 +${l.tk}장`); }
@@ -168,6 +175,9 @@ store.subscribe((s, p) => {
   if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; if (s.tut < 0 || s.tut >= 7) ui.showPaper(paper(s.name, r)); else ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}% · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
   if (s.judge && s.judge !== p.judge) { const j = s.judge.res; Sfx.play(j === 'fail' ? 'fail' : j === 'win' ? 'rank' : 'buy'); ui.toast(j === 'win' ? '단독 성공! 이번 속보 점수 x2 · 오늘 시청률 +0.8' : j === 'fail' ? '오보! 정정 보도 나갑니다... 오늘 시청률 -1.2' : '팩트 체크 완료, 안전하게 송출 (점수 x1.2)'); }
   if (s.misHit && s.misHit !== p.misHit) { const m = s.misHit; Sfx.play('rank'); ui.toast(m.all ? `오늘의 미션 올클리어! +${fmt(m.gain)}점 · 스카우트 티켓 +1` : `미션 달성! +${fmt(m.gain)}점`); }
+  if (s.promo && s.promo !== p.promo) { Sfx.play('rank'); ui.showPromo(s.promo.i, s.name); }
+  if (s.weHit && s.weHit !== p.weHit) { Sfx.play('rank'); ui.toast('한정 이벤트 달성! 스카우트 티켓 +2 · 한정 배지 획득'); }
+  if (s.ev && s.ev.id === 'robot' && (!p.ev || p.ev.id !== 'robot')) ui.toast(heroCount(s) ? `뉴스 디펜더즈 ${heroCount(s)}명 출동! 이번 속보 점수 +${heroCount(s) * 50}%` : '거대 로봇 습격! 히어로 카드가 있으면 점수가 크게 올라요.');
   if (s.ach.length > p.ach.length) { const a = ACHIEVEMENTS.find(x => x.id === s.ach[s.ach.length - 1]); Sfx.play('rank'); ui.toast(`업적 달성: ${a.n} (점수 +2%)`); }
   if (rank(s) > rank(p)) { Sfx.play('rank'); ui.toast(`승급: ${RANKS[rank(s)].n}`); }
 });
@@ -178,7 +188,7 @@ GameLoop({
 }).start();
 setInterval(() => Repo.save(store.getState()), 5000); // 자동 저장: 5초마다
 // 앱을 닫거나 다른 앱으로 넘어갈 때도 즉시 저장
-document.addEventListener('visibilitychange', () => { if (document.hidden) Repo.save(store.getState()); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { Repo.save(store.getState()); Music.pause(); } else Music.resume(); });
 addEventListener('pagehide', () => Repo.save(store.getState()));
 setInterval(refresh, 60000);
 setInterval(checkDates, 60000);

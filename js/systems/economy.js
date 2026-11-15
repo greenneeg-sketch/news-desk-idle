@@ -1,4 +1,5 @@
 import { BASE, UPGRADES, RANKS, MILESTONES, CARDS, RARITY } from '../data/config.js';
+import { weekEvent, heroCount } from './weekly.js';
 // 순수 함수 모음: 상태를 받아 계산만 한다 (부작용 없음)
 const U = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
 export const rl = (s, id) => (s.res && s.res[id]) || 0; // 연구 레벨
@@ -25,11 +26,11 @@ export function rates(s) {
   return r;
 }
 export function scoreMul(s) {
-  let m = prestigeBonus(s) * mult(s, U.live) * mult(s, U.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (s.clock < s.gbEnd ? 7 : 1);
-  if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; m *= e * (1 + .15 * rl(s, 'event')); }
+  let m = prestigeBonus(s) * mult(s, U.live) * mult(s, U.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? 7 : 1);
+  if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s); m *= e * (1 + .15 * rl(s, 'event')); }
   return m;
 }
-export const goldGap = (s, r) => (60 + r * 60) * (1 - .08 * rl(s, 'gold'));
+export const goldGap = (s, r) => (60 + r * 60) * (1 - .08 * rl(s, 'gold')) * ((weekEvent(s) || {}).gold || 1);
 export const perSec = s => Math.min(...rates(s)) * 10 * scoreMul(s);
 // 특종(Cookie Clicker의 황금 쿠키): 10분치 점수 또는 20초간 점수 x7
 export const goldReward = (s, r) => r < .5 ? { cash: Math.max(100, Math.floor(perSec(s) * 600)) } : { frenzy: true };

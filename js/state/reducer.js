@@ -1,4 +1,5 @@
-import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES, SCOOP_P, DIL_SEC, RESEARCH, DECOS } from '../data/config.js';
+import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES, SCOOP_P, DIL_SEC, RESEARCH, DECOS, CAREER } from '../data/config.js';
+import { weekEvent, weekFor } from '../systems/weekly.js';
 import { newMissions, progress } from '../systems/missions.js';
 import { tierOf } from '../systems/season.js';
 import { rates, scoreMul, bulk, prestigeGain, goldReward, perSec, rl, goldGap } from '../systems/economy.js';
@@ -12,9 +13,10 @@ export const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
+  career: 0, promo: null, wev: null, badges: [], weHit: null,
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -28,6 +30,8 @@ function flow(s, dt) {
     if (i < 4) s.q[i + 1] += mv; else { s.dOut += mv; s.outT += mv; const g = mv * 10 * m; s.score += g; s.run += g; s.total += g; }
   }
 }
+// 주간 한정 이벤트 진행도: 종류(k)가 맞을 때만 +1
+const wevBump = (st, k, evId) => { const we = weekEvent(st); return we && st.wev && !st.wev.done && we.k === k && (k !== 'ev' || we.ev === evId) ? { ...st.wev, p: st.wev.p + 1 } : st.wev; };
 // 속보 판단: risk = 바로 단독 송출(성공 시 점수 x2·시청률 +0.8, 오보 시 속보 종료·시청률 -1.2), safe = 확인 후 송출(점수 x1.2)
 function judge(s, pick, r) {
   const ev = { ...s.ev, pick };
@@ -51,6 +55,7 @@ export function reducer(st, a) {
         s.prevRating = s.lastRating; s.lastRating = e.rating; s.bestRating = Math.max(s.bestRating, e.rating); s.views += e.views; s.lastViews = e.views;
         s.hist = [...s.hist, e.rating].slice(-7); s.score += e.bonus; s.run += e.bonus; s.total += e.bonus;
         if (e.rating >= 6) s.week = bump(s.week, 'rate');
+        { const we = weekEvent(s); if (we && we.k === 'win' && e.won && s.wev && !s.wev.done) s.wev = { ...s.wev, p: s.wev.p + 1 }; }
         const rp = 1 + Math.floor(e.rating / 4) + (e.won ? 1 : 0);
         s.win = e.win; s.bestWin = Math.max(s.bestWin, e.win); s.rp += rp;
         s.report = { day: s.day, ...e, rp, rec, log: s.dLog, dW: s.dW, dF: s.dF, all: !!(s.mis && s.mis.all), out: Math.floor(s.dOut) };
@@ -63,17 +68,19 @@ export function reducer(st, a) {
         if (!mis.all && mis.list.every(m => m.done)) { mis.all = 1; s.tickets += 1; s.misAll += 1; s.misHit = { ...s.misHit, all: 1 }; }
         s.mis = mis;
       }
+      { const nc = CAREER[(s.career || 0) + 1]; if (nc && nc.need(s)) { s.career = (s.career || 0) + 1; s.tickets += nc.tk; s.promo = { i: s.career, t: s.clock }; } } // 승진
+      { const we = weekEvent(s); if (we && s.wev && !s.wev.done && s.wev.p >= we.goal) { s.wev = { ...s.wev, done: 1 }; s.tickets += 2; s.badges = [...(s.badges || []), s.wev.id + ':' + s.wev.key]; s.weHit = { id: we.id, t: s.clock }; } }
       const hit = ACHIEVEMENTS.filter(x => !s.ach.includes(x.id) && x.t(s)); if (hit.length) s.ach = [...s.ach, ...hit.map(x => x.id)];
       if (s.chal) { const c = CHALLENGES.find(x => x.id === s.chal); if (c && s.run >= c.goal) { s.chalDone = { ...s.chalDone, [c.id]: 1 }; s.chalWin = c.id + ':' + s.clock; s.chal = null; } }
       return s;
     }
     case 'NAME': return { ...st, name: a.name, uid: st.uid || a.uid };
-    case 'SPAWN': return { ...st, evCount: st.evCount + 1, dEv: st.dEv + 1, dLog: [...(st.dLog || []), a.ev.name].slice(-3), week: bump(st.week, 'ev'), ev: { ...a.ev, end: st.clock + a.ev.dur, boost: !!st.chief, dilEnd: st.clock + DIL_SEC, pick: null } };
+    case 'SPAWN': return { ...st, evCount: st.evCount + 1, dEv: st.dEv + 1, dLog: [...(st.dLog || []), a.ev.name].slice(-3), wev: wevBump(st, 'ev', a.ev.id), week: bump(st.week, 'ev'), ev: { ...a.ev, end: st.clock + a.ev.dur, boost: !!st.chief, dilEnd: st.clock + DIL_SEC, pick: null } };
     case 'JUDGE': return st.ev && st.ev.dil && !st.ev.pick ? judge({ ...st }, a.pick, a.r) : st;
     case 'BOOST': return st.ev ? { ...st, ev: { ...st.ev, boost: true } } : st;
     case 'GOLD': {
       if (!st.gold) return st; const g = goldReward(st, a.r), n = g.cash || 0;
-      return { ...earn(st, n), gold: null, nextGold: st.clock + goldGap(st, a.r), goldCount: st.goldCount + 1, week: bump(st.week, 'gold'), gbEnd: g.frenzy ? st.clock + 20 : st.gbEnd };
+      return { ...earn(st, n), gold: null, nextGold: st.clock + goldGap(st, a.r), goldCount: st.goldCount + 1, wev: wevBump(st, 'gold'), week: bump(st.week, 'gold'), gbEnd: g.frenzy ? st.clock + 20 : st.gbEnd };
     }
     case 'SPD': return st.clock < st.spdReady ? st : { ...st, spdEnd: st.clock + 120, spdReady: st.clock + 300 };
     case 'BUY': {
@@ -88,7 +95,7 @@ export function reducer(st, a) {
       if (a.how === 'paid') { const c = scoutCost(st); if (st.score < c) return st; s.score -= c; }
       else if (a.how === 'ticket') { if (st.tickets < 1) return st; s.tickets -= 1; }
       else { if (st.clock < st.freeReady) return st; s.freeReady = st.clock + 600; }
-      const card = rollCard(a.r, a.r2, st.pity);
+      const card = rollCard(a.r, a.r2, st.pity, (weekEvent(st) || {}).hero || 1);
       s.pulls = st.pulls + 1; s.week = bump(st.week, 'pull');
       if (!card) { // 꽝: 점수로 뽑았다면 비용의 20%를 위로금으로 돌려준다
         const back = a.how === 'paid' ? Math.floor(scoutCost(st) * .2) : 0;
@@ -103,7 +110,10 @@ export function reducer(st, a) {
       const g = WEEKLY.find(x => x.id === a.id); if (!g || st.week.done[g.id] || (st.week.prog[g.k] || 0) < g.goal) return st;
       return { ...earn(st, Math.max(2000, Math.floor(perSec(st) * 1800))), tickets: st.tickets + 1, week: { ...st.week, done: { ...st.week.done, [g.id]: 1 } } };
     }
-    case 'WEEK': return st.week.key === a.key ? st : { ...st, week: { key: a.key, prog: {}, done: {} } };
+    case 'WEEK': { // 주간 목표 초기화 + 이번 주 한정 이벤트 시작
+      const wev = st.wev && st.wev.key === a.key ? st.wev : { key: a.key, id: weekFor(a.key).id, p: 0, done: 0 };
+      return st.week.key === a.key ? (wev === st.wev ? st : { ...st, wev }) : { ...st, week: { key: a.key, prog: {}, done: {} }, wev };
+    }
     case 'CHECKIN': { // 일일 출석: 연속일수 x 보너스, 7일마다 티켓
       if (st.login.last === a.day) return st;
       const streak = st.login.last && dn(a.day) - dn(st.login.last) === 1 ? st.login.streak + 1 : 1;

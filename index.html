@@ -137,6 +137,10 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .iver{position:absolute;left:8px;top:calc(8px + env(safe-area-inset-top,0px));font-size:10px;color:#ffffffa0;text-shadow:1px 1px 0 #14141f;pointer-events:none}
 .hbtns{display:flex;gap:6px;align-self:flex-end}.hbtns .help{align-self:auto}.help.home{font:18px/1 sans-serif;font-weight:700}
 #iosins{z-index:40}#iosins p{line-height:1.6}
+.wevp{border-color:#b45bff;box-shadow:0 0 0 2px #b45bff inset}.wevn{margin:4px 0 0;font-size:15px;color:#ff77e1}
+.carl{margin:6px 0 0;padding-left:20px;font-size:12px;color:var(--sub);line-height:1.7}.carl li.on{color:var(--y)}.carl li.now{color:#a7f070;font-weight:700}
+.promo h1{color:#a7f070}.prt{font-size:16px;line-height:1.5;margin:6px 0 10px}.say{background:#14141f;padding:10px;box-shadow:inset 0 0 0 2px #566c86}
+.say b{color:var(--y);font-size:13px}.say p{margin:6px 0 0;line-height:1.6;font-size:14px}
 </style>
 </head>
 <body>
@@ -173,6 +177,12 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
       <div class="fh"><b>오늘의 미션</b><span class="cnt" id="misd"></span></div>
       <div id="mlist"></div>
     </section>
+    <section class="panel wevp" id="wevp" hidden>
+      <div class="fh"><b>이번 주 한정 이벤트</b><span class="cnt" id="wevd"></span></div>
+      <p class="wevn" id="wevn"></p><p class="note" id="wevt"></p>
+      <div class="row2"><span id="wevg"></span><span id="wevp2"></span></div><div class="ms"><i id="wevm"></i></div>
+      <p class="note">보상: 스카우트 티켓 2장 + 한정 배지</p>
+    </section>
     <button class="btn warn wide" id="spdb"></button>
     <div class="seg" id="seg"><span class="px">BUY</span><button data-n="1">x1</button><button data-n="10">x10</button><button data-n="max">MAX</button></div>
     <p class="note" id="note"></p>
@@ -185,7 +195,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
   <div class="pane" data-tab="scout" hidden>
     <section class="panel" id="scout">
       <div class="fh"><b>스카우트 도감</b><span class="cnt" id="scd"></span></div>
-      <canvas id="cards" width="240" height="88"></canvas>
+      <canvas id="cards" width="320" height="88"></canvas>
       <p class="note" id="cinfo"></p>
       <p class="note" id="odds"></p>
       <div class="row"><button class="btn" id="scoutb"></button><button class="btn warn" id="scouta"></button></div>
@@ -214,6 +224,12 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
   </div>
 
   <div class="pane" data-tab="grow" hidden>
+    <section class="panel" id="carp">
+      <div class="fh"><b>커리어</b><span class="cnt" id="card"></span></div>
+      <div class="rt"><strong id="carn"></strong></div>
+      <p class="note" id="carx"></p>
+      <ol class="carl" id="carl"></ol>
+    </section>
     <section class="panel" id="resp">
       <div class="fh"><b>방송 기술 연구소</b><span class="cnt" id="rpd"></span></div>
       <div id="rlist"></div>
@@ -237,7 +253,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
     <section class="panel"><div class="fh"><b>업적</b><span class="cnt" id="achd"></span></div><div class="ach" id="ach"></div><p class="note" id="achn"></p></section>
     <section class="panel">
       <div class="fh"><b>설정</b></div>
-      <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="renameb">이름 변경</button><button class="btn alt" id="titleb">타이틀</button><button class="btn alt" id="resetb">RESET</button></div>
+      <div class="row"><button class="btn alt" id="mute">SOUND ON</button><button class="btn alt" id="bgmb">BGM ON</button><button class="btn alt" id="renameb">이름 변경</button><button class="btn alt" id="titleb">타이틀</button><button class="btn alt" id="resetb">RESET</button></div>
     </section>
   </div>
 </main>
@@ -258,6 +274,15 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
   <input id="nameIn" maxlength="12" placeholder="예: 한강뉴스" autocomplete="off"><p class="note" id="nameErr"></p>
   <div class="row"><button class="btn" id="startb">방송 시작</button><button class="btn alt" id="cancelb" hidden>취소</button></div></div>
 </div>
+<div class="modal" id="promo" hidden>
+  <div class="panel promo">
+    <h1>인사 발령</h1>
+    <p class="prt" id="prt"></p>
+    <div class="say"><b id="prwho"></b><p id="prsay"></p></div>
+    <p class="note" id="prrew"></p>
+    <div class="row"><button class="btn" id="prok">감사합니다!</button></div>
+  </div>
+</div>
 <div class="modal" id="paper" hidden>
   <div class="panel paper">
     <div class="mast"><b id="pmast"></b><small id="pno"></small></div>
@@ -274,10 +299,10 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-0859</span>
+  <span class="iver">v2026.11.15-0907</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
-    <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
+    <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름 변경</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
   </div>
   <div class="iticker ifix"><span id="iticker"></span></div>
 </div>
@@ -308,6 +333,7 @@ const EVENTS = [
   { id: 'politics', k: '정치', names: ['대선 개표 중계 (가상)'], dur: 180, inf: 2, sc: 3, min: 5e3 },
   { id: 'world', k: '국제', names: ['인접국 미사일 발사'], dur: 45, inf: 2.5, sc: 2.5, min: 2e5 },
   { id: 'sports', k: '스포츠', names: ['세계 종합 스포츠 대회 금메달'], dur: 120, inf: 4, sc: 4, min: 2e5 },
+  { id: 'robot', k: '특보', names: ['거대 로봇 도심 출현 (가상)'], dur: 40, inf: 3, sc: 4, min: 1e6, w: .35 }, // 히어로 카드 1장당 점수 +50%
 ];
 const MANAGER = [2000, 8000, 30000, 120000, 500000];
 const CHIEF = 40000;
@@ -342,6 +368,9 @@ const CARDS = [
   { id: 'c4', n: '인턴 그래픽 디자이너', st: 3, rar: 0 }, { id: 'c5', n: '신입 아나운서', st: 4, rar: 0 }, { id: 'c6', n: '베테랑 영상기자', st: 0, rar: 1 },
   { id: 'c7', n: '야근 영상편집기자', st: 2, rar: 1 }, { id: 'c8', n: '모션 그래픽 전문가', st: 3, rar: 1 }, { id: 'c9', n: '탐사 취재기자', st: 0, rar: 2 },
   { id: 'c10', n: '편집 달인', st: 2, rar: 2 }, { id: 'c11', n: '메인 앵커', st: 4, rar: 2 }, { id: 'c12', n: '전설의 보도국장', st: -1, rar: 3 },
+  // 뉴스 디펜더즈(오리지널 히어로): 전설 등급. 거대 로봇 속보 때 1장당 점수 +50%
+  { id: 'h1', n: '캡틴 큐시트', st: -1, rar: 3, hero: 'cap' }, { id: 'h2', n: '프레임 닌자', st: 2, rar: 3, hero: 'ninja' },
+  { id: 'h3', n: '메카 앵커', st: 4, rar: 3, hero: 'mecha' }, { id: 'h4', n: '나이트 에디터', st: 3, rar: 3, hero: 'night' },
 ];
 // 주간 목표 (Egg Inc의 계약식): 매주 월요일에 초기화
 const WEEKLY = [
@@ -349,7 +378,7 @@ const WEEKLY = [
   { id: 'w4', n: '업그레이드 50레벨 구매', k: 'buy', goal: 50 }, { id: 'w5', n: '스카우트 3회', k: 'pull', goal: 3 },
 ];
 // 스카우트 확률(등급 순서: 일반, 희귀, 영웅, 전설). 합계의 나머지가 꽝이다. PITY번째 스카우트는 영웅 이상 보장
-const ODDS = [.30, .17, .065, .015];
+const ODDS = [.29, .17, .065, .025];
 const PITY = 30;
 // 시즌(매월 1일 시작): 시즌 점수로 등급을 매기고, 시즌이 끝나면 등급에 따라 스카우트 티켓 1~5장 지급
 const TIERS = [{ n: '브론즈', at: 0 }, { n: '실버', at: 1e5 }, { n: '골드', at: 1e6 }, { n: '플래티넘', at: 1e7 }, { n: '다이아', at: 1e8 }];
@@ -384,6 +413,7 @@ const DILEMMAS = {
   politics: '출구조사 결과라는 문서가 들어왔어요.',
   world: '외신 단독 보도가 떴어요. 국내 확인 전이에요.',
   sports: '선수 독점 인터뷰 영상, 사용 허락 확인 중이에요.',
+  robot: '로봇 조종사가 누구라는 미확인 제보가 들어왔어요.',
 };
 const SCOOP_P = .65, DIL_SEC = 15;
 // 방송 기술 연구소: 연구 포인트(RP)로 영구 강화 (개편해도 유지). req = [선행 연구, 필요 레벨]
@@ -408,6 +438,24 @@ const DECOS = [
   { id: 'trophy', n: '동시간대 1위 트로피', fl: 4, need: s => (s.bestWin || 0) >= 3, nt: '라이벌 3연승' },
   { id: 'mic', n: '황금 마이크', fl: 0, need: s => s.bestRating >= 10, nt: '시청률 10% 돌파' },
 ];
+// 커리어: 조건을 채우면 승진(개편해도 유지). 승진마다 영구 점수 +5%와 스카우트 티켓
+const CAREER = [
+  { n: '수습 영상편집기자' },
+  { n: '영상편집기자', need: s => s.total >= 1e4, nd: '누적 1만 점', tk: 1, who: '영상편집팀장', say: ['수습 딱지 뗐다. 오늘부터 네 이름으로 리포트 붙는다.', '마감 5분 전에 올리는 버릇만 고치자.'] },
+  { n: '선임 영상편집기자', need: s => s.total >= 1e7 && s.evCount >= 30, nd: '누적 1천만 점 · 속보 30회 대응', tk: 1, who: '보도국장', say: ['속보 때 손 빠른 거 다들 봤어.', '이제 후배들 편집도 좀 봐 줘.'] },
+  { n: '영상편집 데스크', need: s => s.total >= 1e10 && s.bestRating >= 12 && s.evCount >= 80, nd: '누적 100억 점 · 최고 시청률 12% · 속보 80회', tk: 2, who: '보도국장', say: ['8시 뉴스 큐시트, 이제 자네가 챙기게.', '데스크는 모든 컷의 마지막 눈이야.'] },
+  { n: '영상편집부장', need: s => s.total >= 1e13 && s.pts >= 10, nd: '누적 10조 점 · 개편 포인트 10', tk: 2, who: '보도국장', say: ['영상편집부를 맡아 줘.', '사람이 먼저야. 장비는 그다음이고.'] },
+  { n: '보도국장', need: s => s.total >= 1e16 && (s.bestWin || 0) >= 5, nd: '누적 1경 점 · 라이벌 5연승', tk: 3, who: '사장', say: ['보도국을 맡기겠습니다.', '오늘도 방송은 계속됩니다.'] },
+];
+// 주간 한정 이벤트: 매주 월요일(서버 시각)마다 바뀐다. 목표 달성 시 티켓 2장 + 한정 배지
+const WEEK_EVENTS = [
+  { id: 'vote', n: '대선 개표 방송 주간 (가상)', d: '정치 속보가 4배 자주, 점수 x1.5', ev: 'politics', w: 4, sc: 1.5, k: 'ev', goal: 8, gd: '정치 속보 8회 대응' },
+  { id: 'games', n: '세계 스포츠 대회 주간', d: '스포츠 속보가 4배 자주, 점수 x1.5', ev: 'sports', w: 4, sc: 1.5, k: 'ev', goal: 8, gd: '스포츠 속보 8회 대응' },
+  { id: 'storm', n: '태풍 특보 주간', d: '날씨 속보가 4배 자주, 점수 x1.5', ev: 'weather', w: 4, sc: 1.5, k: 'ev', goal: 10, gd: '날씨 속보 10회 대응' },
+  { id: 'robots', n: '로봇 출몰 주간 (가상)', d: '거대 로봇 속보가 자주, 히어로 카드 확률 2배', ev: 'robot', w: 4, sc: 1.5, hero: 2, k: 'ev', goal: 5, gd: '로봇 속보 5회 대응' },
+  { id: 'scoop', n: '특종 사냥 주간', d: '특종이 1.7배 자주 나타나요', gold: .6, k: 'gold', goal: 12, gd: '특종 12번 잡기' },
+  { id: 'war', n: '시청률 전쟁 주간', d: '라이벌을 이기면 광고 수입 2배 더', rival: 2, k: 'win', goal: 6, gd: '라이벌에게 6번 승리' },
+];
 
 // 층별 말풍선 대사 (데이터). 인덱스: 0취재 1인제스트 2편집 3CG 4송출 5중계 6방송품질 7영상편집팀장
 const QUOTES = [
@@ -424,11 +472,18 @@ const QUOTES = [
 const URGENT = ['속보입니다!', '지금 바로 올려요!', '일단 나갑시다!', '확인 확인!', '시간 없어요!', '큐 빨리요!'];
 
 
+// 이번 주 한정 이벤트와 히어로 카드 보유 수 (순수 함수)
+const weekEvent = s => (s.wev && WEEK_EVENTS.find(e => e.id === s.wev.id)) || null;
+const weekFor = key => WEEK_EVENTS[((Math.floor(Date.parse(key + 'T00:00:00Z') / 864e5 / 7) % WEEK_EVENTS.length) + WEEK_EVENTS.length) % WEEK_EVENTS.length];
+const heroCount = s => CARDS.filter(c => c.hero && s.cards[c.id]).length;
+
+
 const seasonKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 const themeOf = key => { const m = +String(key).slice(5); return SEASON_THEMES.find(t => t.months.includes(m)); };
 // 시즌 점수 = 시즌 시작 이후 번 누적 점수
 const seasonPts = s => Math.max(0, s.total - s.season.base);
 const tierOf = p => TIERS.filter(t => p >= t.at).length - 1;
+
 
 
 // 순수 함수 모음: 상태를 받아 계산만 한다 (부작용 없음)
@@ -457,11 +512,11 @@ function rates(s) {
   return r;
 }
 function scoreMul(s) {
-  let m = prestigeBonus(s) * mult(s, U.live) * mult(s, U.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (s.clock < s.gbEnd ? 7 : 1);
-  if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; m *= e * (1 + .15 * rl(s, 'event')); }
+  let m = prestigeBonus(s) * mult(s, U.live) * mult(s, U.qual) * 2 ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? 7 : 1);
+  if (s.ev) { let e = s.ev.sc; if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s); m *= e * (1 + .15 * rl(s, 'event')); }
   return m;
 }
-const goldGap = (s, r) => (60 + r * 60) * (1 - .08 * rl(s, 'gold'));
+const goldGap = (s, r) => (60 + r * 60) * (1 - .08 * rl(s, 'gold')) * ((weekEvent(s) || {}).gold || 1);
 const perSec = s => Math.min(...rates(s)) * 10 * scoreMul(s);
 // 특종(Cookie Clicker의 황금 쿠키): 10분치 점수 또는 20초간 점수 x7
 const goldReward = (s, r) => r < .5 ? { cash: Math.max(100, Math.floor(perSec(s) * 600)) } : { frenzy: true };
@@ -473,12 +528,14 @@ const cardBonus = (s, i) => CARDS.reduce((a, c) => a + ((c.st === i || c.st < 0)
 // 스카우트 가격: 횟수마다 15%씩 계속 오르고(상한 없음), 최소한 평소 수입 10분치는 되게 한다(속보·특종 배율 제외)
 const scoutCost = s => Math.floor(Math.max(5000 * 1.15 ** s.pulls, perSec({ ...s, ev: null, gbEnd: 0, spdEnd: 0 }) * 600));
 // r: 등급 추첨, r2: 같은 등급 안의 카드 추첨. 확률 합계를 넘으면 꽝(null). pity가 차면 영웅 이상 보장
-function rollCard(r, r2, pity) {
+function rollCard(r, r2, pity, heroBoost = 1) {
   let rar = null, acc = 0;
   for (let i = ODDS.length - 1; i >= 0; i--) { acc += ODDS[i]; if (r < acc) { rar = i; break; } }
   if (pity >= PITY - 1 && (rar === null || rar < 2)) rar = 2;
   if (rar === null) return null;
-  const pool = CARDS.filter(c => c.rar === rar); return pool[Math.floor(r2 * pool.length) % pool.length];
+  const pool = CARDS.filter(c => c.rar === rar), w = pool.map(c => c.hero ? heroBoost : 1); // 로봇 출몰 주간에는 히어로 카드 가중치 2배
+  let x = r2 * w.reduce((a, b) => a + b, 0), i = 0; while (i < pool.length - 1 && x >= w[i]) { x -= w[i]; i++; }
+  return pool[i];
 }
 
 
@@ -501,6 +558,7 @@ function checkName(raw) {
 
 
 
+
 const QUAL = UPGRADES.find(u => u.id === 'qual');
 // 8시 뉴스 일일 평가: 오늘의 송출량, 속보 대응, 방송 품질, 승급 단계로 시청률을 정하고, 매일 +-20% 변동을 준다.
 // 시청률로 유튜브 조회수가 정해지고(12% 확률로 대박 x5), 광고 수입이 점수로 지급된다.
@@ -508,7 +566,7 @@ const QUAL = UPGRADES.find(u => u.id === 'qual');
 function evaluateDay(s, r, r2, r3 = .5) {
   const base = 2 + 1.1 * Math.log10(1 + s.dOut) + .6 * Math.min(s.dEv, 5) + 1.2 * Math.sqrt(mult(s, QUAL) - 1) + .4 * rank(s);
   const rating = Math.max(.5, Math.min(30, Math.round((base * (.8 + .4 * r) + (s.dAdj || 0) + .3 * rl(s, 'rating')) * 10) / 10)), viral = r2 < .12;
-  const rival = Math.round(base * (.85 + .35 * r3) * 10) / 10, won = rating > rival, win = won ? (s.win || 0) + 1 : 0, wm = won ? 1.4 + .1 * Math.min(win, 10) : 1;
+  const rival = Math.round(base * (.85 + .35 * r3) * 10) / 10, won = rating > rival, win = won ? (s.win || 0) + 1 : 0, wm = won ? (1.4 + .1 * Math.min(win, 10)) * ((weekEvent(s) || {}).rival || 1) : 1;
   const views = Math.floor((s.dOut * 8 + s.dEv * 400) * (1 + rating / 10) * (viral ? 5 : 1));
   return { rating, views, viral, rival, won, win, bonus: Math.floor((perSec(s) * rating * 10 + views * .05) * wm) };
 }
@@ -561,6 +619,7 @@ function GameLoop({ step, render, dt = .05 }) {
 
 
 
+
 const initialState = () => ({
   score: 0, run: 0, pts: 0, clock: 0, nextEv: 15, ev: null, q: [0, 0, 0, 0, 0], buyN: '1', mg: [0, 0, 0, 0, 0], chief: 0,
   ach: [], evCount: 0, goldCount: 0, gold: null, nextGold: 60, gbEnd: 0, spdEnd: 0, spdReady: 0,
@@ -569,9 +628,10 @@ const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
+  career: 0, promo: null, wev: null, badges: [], weHit: null,
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -585,6 +645,8 @@ function flow(s, dt) {
     if (i < 4) s.q[i + 1] += mv; else { s.dOut += mv; s.outT += mv; const g = mv * 10 * m; s.score += g; s.run += g; s.total += g; }
   }
 }
+// 주간 한정 이벤트 진행도: 종류(k)가 맞을 때만 +1
+const wevBump = (st, k, evId) => { const we = weekEvent(st); return we && st.wev && !st.wev.done && we.k === k && (k !== 'ev' || we.ev === evId) ? { ...st.wev, p: st.wev.p + 1 } : st.wev; };
 // 속보 판단: risk = 바로 단독 송출(성공 시 점수 x2·시청률 +0.8, 오보 시 속보 종료·시청률 -1.2), safe = 확인 후 송출(점수 x1.2)
 function judge(s, pick, r) {
   const ev = { ...s.ev, pick };
@@ -608,6 +670,7 @@ function reducer(st, a) {
         s.prevRating = s.lastRating; s.lastRating = e.rating; s.bestRating = Math.max(s.bestRating, e.rating); s.views += e.views; s.lastViews = e.views;
         s.hist = [...s.hist, e.rating].slice(-7); s.score += e.bonus; s.run += e.bonus; s.total += e.bonus;
         if (e.rating >= 6) s.week = bump(s.week, 'rate');
+        { const we = weekEvent(s); if (we && we.k === 'win' && e.won && s.wev && !s.wev.done) s.wev = { ...s.wev, p: s.wev.p + 1 }; }
         const rp = 1 + Math.floor(e.rating / 4) + (e.won ? 1 : 0);
         s.win = e.win; s.bestWin = Math.max(s.bestWin, e.win); s.rp += rp;
         s.report = { day: s.day, ...e, rp, rec, log: s.dLog, dW: s.dW, dF: s.dF, all: !!(s.mis && s.mis.all), out: Math.floor(s.dOut) };
@@ -620,17 +683,19 @@ function reducer(st, a) {
         if (!mis.all && mis.list.every(m => m.done)) { mis.all = 1; s.tickets += 1; s.misAll += 1; s.misHit = { ...s.misHit, all: 1 }; }
         s.mis = mis;
       }
+      { const nc = CAREER[(s.career || 0) + 1]; if (nc && nc.need(s)) { s.career = (s.career || 0) + 1; s.tickets += nc.tk; s.promo = { i: s.career, t: s.clock }; } } // 승진
+      { const we = weekEvent(s); if (we && s.wev && !s.wev.done && s.wev.p >= we.goal) { s.wev = { ...s.wev, done: 1 }; s.tickets += 2; s.badges = [...(s.badges || []), s.wev.id + ':' + s.wev.key]; s.weHit = { id: we.id, t: s.clock }; } }
       const hit = ACHIEVEMENTS.filter(x => !s.ach.includes(x.id) && x.t(s)); if (hit.length) s.ach = [...s.ach, ...hit.map(x => x.id)];
       if (s.chal) { const c = CHALLENGES.find(x => x.id === s.chal); if (c && s.run >= c.goal) { s.chalDone = { ...s.chalDone, [c.id]: 1 }; s.chalWin = c.id + ':' + s.clock; s.chal = null; } }
       return s;
     }
     case 'NAME': return { ...st, name: a.name, uid: st.uid || a.uid };
-    case 'SPAWN': return { ...st, evCount: st.evCount + 1, dEv: st.dEv + 1, dLog: [...(st.dLog || []), a.ev.name].slice(-3), week: bump(st.week, 'ev'), ev: { ...a.ev, end: st.clock + a.ev.dur, boost: !!st.chief, dilEnd: st.clock + DIL_SEC, pick: null } };
+    case 'SPAWN': return { ...st, evCount: st.evCount + 1, dEv: st.dEv + 1, dLog: [...(st.dLog || []), a.ev.name].slice(-3), wev: wevBump(st, 'ev', a.ev.id), week: bump(st.week, 'ev'), ev: { ...a.ev, end: st.clock + a.ev.dur, boost: !!st.chief, dilEnd: st.clock + DIL_SEC, pick: null } };
     case 'JUDGE': return st.ev && st.ev.dil && !st.ev.pick ? judge({ ...st }, a.pick, a.r) : st;
     case 'BOOST': return st.ev ? { ...st, ev: { ...st.ev, boost: true } } : st;
     case 'GOLD': {
       if (!st.gold) return st; const g = goldReward(st, a.r), n = g.cash || 0;
-      return { ...earn(st, n), gold: null, nextGold: st.clock + goldGap(st, a.r), goldCount: st.goldCount + 1, week: bump(st.week, 'gold'), gbEnd: g.frenzy ? st.clock + 20 : st.gbEnd };
+      return { ...earn(st, n), gold: null, nextGold: st.clock + goldGap(st, a.r), goldCount: st.goldCount + 1, wev: wevBump(st, 'gold'), week: bump(st.week, 'gold'), gbEnd: g.frenzy ? st.clock + 20 : st.gbEnd };
     }
     case 'SPD': return st.clock < st.spdReady ? st : { ...st, spdEnd: st.clock + 120, spdReady: st.clock + 300 };
     case 'BUY': {
@@ -645,7 +710,7 @@ function reducer(st, a) {
       if (a.how === 'paid') { const c = scoutCost(st); if (st.score < c) return st; s.score -= c; }
       else if (a.how === 'ticket') { if (st.tickets < 1) return st; s.tickets -= 1; }
       else { if (st.clock < st.freeReady) return st; s.freeReady = st.clock + 600; }
-      const card = rollCard(a.r, a.r2, st.pity);
+      const card = rollCard(a.r, a.r2, st.pity, (weekEvent(st) || {}).hero || 1);
       s.pulls = st.pulls + 1; s.week = bump(st.week, 'pull');
       if (!card) { // 꽝: 점수로 뽑았다면 비용의 20%를 위로금으로 돌려준다
         const back = a.how === 'paid' ? Math.floor(scoutCost(st) * .2) : 0;
@@ -660,7 +725,10 @@ function reducer(st, a) {
       const g = WEEKLY.find(x => x.id === a.id); if (!g || st.week.done[g.id] || (st.week.prog[g.k] || 0) < g.goal) return st;
       return { ...earn(st, Math.max(2000, Math.floor(perSec(st) * 1800))), tickets: st.tickets + 1, week: { ...st.week, done: { ...st.week.done, [g.id]: 1 } } };
     }
-    case 'WEEK': return st.week.key === a.key ? st : { ...st, week: { key: a.key, prog: {}, done: {} } };
+    case 'WEEK': { // 주간 목표 초기화 + 이번 주 한정 이벤트 시작
+      const wev = st.wev && st.wev.key === a.key ? st.wev : { key: a.key, id: weekFor(a.key).id, p: 0, done: 0 };
+      return st.week.key === a.key ? (wev === st.wev ? st : { ...st, wev }) : { ...st, week: { key: a.key, prog: {}, done: {} }, wev };
+    }
     case 'CHECKIN': { // 일일 출석: 연속일수 x 보너스, 7일마다 티켓
       if (st.login.last === a.day) return st;
       const streak = st.login.last && dn(a.day) - dn(st.login.last) === 1 ? st.login.streak + 1 : 1;
@@ -697,12 +765,14 @@ function reducer(st, a) {
 
 
 
+
 // 속보 스케줄러: 해금된 카테고리 중 직전과 다른 것을 고르고, 시즌 테마 속보는 3배 가중치
 let lastEvent = '';
 function pickEvent(s, r, r2) {
-  let pool = EVENTS.filter(e => s.run >= e.min && e.id !== lastEvent);
-  if (!pool.length) pool = EVENTS.filter(e => s.run >= e.min);
-  const th = themeOf(s.season.key), w = pool.map(e => th && e.id === th.ev ? 3 : 1);
+  const we = weekEvent(s), ok = e => s.run >= e.min || (we && we.ev === e.id); // 이번 주 한정 이벤트 속보는 점수 조건 없이 나온다
+  let pool = EVENTS.filter(e => ok(e) && e.id !== lastEvent);
+  if (!pool.length) pool = EVENTS.filter(ok);
+  const th = themeOf(s.season.key), w = pool.map(e => (th && e.id === th.ev ? 3 : 1) * (e.w || 1) * (we && we.ev === e.id ? we.w : 1));
   let x = r * w.reduce((a, b) => a + b, 0), i = 0; while (i < pool.length - 1 && x >= w[i]) { x -= w[i]; i++; }
   const d = pool[i], themed = th && d.id === th.ev && th.name != null;
   return { ...d, name: themed ? d.names[th.name] : d.names[Math.floor(r2 * d.names.length) % d.names.length] };
@@ -719,7 +789,7 @@ const EventScheduler = store => ({
 
 
 
-const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco'];
+const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges'];
 // Repository 패턴: 저장 매체(localStorage)를 이 모듈 안에 가둔다
 const Repo = {
   save(s) { try { localStorage.setItem(SAVE_KEY, JSON.stringify({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() })); } catch (e) { } },
@@ -796,6 +866,101 @@ const Sfx = {
     } catch (e) { }
   },
 };
+
+// 8비트 배경음악(오리지널 작곡): Web Audio로 실시간 연주한다. 음원 파일이 없어 저작권 걱정이 없다.
+// 곡: title(타이틀, 경쾌한 뉴스 시그널풍) / desk(보도국, 잔잔한 반복) / breaking(속보, 긴박한 오스티나토)
+// 표기: 16분음표 한 칸 = 토큰 하나. '.' 쉼표, '-' 앞 음 길게, 'C5' 음이름+옥타브. 드럼: k 킥, s 스네어, h 하이햇
+const Music = (() => {
+const SONGS = {
+  title: {
+    bpm: 132,
+    lead: ['C5 . E5 . G5 . C6 . B5 . G5 . E5 . G5 .', 'A5 . - . E5 . A5 . C6 . B5 . A5 . E5 .', 'F5 . A5 . C6 . A5 . G5 . F5 . E5 . F5 .', 'G5 . - . D5 . G5 . B5 . - . D6 - - -',
+      'C6 . G5 . E5 . G5 . C6 . D6 . E6 . C6 .', 'A5 . E5 . C5 . E5 . A5 . B5 . C6 . A5 .', 'F5 . A5 . C6 . F6 . E6 . C6 . A5 . C6 .', 'B5 . G5 . D6 . B5 . C6 - - - - - - .'],
+    bass: ['C3 . C4 . C3 . C4 . C3 . C4 . C3 . C4 .', 'A2 . A3 . A2 . A3 . A2 . A3 . A2 . A3 .', 'F2 . F3 . F2 . F3 . F2 . F3 . F2 . F3 .', 'G2 . G3 . G2 . G3 . G2 . G3 . B2 . D3 .'],
+    drum: ['k . h . s . h . k . h k s . h h'],
+  },
+  desk: {
+    bpm: 100,
+    lead: ['A4 . C5 . E5 . . . D5 . C5 . B4 . . .', 'A4 . C5 . F5 . . . E5 . C5 . A4 . . .', 'G4 . C5 . E5 . . . G5 . E5 . D5 . . .', 'B4 . D5 . G5 . . . F5 . D5 . B4 - - -',
+      'E5 . . . A5 . . . G5 . E5 . C5 . . .', 'F5 . . . A5 . . . G5 . F5 . C5 . . .', 'E5 . . . G5 . . . C6 . G5 . E5 . . .', 'D5 . . . G5 . . . B4 - - - . . . .'],
+    bass: ['A2 . . . A2 . E3 . A2 . . . A2 . E3 .', 'F2 . . . F2 . C3 . F2 . . . F2 . C3 .', 'C3 . . . C3 . G3 . C3 . . . C3 . G3 .', 'G2 . . . G2 . D3 . G2 . . . G2 . B2 .'],
+    drum: ['k . h . s . h . k . h . s . h h'],
+  },
+  breaking: {
+    bpm: 150,
+    lead: ['D5 D5 . D5 F5 . D5 . A5 . G5 F5 E5 . C5 .', 'D5 D5 . D5 F5 . D5 . C6 . A5 . G5 - - .', 'D5 D5 . D5 F5 . D5 . A5 . G5 F5 E5 . F5 .', 'A5 . G5 . F5 . E5 . D5 - - - . . . .'],
+    bass: ['D3 D3 D3 D3 D3 D3 D3 D3 D3 D3 D3 D3 C3 C3 C3 C3', 'A#2 A#2 A#2 A#2 A#2 A#2 A#2 A#2 A2 A2 A2 A2 A2 A2 A2 A2'],
+    drum: ['k h s h k k s h k h s h k k s s'],
+  },
+};
+const NOTE = { C: 0, 'C#': 1, D: 2, 'D#': 3, E: 4, F: 5, 'F#': 6, G: 7, 'G#': 8, A: 9, 'A#': 10, B: 11 };
+const hz = t => { const m = /^([A-G]#?)(\d)$/.exec(t); return m ? 440 * 2 ** ((NOTE[m[1]] + (+m[2] + 1) * 12 - 69) / 12) : 0; };
+// 마디 문자열들을 [음, 길이(칸)] 배열로 바꾼다
+function parse(bars) {
+  const out = []; let last = null;
+  bars.join(' ').split(/\s+/).filter(Boolean).forEach(t => {
+    if (t === '-') { if (last) last.len++; out.push(null); }
+    else if (t === '.') { last = null; out.push(null); }
+    else { last = { t, len: 1 }; out.push(last); }
+  });
+  return out;
+}
+const PARSED = Object.fromEntries(Object.entries(SONGS).map(([k, s]) => [k, { bpm: s.bpm, lead: parse(s.lead), bass: parse(s.bass), drum: s.drum.join(' ').split(/\s+/) }]));
+
+let ac = null, master = null, noise = null, on = true, cur = null, want = null, step = 0, nextT = 0, timer = 0;
+try { on = localStorage.getItem('newsDeskBgm') !== 'off'; } catch (e) { }
+function init() {
+  if (ac) return true;
+  try {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain(); master.gain.value = .55; master.connect(ac.destination);
+    noise = ac.createBuffer(1, ac.sampleRate * .3, ac.sampleRate); const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return true;
+  } catch (e) { return false; }
+}
+function tone(type, f, t, dur, vol) {
+  const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.value = f;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(vol * .4, t + dur * .7); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g).connect(master); o.start(t); o.stop(t + dur + .02);
+}
+function drum(k, t) {
+  if (k === 'k') { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(45, t + .12); g.gain.setValueAtTime(.12, t); g.gain.exponentialRampToValueAtTime(.0001, t + .14); o.connect(g).connect(master); o.start(t); o.stop(t + .15); return; }
+  if (k !== 's' && k !== 'h') return;
+  const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); s.buffer = noise;
+  f.type = k === 'h' ? 'highpass' : 'bandpass'; f.frequency.value = k === 'h' ? 7000 : 1800;
+  const v = k === 'h' ? .025 : .06, d = k === 'h' ? .03 : .1; g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  s.connect(f).connect(g).connect(master); s.start(t); s.stop(t + d + .01);
+}
+// 앞으로 0.15초 안에 울릴 음을 미리 예약한다(타이머가 늦어도 박자가 흔들리지 않게)
+function tick() {
+  if (!ac || !cur) return;
+  const S = PARSED[cur], sec = 60 / S.bpm / 4;
+  while (nextT < ac.currentTime + .15) {
+    const L = S.lead[step % S.lead.length], B = S.bass[step % S.bass.length], D = S.drum[step % S.drum.length];
+    if (L) tone('square', hz(L.t), nextT, sec * L.len * .95, .032);
+    if (B) tone('triangle', hz(B.t), nextT, sec * B.len * .9, .09);
+    drum(D, nextT);
+    nextT += sec; step++;
+    if (want && want !== cur && step % 16 === 0) { cur = want; step = 0; } // 곡 전환은 마디가 끝날 때
+  }
+}
+return {
+  get on() { return on; },
+  play(name) {
+    want = name; if (!on || !init()) return;
+    if (ac.state === 'suspended') ac.resume().catch(() => { });
+    if (!cur) { cur = name; step = 0; nextT = ac.currentTime + .05; }
+    if (!timer) timer = setInterval(tick, 30);
+  },
+  toggle() {
+    on = !on; try { localStorage.setItem('newsDeskBgm', on ? 'on' : 'off'); } catch (e) { }
+    if (on) { const w = want || 'title'; cur = null; this.play(w); } else { clearInterval(timer); timer = 0; cur = null; }
+    return on;
+  },
+  pause() { if (ac && ac.state === 'running') ac.suspend().catch(() => { }); },
+  resume() { if (ac && on && cur && ac.state === 'suspended') ac.resume().catch(() => { }); },
+};
+})();
 
 
 // 16비트풍 픽셀 렌더러: 그라데이션 밴드, 베벨 셰이딩, 음영 있는 캐릭터, 단계별 외형 변화(tier 0~4)
@@ -932,6 +1097,7 @@ const DECO_DRAW = {
   trophy: (c, t) => { bx(c, 236, GY - 6, 12, 6, '#5a3a20'); R(c, 239, GY - 10, 6, 4, '#ffcd75'); R(c, 237, GY - 18, 10, 8, '#ffd24a'); R(c, 235, GY - 17, 2, 4, '#ffd24a'); R(c, 247, GY - 17, 2, 4, '#ffd24a'); R(c, 239, GY - 16, 2, 3, '#fff6c0'); if (blink(t, 1)) R(c, 248, GY - 21, 2, 2, '#ffffff'); },
   mic: (c, t) => { R(c, 150, GY - 9, 2, 9, '#ffcd75'); bx(c, 148, GY - 15, 6, 7, '#ffd24a'); R(c, 149, GY - 14, 2, 2, '#fff6c0'); if (blink(t, 1)) { R(c, 156, GY - 18, 2, 2, '#ffffff'); R(c, 145, GY - 12, 1, 1, '#ffffff'); } },
 };
+const HERO_PAL = { cap: PAL('#ffcd75', '#257179'), ninja: PAL('#257179', '#14141f'), mecha: PAL('#c2c3c7', '#b45bff'), night: PAL('#ef7d57', '#333c57') };
 const HAIR = ['#3b2a20', '#14141f', '#8b5e3c', '#d8a050'], DARK = { H: '#222633', h: '#222633', S: '#222633', s: '#222633', E: '#222633', B: '#222633', b: '#222633', L: '#222633', K: '#222633' };
 function Scene(canvases, cardCv) {
   const ctx = canvases.map(cv => { const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; return c; }), act = [1, 0, 0, 0, 0, 1, 1, 1], cc = cardCv && cardCv.getContext('2d');
@@ -948,11 +1114,12 @@ function Scene(canvases, cardCv) {
         if (k >= 4) { R(c, 0, 0, 320, 2, '#ffd24a'); R(c, 0, 62, 320, 2, '#ffd24a'); }
       });
       if (cc) { // 직원 카드 도감: 6열 x 2행, 미획득은 실루엣
-        cc.imageSmoothingEnabled = false; R(cc, 0, 0, 240, 88, '#1a1c2c');
+        cc.imageSmoothingEnabled = false; R(cc, 0, 0, 320, 88, '#1a1c2c');
         CARDS.forEach((cd, i) => {
-          const x = i % 6 * 40, y = (i / 6 | 0) * 44, n = s.cards[cd.id] || 0, col = RARITY[cd.rar].c;
+          const x = i % 8 * 40, y = (i / 8 | 0) * 44, n = s.cards[cd.id] || 0, col = RARITY[cd.rar].c;
           bx(cc, x + 2, y + 2, 36, 40, n ? '#3a4466' : '#14161f'); if (n) { R(cc, x + 2, y + 2, 36, 2, col); for (let m = 0; m < n; m++) R(cc, x + 8 + m * 8, y + 36, 6, 3, col); }
-          person(cc, x + 10, y + 6, n ? PAL(cd.st < 0 ? '#ffd24a' : COL[cd.st], HAIR[i % 4]) : DARK);
+          person(cc, x + 10, y + 6, n ? (cd.hero ? HERO_PAL[cd.hero] : PAL(cd.st < 0 ? '#ffd24a' : COL[cd.st], HAIR[i % 4])) : DARK);
+          if (n && cd.hero) { R(cc, x + 3, y + 3, 4, 4, '#ffd24a'); R(cc, x + 4, y + 4, 2, 2, '#ff4ad6'); } // 히어로 표시
           if (i === sel) { cc.strokeStyle = '#ffffff'; cc.strokeRect(x + 1.5, y + 1.5, 37, 41); }
         });
       }
@@ -1333,8 +1500,9 @@ const TUTORIAL = [
 
 
 
+
 const $ = id => document.getElementById(id);
-const fmt = n => { n = Math.floor(n); return n >= 1e12 ? (n / 1e12).toFixed(1) + '조' : n >= 1e8 ? (n / 1e8).toFixed(1) + '억' : n >= 1e4 ? (n / 1e4).toFixed(1) + '만' : n.toLocaleString('ko-KR'); };
+const fmt = n => { n = Math.floor(n); return n >= 1e16 ? (n / 1e16).toFixed(1) + '경' : n >= 1e12 ? (n / 1e12).toFixed(1) + '조' : n >= 1e8 ? (n / 1e8).toFixed(1) + '억' : n >= 1e4 ? (n / 1e4).toFixed(1) + '만' : n.toLocaleString('ko-KR'); };
 const FLOORS = [['취재', '카메라 기자 · 취재 기자', 'crew'], ['인제스트', '인제스트실', 'ing'], ['편집', '영상편집기자', 'edit'], ['CG', '그래픽 디자이너', 'cg'], ['송출', '뉴스 스튜디오', 'out'], ['중계 장비', '중계 차량 · 리포터', 'live'], ['방송 품질', '화질 · 시청률', 'qual']];
 const byId = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
 const floorHtml = i => `<section class="panel floor" id="fl${i}"><div class="fh"><div><b>${FLOORS[i][0]}</b> <small>${FLOORS[i][1]}</small><div class="cnt" id="c${i}"></div></div><div class="bs"><button class="btn mini" data-id="${FLOORS[i][2]}" id="fb${i}"></button>${i < 5 ? `<button class="btn mini" data-hire="${i}" id="mb${i}"></button>` : ''}</div></div><div class="ms"><i id="m${i}"></i></div><canvas width="320" height="64"></canvas></section>`;
@@ -1386,11 +1554,13 @@ function Hud(bus) {
   $('rlist').onclick = e => { const b = e.target.closest('[data-res]'); if (b && !b.disabled) bus.emit('research', b.dataset.res); };
   $('dlist').innerHTML = DECOS.map((d, i) => `<div class="wg"><div class="row2"><span>${d.n}<br><small id="dn${i}"></small></span><button class="btn mini" data-deco="${d.id}" id="db${i}"></button></div></div>`).join('');
   $('dlist').onclick = e => { const b = e.target.closest('[data-deco]'); if (b && !b.disabled) bus.emit('deco', b.dataset.deco); };
+  $('carl').innerHTML = CAREER.map(c => `<li>${c.n}${c.nd ? ` <small>(${c.nd})</small>` : ''}</li>`).join('');
+  $('prok').onclick = () => { $('promo').hidden = true; };
   $('pok').onclick = () => { $('paper').hidden = true; }; $('pad').onclick = () => bus.emit('paperad');
   $('dilR').onclick = () => bus.emit('judge', 'risk'); $('dilS').onclick = () => bus.emit('judge', 'safe');
   $('wlist').onclick = e => { const b = e.target.closest('[data-goal]'); if (b && !b.disabled) bus.emit('goal', b.dataset.goal); };
   $('scoutb').onclick = () => bus.emit('scout', 'paid'); $('scouta').onclick = () => bus.emit('scout', 'free');
-  $('cards').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); selCard = Math.floor((e.clientY - r.top) / r.height * 2) * 6 + Math.floor((e.clientX - r.left) / r.width * 6); };
+  $('cards').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); selCard = Math.floor((e.clientY - r.top) / r.height * 2) * 8 + Math.floor((e.clientX - r.left) / r.width * 8); };
   $('hist').innerHTML = '<i></i>'.repeat(7); $('boardb').onclick = () => bus.emit('board');
   $('startb').onclick = () => { const r = checkName($('nameIn').value); if (r.err) { $('nameErr').textContent = r.err; return; } bus.emit('name', r.name); };
   $('nameIn').onkeydown = e => { if (e.key === 'Enter') $('startb').click(); };
@@ -1409,6 +1579,7 @@ function Hud(bus) {
     toast(m) { const e = $('toast'); e.textContent = m; clearTimeout(tt); tt = setTimeout(() => e.textContent = '', 3500); },
     offline(o) { $('offd').textContent = `${o.min}분 동안 야간 근무로 ${fmt(o.n)}점을 벌었어요.`; $('offline').hidden = false; },
     showPaper(p) { $('pmast').textContent = p.mast; $('pno').textContent = p.no; $('phead').textContent = p.head; $('pfoot').textContent = p.foot; $('psubs').innerHTML = ''; p.subs.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('psubs').appendChild(li); }); $('pad').disabled = false; $('pad').textContent = '광고 보고 수입 2배'; $('paper').hidden = false; },
+    showPromo(i, name) { const c = CAREER[i]; $('prt').textContent = `${name}님을 ${c.n}(으)로 임명합니다.`; $('prwho').textContent = c.who; $('prsay').textContent = c.say.join(' '); $('prrew').textContent = `보상: 영구 점수 +5% · 스카우트 티켓 ${c.tk}장`; $('promo').hidden = false; },
     paperAdDone() { $('pad').disabled = true; $('pad').textContent = '받음'; },
     hideOffline() { $('offline').hidden = true; },
     setMute(on) { $('mute').textContent = on ? 'SOUND ON' : 'SOUND OFF'; },
@@ -1435,7 +1606,21 @@ function Hud(bus) {
       document.querySelectorAll('#ach i').forEach((e, i) => e.classList.toggle('on', s.ach.includes(ACHIEVEMENTS[i].id)));
       const na = ACHIEVEMENTS.find(a => !s.ach.includes(a.id)); $('achn').textContent = na ? `다음 업적: ${na.n} · ${na.d}` : '모든 업적을 달성했어요!';
       $('achd').textContent = `${s.ach.length}/${ACHIEVEMENTS.length} · 점수 +${s.ach.length * 2}%`;
-      $('sname').textContent = s.name;
+      $('sname').textContent = s.name ? `${s.name} · ${CAREER[s.career || 0].n}` : '';
+      { // 커리어
+        const ci = s.career || 0, nx = CAREER[ci + 1];
+        $('carn').textContent = CAREER[ci].n; $('card').textContent = `영구 점수 +${ci * 5}%`;
+        $('carx').textContent = nx ? `다음 승진: ${nx.n} · 조건 ${nx.nd}` : '최고 직급에 올랐어요!';
+        document.querySelectorAll('#carl li').forEach((li, i) => { li.className = i === ci ? 'now' : i < ci ? 'on' : ''; });
+      }
+      { // 주간 한정 이벤트
+        const we = weekEvent(s), w = s.wev; $('wevp').hidden = !we;
+        if (we) {
+          const left = Math.max(1, Math.ceil((Date.parse(w.key + 'T00:00:00') + 7 * 864e5 - Date.now()) / 864e5)), p = Math.min(we.goal, w.p);
+          $('wevn').textContent = we.n; $('wevt').textContent = we.d + (we.ev === 'robot' ? ` · 보유 히어로 ${heroCount(s)}명` : ''); $('wevd').textContent = w.done ? '달성 완료!' : `종료까지 ${left}일`;
+          $('wevg').textContent = we.gd; $('wevp2').textContent = `${p}/${we.goal}`; $('wevm').style.width = p / we.goal * 100 + '%';
+        }
+      }
       const hr = 6 + 14 * s.dayT / DAY_SEC, hh = Math.floor(hr), mm = Math.floor((hr - hh) * 60);
       $('clock').textContent = `D+${s.day} · ${hh}:${String(mm).padStart(2, '0')} → 8시 뉴스 ${Math.ceil(DAY_SEC - s.dayT)}초`; $('dayb').style.width = s.dayT / DAY_SEC * 100 + '%';
       $('rnow').textContent = s.lastRating ? `${s.lastRating.toFixed(1)}%` : '-';
@@ -1475,7 +1660,7 @@ function Hud(bus) {
       $('scoutb').textContent = `스카우트 ${fmt(scost)}점`; $('scoutb').classList.toggle('can', s.score >= scost);
       $('scouta').textContent = s.tickets > 0 ? `티켓 사용 (${s.tickets}장)` : adcd ? `광고 스카우트 ${Math.ceil(s.freeReady - s.clock)}초` : '광고 보고 무료 스카우트'; $('scouta').disabled = s.tickets < 1 && adcd;
       const c0 = CARDS[selCard] || CARDS[0], n0 = s.cards[c0.id] || 0;
-      $('cinfo').textContent = n0 ? `${c0.n} · ${RARITY[c0.rar].n} · ${c0.st < 0 ? '전 층' : FLOORS[c0.st][0]} 속도 +${Math.round(RARITY[c0.rar].b * (1 + .5 * (n0 - 1)) * 100)}% · ★${n0}` : '??? · 아직 모르는 직원이에요. 카드를 눌러 확인해 보세요.';
+      $('cinfo').textContent = n0 ? `${c0.n} · ${RARITY[c0.rar].n} · ${c0.st < 0 ? '전 층' : FLOORS[c0.st][0]} 속도 +${Math.round(RARITY[c0.rar].b * (1 + .5 * (n0 - 1)) * 100)}% · ★${n0}${c0.hero ? ' · 뉴스 디펜더즈: 거대 로봇 속보 점수 +50%' : ''}` : (c0.hero ? '??? · 전설의 히어로. 거대 로봇이 나타나면 출동해요.' : '??? · 아직 모르는 직원이에요. 카드를 눌러 확인해 보세요.');
       $('cbonus').textContent = '도감 보너스 ' + FLOORS.slice(0, 5).map(([n], i) => `${n} +${Math.round(cardBonus(s, i) * 100)}%`).join(' · ');
       WEEKLY.forEach((g, i) => { const p = Math.min(g.goal, s.week.prog[g.k] || 0), dn = s.week.done[g.id], b = $('wb' + i); $('wp' + i).textContent = `${p}/${g.goal}`; $('wm' + i).style.width = p / g.goal * 100 + '%'; b.textContent = dn ? '완료' : '받기'; b.disabled = !!dn || p < g.goal; b.classList.toggle('can', !dn && p >= g.goal); });
       $('wkd').textContent = `출석 ${s.login.streak}일째 · 7일 연속 시 티켓`;
@@ -1537,6 +1722,8 @@ function Hud(bus) {
 
 
 
+
+
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
 const ui = Hud(bus), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
@@ -1557,9 +1744,9 @@ const $i = id => document.getElementById(id), intro = Intro($i('introcv'), $i('i
 function showIntro() {
   const n = store.getState().name; $i('istart').textContent = n ? '이어하기' : '게임 시작'; $i('iname').textContent = n ? `${n} 방송 중` : '';
   $i('inew').hidden = $i('iname2').hidden = !n; $i('inew').textContent = '새로 시작'; delete $i('inew').dataset.a;
-  $i('isound').textContent = $i('mute').textContent; $i('intro').classList.remove('open'); $i('intro').hidden = false; intro.start();
+  $i('isound').textContent = $i('mute').textContent; $i('intro').classList.remove('open'); $i('intro').hidden = false; intro.start(); Music.play('title');
 }
-function enter(after) { $i('intro').hidden = true; intro.stop(); Sfx.play('buy'); if (!store.getState().name) ui.askName(); else if (after) after(); }
+function enter(after) { $i('intro').hidden = true; intro.stop(); Sfx.play('buy'); Music.play(store.getState().ev ? 'breaking' : 'desk'); if (!store.getState().name) ui.askName(); else if (after) after(); }
 $i('istart').onclick = () => enter(() => ui.showTab('desk'));
 $i('irank').onclick = () => enter(() => { ui.showTab('rank'); refresh(); });
 $i('iguide').onclick = () => enter(() => bus.emit('tut', 0));
@@ -1591,7 +1778,11 @@ $i('iname2').onclick = () => enter(() => bus.emit('rename'));
 // 처음엔 PRESS START만. 화면을 누르면 타이틀이 위에서, 메뉴가 아래에서 나오고 5초 동안 조작이 없으면 역순으로 사라진다
 let itimer = 0;
 const openMenu = () => { $i('intro').classList.add('open'); clearTimeout(itimer); itimer = setTimeout(() => $i('intro').classList.remove('open'), 5000); };
-$i('intro').addEventListener('pointerdown', openMenu);
+$i('intro').addEventListener('pointerdown', () => { openMenu(); Music.play('title'); }); // 브라우저는 화면을 눌러야 소리를 낼 수 있다
+// 배경음악 켜기·끄기 (타이틀 메뉴, 성장 탭 설정)
+const bgmLabel = () => { const t = Music.on ? 'BGM ON' : 'BGM OFF'; $i('ibgm').textContent = t; $i('bgmb').textContent = t; };
+$i('ibgm').onclick = $i('bgmb').onclick = () => { Music.toggle(); if (Music.on) Music.play($i('intro').hidden ? (store.getState().ev ? 'breaking' : 'desk') : 'title'); bgmLabel(); };
+bgmLabel();
 addEventListener('keydown', e => { if (!$i('intro').hidden && (e.key === 'Enter' || e.key === ' ')) openMenu(); });
 showIntro();
 
@@ -1680,6 +1871,7 @@ bus.on('mute', () => ui.setMute(Sfx.toggle()));
 // 상태 변화 구독: 효과음과 알림
 store.subscribe((s, p) => {
   if (s.ev && (!p.ev || p.ev.id !== s.ev.id || p.ev.end !== s.ev.end)) Sfx.play('alert');
+  if (!!s.ev !== !!p.ev && $i('intro').hidden) Music.play(s.ev ? 'breaking' : 'desk'); // 속보 중에는 긴박한 곡
   if (s.gold && !p.gold) Sfx.play('alert');
   if (s.chalWin && s.chalWin !== p.chalWin) { const c = CHALLENGES.find(x => x.id === s.chalWin.split(':')[0]); Sfx.play('rank'); ui.toast(`챌린지 완료: ${c.n}! 영구 점수 +10%`); }
   if (s.lastSeason && s.lastSeason !== p.lastSeason) { const l = s.lastSeason; Sfx.play('rank'); ui.toast(`시즌 종료: ${TIERS[l.tier].n} 달성 · 스카우트 티켓 +${l.tk}장`); }
@@ -1687,6 +1879,9 @@ store.subscribe((s, p) => {
   if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; if (s.tut < 0 || s.tut >= 7) ui.showPaper(paper(s.name, r)); else ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}% · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
   if (s.judge && s.judge !== p.judge) { const j = s.judge.res; Sfx.play(j === 'fail' ? 'fail' : j === 'win' ? 'rank' : 'buy'); ui.toast(j === 'win' ? '단독 성공! 이번 속보 점수 x2 · 오늘 시청률 +0.8' : j === 'fail' ? '오보! 정정 보도 나갑니다... 오늘 시청률 -1.2' : '팩트 체크 완료, 안전하게 송출 (점수 x1.2)'); }
   if (s.misHit && s.misHit !== p.misHit) { const m = s.misHit; Sfx.play('rank'); ui.toast(m.all ? `오늘의 미션 올클리어! +${fmt(m.gain)}점 · 스카우트 티켓 +1` : `미션 달성! +${fmt(m.gain)}점`); }
+  if (s.promo && s.promo !== p.promo) { Sfx.play('rank'); ui.showPromo(s.promo.i, s.name); }
+  if (s.weHit && s.weHit !== p.weHit) { Sfx.play('rank'); ui.toast('한정 이벤트 달성! 스카우트 티켓 +2 · 한정 배지 획득'); }
+  if (s.ev && s.ev.id === 'robot' && (!p.ev || p.ev.id !== 'robot')) ui.toast(heroCount(s) ? `뉴스 디펜더즈 ${heroCount(s)}명 출동! 이번 속보 점수 +${heroCount(s) * 50}%` : '거대 로봇 습격! 히어로 카드가 있으면 점수가 크게 올라요.');
   if (s.ach.length > p.ach.length) { const a = ACHIEVEMENTS.find(x => x.id === s.ach[s.ach.length - 1]); Sfx.play('rank'); ui.toast(`업적 달성: ${a.n} (점수 +2%)`); }
   if (rank(s) > rank(p)) { Sfx.play('rank'); ui.toast(`승급: ${RANKS[rank(s)].n}`); }
 });
@@ -1697,7 +1892,7 @@ GameLoop({
 }).start();
 setInterval(() => Repo.save(store.getState()), 5000); // 자동 저장: 5초마다
 // 앱을 닫거나 다른 앱으로 넘어갈 때도 즉시 저장
-document.addEventListener('visibilitychange', () => { if (document.hidden) Repo.save(store.getState()); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { Repo.save(store.getState()); Music.pause(); } else Music.resume(); });
 addEventListener('pagehide', () => Repo.save(store.getState()));
 setInterval(refresh, 60000);
 setInterval(checkDates, 60000);

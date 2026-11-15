@@ -133,6 +133,7 @@ const DECO_DRAW = {
   trophy: (c, t) => { bx(c, 236, GY - 6, 12, 6, '#5a3a20'); R(c, 239, GY - 10, 6, 4, '#ffcd75'); R(c, 237, GY - 18, 10, 8, '#ffd24a'); R(c, 235, GY - 17, 2, 4, '#ffd24a'); R(c, 247, GY - 17, 2, 4, '#ffd24a'); R(c, 239, GY - 16, 2, 3, '#fff6c0'); if (blink(t, 1)) R(c, 248, GY - 21, 2, 2, '#ffffff'); },
   mic: (c, t) => { R(c, 150, GY - 9, 2, 9, '#ffcd75'); bx(c, 148, GY - 15, 6, 7, '#ffd24a'); R(c, 149, GY - 14, 2, 2, '#fff6c0'); if (blink(t, 1)) { R(c, 156, GY - 18, 2, 2, '#ffffff'); R(c, 145, GY - 12, 1, 1, '#ffffff'); } },
 };
+const HERO_PAL = { cap: PAL('#ffcd75', '#257179'), ninja: PAL('#257179', '#14141f'), mecha: PAL('#c2c3c7', '#b45bff'), night: PAL('#ef7d57', '#333c57') };
 const HAIR = ['#3b2a20', '#14141f', '#8b5e3c', '#d8a050'], DARK = { H: '#222633', h: '#222633', S: '#222633', s: '#222633', E: '#222633', B: '#222633', b: '#222633', L: '#222633', K: '#222633' };
 export function Scene(canvases, cardCv) {
   const ctx = canvases.map(cv => { const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; return c; }), act = [1, 0, 0, 0, 0, 1, 1, 1], cc = cardCv && cardCv.getContext('2d');
@@ -149,11 +150,12 @@ export function Scene(canvases, cardCv) {
         if (k >= 4) { R(c, 0, 0, 320, 2, '#ffd24a'); R(c, 0, 62, 320, 2, '#ffd24a'); }
       });
       if (cc) { // 직원 카드 도감: 6열 x 2행, 미획득은 실루엣
-        cc.imageSmoothingEnabled = false; R(cc, 0, 0, 240, 88, '#1a1c2c');
+        cc.imageSmoothingEnabled = false; R(cc, 0, 0, 320, 88, '#1a1c2c');
         CARDS.forEach((cd, i) => {
-          const x = i % 6 * 40, y = (i / 6 | 0) * 44, n = s.cards[cd.id] || 0, col = RARITY[cd.rar].c;
+          const x = i % 8 * 40, y = (i / 8 | 0) * 44, n = s.cards[cd.id] || 0, col = RARITY[cd.rar].c;
           bx(cc, x + 2, y + 2, 36, 40, n ? '#3a4466' : '#14161f'); if (n) { R(cc, x + 2, y + 2, 36, 2, col); for (let m = 0; m < n; m++) R(cc, x + 8 + m * 8, y + 36, 6, 3, col); }
-          person(cc, x + 10, y + 6, n ? PAL(cd.st < 0 ? '#ffd24a' : COL[cd.st], HAIR[i % 4]) : DARK);
+          person(cc, x + 10, y + 6, n ? (cd.hero ? HERO_PAL[cd.hero] : PAL(cd.st < 0 ? '#ffd24a' : COL[cd.st], HAIR[i % 4])) : DARK);
+          if (n && cd.hero) { R(cc, x + 3, y + 3, 4, 4, '#ffd24a'); R(cc, x + 4, y + 4, 2, 2, '#ff4ad6'); } // 히어로 표시
           if (i === sel) { cc.strokeStyle = '#ffffff'; cc.strokeRect(x + 1.5, y + 1.5, 37, 41); }
         });
       }

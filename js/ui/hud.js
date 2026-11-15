@@ -1,4 +1,5 @@
-import { RANKS, UPGRADES, MILESTONES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, CARDS, RARITY, WEEKLY, ODDS, PITY, TIERS, CHALLENGES, RIVAL, DILEMMAS, SCOOP_P, RESEARCH, DECOS } from '../data/config.js';
+import { RANKS, UPGRADES, MILESTONES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, CARDS, RARITY, WEEKLY, ODDS, PITY, TIERS, CHALLENGES, RIVAL, DILEMMAS, SCOOP_P, RESEARCH, DECOS, CAREER } from '../data/config.js';
+import { weekEvent, heroCount } from '../systems/weekly.js';
 import { progress, missionText } from '../systems/missions.js';
 import { seasonPts, tierOf, themeOf } from '../systems/season.js';
 import { TUTORIAL } from './tutorial.js';
@@ -6,7 +7,7 @@ import { rank, perSec, prestigeGain, prestigeBonus, rates, bulk, mult, cardBonus
 import { checkName, isBlocked } from '../systems/nameFilter.js';
 import { scoutCost } from '../systems/cards.js';
 const $ = id => document.getElementById(id);
-export const fmt = n => { n = Math.floor(n); return n >= 1e12 ? (n / 1e12).toFixed(1) + '조' : n >= 1e8 ? (n / 1e8).toFixed(1) + '억' : n >= 1e4 ? (n / 1e4).toFixed(1) + '만' : n.toLocaleString('ko-KR'); };
+export const fmt = n => { n = Math.floor(n); return n >= 1e16 ? (n / 1e16).toFixed(1) + '경' : n >= 1e12 ? (n / 1e12).toFixed(1) + '조' : n >= 1e8 ? (n / 1e8).toFixed(1) + '억' : n >= 1e4 ? (n / 1e4).toFixed(1) + '만' : n.toLocaleString('ko-KR'); };
 const FLOORS = [['취재', '카메라 기자 · 취재 기자', 'crew'], ['인제스트', '인제스트실', 'ing'], ['편집', '영상편집기자', 'edit'], ['CG', '그래픽 디자이너', 'cg'], ['송출', '뉴스 스튜디오', 'out'], ['중계 장비', '중계 차량 · 리포터', 'live'], ['방송 품질', '화질 · 시청률', 'qual']];
 const byId = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
 const floorHtml = i => `<section class="panel floor" id="fl${i}"><div class="fh"><div><b>${FLOORS[i][0]}</b> <small>${FLOORS[i][1]}</small><div class="cnt" id="c${i}"></div></div><div class="bs"><button class="btn mini" data-id="${FLOORS[i][2]}" id="fb${i}"></button>${i < 5 ? `<button class="btn mini" data-hire="${i}" id="mb${i}"></button>` : ''}</div></div><div class="ms"><i id="m${i}"></i></div><canvas width="320" height="64"></canvas></section>`;
@@ -58,11 +59,13 @@ export function Hud(bus) {
   $('rlist').onclick = e => { const b = e.target.closest('[data-res]'); if (b && !b.disabled) bus.emit('research', b.dataset.res); };
   $('dlist').innerHTML = DECOS.map((d, i) => `<div class="wg"><div class="row2"><span>${d.n}<br><small id="dn${i}"></small></span><button class="btn mini" data-deco="${d.id}" id="db${i}"></button></div></div>`).join('');
   $('dlist').onclick = e => { const b = e.target.closest('[data-deco]'); if (b && !b.disabled) bus.emit('deco', b.dataset.deco); };
+  $('carl').innerHTML = CAREER.map(c => `<li>${c.n}${c.nd ? ` <small>(${c.nd})</small>` : ''}</li>`).join('');
+  $('prok').onclick = () => { $('promo').hidden = true; };
   $('pok').onclick = () => { $('paper').hidden = true; }; $('pad').onclick = () => bus.emit('paperad');
   $('dilR').onclick = () => bus.emit('judge', 'risk'); $('dilS').onclick = () => bus.emit('judge', 'safe');
   $('wlist').onclick = e => { const b = e.target.closest('[data-goal]'); if (b && !b.disabled) bus.emit('goal', b.dataset.goal); };
   $('scoutb').onclick = () => bus.emit('scout', 'paid'); $('scouta').onclick = () => bus.emit('scout', 'free');
-  $('cards').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); selCard = Math.floor((e.clientY - r.top) / r.height * 2) * 6 + Math.floor((e.clientX - r.left) / r.width * 6); };
+  $('cards').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); selCard = Math.floor((e.clientY - r.top) / r.height * 2) * 8 + Math.floor((e.clientX - r.left) / r.width * 8); };
   $('hist').innerHTML = '<i></i>'.repeat(7); $('boardb').onclick = () => bus.emit('board');
   $('startb').onclick = () => { const r = checkName($('nameIn').value); if (r.err) { $('nameErr').textContent = r.err; return; } bus.emit('name', r.name); };
   $('nameIn').onkeydown = e => { if (e.key === 'Enter') $('startb').click(); };
@@ -81,6 +84,7 @@ export function Hud(bus) {
     toast(m) { const e = $('toast'); e.textContent = m; clearTimeout(tt); tt = setTimeout(() => e.textContent = '', 3500); },
     offline(o) { $('offd').textContent = `${o.min}분 동안 야간 근무로 ${fmt(o.n)}점을 벌었어요.`; $('offline').hidden = false; },
     showPaper(p) { $('pmast').textContent = p.mast; $('pno').textContent = p.no; $('phead').textContent = p.head; $('pfoot').textContent = p.foot; $('psubs').innerHTML = ''; p.subs.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('psubs').appendChild(li); }); $('pad').disabled = false; $('pad').textContent = '광고 보고 수입 2배'; $('paper').hidden = false; },
+    showPromo(i, name) { const c = CAREER[i]; $('prt').textContent = `${name}님을 ${c.n}(으)로 임명합니다.`; $('prwho').textContent = c.who; $('prsay').textContent = c.say.join(' '); $('prrew').textContent = `보상: 영구 점수 +5% · 스카우트 티켓 ${c.tk}장`; $('promo').hidden = false; },
     paperAdDone() { $('pad').disabled = true; $('pad').textContent = '받음'; },
     hideOffline() { $('offline').hidden = true; },
     setMute(on) { $('mute').textContent = on ? 'SOUND ON' : 'SOUND OFF'; },
@@ -107,7 +111,21 @@ export function Hud(bus) {
       document.querySelectorAll('#ach i').forEach((e, i) => e.classList.toggle('on', s.ach.includes(ACHIEVEMENTS[i].id)));
       const na = ACHIEVEMENTS.find(a => !s.ach.includes(a.id)); $('achn').textContent = na ? `다음 업적: ${na.n} · ${na.d}` : '모든 업적을 달성했어요!';
       $('achd').textContent = `${s.ach.length}/${ACHIEVEMENTS.length} · 점수 +${s.ach.length * 2}%`;
-      $('sname').textContent = s.name;
+      $('sname').textContent = s.name ? `${s.name} · ${CAREER[s.career || 0].n}` : '';
+      { // 커리어
+        const ci = s.career || 0, nx = CAREER[ci + 1];
+        $('carn').textContent = CAREER[ci].n; $('card').textContent = `영구 점수 +${ci * 5}%`;
+        $('carx').textContent = nx ? `다음 승진: ${nx.n} · 조건 ${nx.nd}` : '최고 직급에 올랐어요!';
+        document.querySelectorAll('#carl li').forEach((li, i) => { li.className = i === ci ? 'now' : i < ci ? 'on' : ''; });
+      }
+      { // 주간 한정 이벤트
+        const we = weekEvent(s), w = s.wev; $('wevp').hidden = !we;
+        if (we) {
+          const left = Math.max(1, Math.ceil((Date.parse(w.key + 'T00:00:00') + 7 * 864e5 - Date.now()) / 864e5)), p = Math.min(we.goal, w.p);
+          $('wevn').textContent = we.n; $('wevt').textContent = we.d + (we.ev === 'robot' ? ` · 보유 히어로 ${heroCount(s)}명` : ''); $('wevd').textContent = w.done ? '달성 완료!' : `종료까지 ${left}일`;
+          $('wevg').textContent = we.gd; $('wevp2').textContent = `${p}/${we.goal}`; $('wevm').style.width = p / we.goal * 100 + '%';
+        }
+      }
       const hr = 6 + 14 * s.dayT / DAY_SEC, hh = Math.floor(hr), mm = Math.floor((hr - hh) * 60);
       $('clock').textContent = `D+${s.day} · ${hh}:${String(mm).padStart(2, '0')} → 8시 뉴스 ${Math.ceil(DAY_SEC - s.dayT)}초`; $('dayb').style.width = s.dayT / DAY_SEC * 100 + '%';
       $('rnow').textContent = s.lastRating ? `${s.lastRating.toFixed(1)}%` : '-';
@@ -147,7 +165,7 @@ export function Hud(bus) {
       $('scoutb').textContent = `스카우트 ${fmt(scost)}점`; $('scoutb').classList.toggle('can', s.score >= scost);
       $('scouta').textContent = s.tickets > 0 ? `티켓 사용 (${s.tickets}장)` : adcd ? `광고 스카우트 ${Math.ceil(s.freeReady - s.clock)}초` : '광고 보고 무료 스카우트'; $('scouta').disabled = s.tickets < 1 && adcd;
       const c0 = CARDS[selCard] || CARDS[0], n0 = s.cards[c0.id] || 0;
-      $('cinfo').textContent = n0 ? `${c0.n} · ${RARITY[c0.rar].n} · ${c0.st < 0 ? '전 층' : FLOORS[c0.st][0]} 속도 +${Math.round(RARITY[c0.rar].b * (1 + .5 * (n0 - 1)) * 100)}% · ★${n0}` : '??? · 아직 모르는 직원이에요. 카드를 눌러 확인해 보세요.';
+      $('cinfo').textContent = n0 ? `${c0.n} · ${RARITY[c0.rar].n} · ${c0.st < 0 ? '전 층' : FLOORS[c0.st][0]} 속도 +${Math.round(RARITY[c0.rar].b * (1 + .5 * (n0 - 1)) * 100)}% · ★${n0}${c0.hero ? ' · 뉴스 디펜더즈: 거대 로봇 속보 점수 +50%' : ''}` : (c0.hero ? '??? · 전설의 히어로. 거대 로봇이 나타나면 출동해요.' : '??? · 아직 모르는 직원이에요. 카드를 눌러 확인해 보세요.');
       $('cbonus').textContent = '도감 보너스 ' + FLOORS.slice(0, 5).map(([n], i) => `${n} +${Math.round(cardBonus(s, i) * 100)}%`).join(' · ');
       WEEKLY.forEach((g, i) => { const p = Math.min(g.goal, s.week.prog[g.k] || 0), dn = s.week.done[g.id], b = $('wb' + i); $('wp' + i).textContent = `${p}/${g.goal}`; $('wm' + i).style.width = p / g.goal * 100 + '%'; b.textContent = dn ? '완료' : '받기'; b.disabled = !!dn || p < g.goal; b.classList.toggle('can', !dn && p >= g.goal); });
       $('wkd').textContent = `출석 ${s.login.streak}일째 · 7일 연속 시 티켓`;
