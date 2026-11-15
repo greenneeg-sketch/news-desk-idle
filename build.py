@@ -2,7 +2,7 @@
 # 사용법: python3 build.py  → index.html 생성 (GitHub Pages가 여는 파일)
 import re, pathlib, datetime
 r = pathlib.Path(__file__).parent
-order = ['data/config','data/quotes','data/tips','data/guide','systems/weekly','systems/meeting','systems/season','systems/economy','systems/cards','systems/ranking','systems/nameFilter','systems/ratings','systems/missions','core/EventBus','core/Store','core/Loop','state/reducer','systems/events','services/storage','services/leaderboard','services/audio','services/music','ui/cardart','ui/edithd','ui/scene','ui/bubbles','ui/paper','ui/intro','ui/tutorial','ui/minigame','ui/hud','ui/branches','ui/social','ui/guide','main']
+order = ['data/config','data/quotes','data/tips','data/guide','systems/weekly','systems/meeting','systems/season','systems/economy','systems/cards','systems/ranking','systems/nameFilter','systems/ratings','systems/missions','core/EventBus','core/Store','core/Loop','state/reducer','systems/events','services/storage','services/leaderboard','services/audio','services/music','ui/cardart','ui/edithd','ui/floorshd','ui/scene','ui/bubbles','ui/paper','ui/intro','ui/tutorial','ui/minigame','ui/hud','ui/branches','ui/social','ui/guide','main']
 js = ''
 for m in order:
     t = (r / 'js' / f'{m}.js').read_text(encoding='utf-8')

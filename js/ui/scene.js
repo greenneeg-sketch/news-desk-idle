@@ -1,4 +1,5 @@
 import { drawEditHD } from './edithd.js';
+import { FloorsHD } from './floorshd.js';
 import { MILESTONES, CARDS, RARITY, DECOS } from '../data/config.js';
 import { drawCards } from './cardart.js';
 // 16비트풍 픽셀 렌더러: 그라데이션 밴드, 베벨 셰이딩, 음영 있는 캐릭터, 단계별 외형 변화(tier 0~4)
@@ -155,14 +156,21 @@ const DECO_DRAW = {
 };
 const HERO_PAL = { cap: PAL('#ffcd75', '#257179'), ninja: PAL('#257179', '#14141f'), mecha: PAL('#c2c3c7', '#b45bff'), night: PAL('#ef7d57', '#333c57') };
 const HAIR = ['#3b2a20', '#14141f', '#8b5e3c', '#d8a050'], DARK = { H: '#222633', h: '#222633', S: '#222633', s: '#222633', E: '#222633', B: '#222633', b: '#222633', L: '#222633', K: '#222633' };
+// 고해상도 층에서 소품 자리 옮기기(기존 좌표 단위, 화면에서는 2배). null = 고해상도 장면이 직접 그린다
+const HD_OFF = { bike: [-38, 0], mic: [-68, 0], figure: [10, 0], neon: [16, 10], light: [-50, 0], trophy: [-33, 0], globe: [-35, 0], parasol: [60, 0], flower: [230, 0], tape: [-40, 0], disc: null };
 export function Scene(canvases, cardCv) {
-  const ctx = canvases.map(cv => { const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; return c; }), act = [1, 0, 0, 0, 0, 1, 1, 1], cc = cardCv && cardCv.getContext('2d');
+  const ctx = canvases.map(cv => { cv.width = 1920; cv.height = 384; const c = cv.getContext('2d'); /* 모든 층: 640x128칸을 3배로 */ c.imageSmoothingEnabled = false; return c; }), act = [1, 0, 0, 0, 0, 1, 1, 1], cc = cardCv && cardCv.getContext('2d');
   return {
     draw(s, t, sel) {
       ctx.forEach((c, i) => {
         const k = i === 7 ? s.chief : MILESTONES.filter(m => s.lv[IDS[i]] >= m).length;
         act[i] += ((i === 0 || i >= 5 || s.q[i] > .02 ? 1 : 0) - act[i]) * .15; const a = act[i] > .4;
         if (i === 2) { c.setTransform(3, 0, 0, 3, 0, 0); drawEditHD(c, s, t, a, k); c.setTransform(1, 0, 0, 1, 0, 0); return; } // 편집실: 고해상도 장면(ui/edithd.js)
+        if (FloorsHD.has(i)) { // 나머지 층: 고해상도 장면(ui/floorshd.js) + 꾸미기 소품은 기존 그림을 2배로 겹친다
+          c.setTransform(3, 0, 0, 3, 0, 0); FloorsHD.draw(i, c, s, t, a, k);
+          if (s.deco) DECOS.forEach(d => { const o = HD_OFF[d.id]; if (d.fl !== i || !s.deco[d.id] || o === null) return; c.setTransform(6, 0, 0, 6, (o ? o[0] : 0) * 6, 12 + (o ? o[1] : 0) * 6); DECO_DRAW[d.id](c, t); });
+          c.setTransform(1, 0, 0, 1, 0, 0); return;
+        }
         DRAW[i](c, s, t, a, k);
         if (s.deco) DECOS.forEach(d => { if (d.fl === i && s.deco[d.id]) DECO_DRAW[d.id](c, t); });
         if (i < 4) { R(c, 0, GY + 5, 320, 3, '#14141f'); if (a) R(c, (t * 40 + i * 37) % 340 - 10, GY + 5, 8, 3, COL[i]); }
