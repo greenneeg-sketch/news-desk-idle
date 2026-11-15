@@ -92,6 +92,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 #brmap{display:block;width:100%;image-rendering:pixelated;margin:6px 0;box-shadow:0 0 0 3px var(--ink)}.brrow.off{opacity:.45}.brk{color:var(--y)}
 .opp{display:flex;flex-direction:column;gap:2px;padding:8px;background:var(--ink);margin:6px 0}.opp b{font-size:17px;color:var(--y)}.opp small{color:var(--sub);font-size:12px}
 .dlog li.w b{color:#a7f070}.dlog li.l b{color:#ff8a8a}.gcode{font-size:12px;color:var(--sub)}.gcode b{font:12px "Press Start 2P",monospace;color:var(--y);letter-spacing:1px}.gstory{color:#ff8a8a;font-weight:700;margin:8px 0 4px}#gin .rt{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}#gin .rt strong{font-size:18px}#gname,#gcode{flex:1;margin:4px 0}#glv{margin-top:6px}
+.perk{display:flex;gap:10px;align-items:center;border-left:4px solid var(--g)}.perk>div{flex:1}.perk b{display:block;color:#a7f070}.perk small{display:block;color:var(--sub);font-size:12px;margin-top:2px}.perk i{display:block;height:3px;margin-top:6px;background:var(--g);transform-origin:left}.perk .btn{min-height:40px;font-size:10px}
 .lbpg{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0}.lbpg span{min-width:56px;text-align:center;font-size:13px}.lbpg .btn:disabled{opacity:.4}
 #cards{cursor:pointer}
 .wg{margin:10px 0}.row2{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}.row2 span:first-child{flex:1}
@@ -228,6 +229,10 @@ section.gh{display:none!important}
   <section class="panel alert" id="alert" hidden>
     <div><b id="evt"></b><small id="evd"></small></div>
     <button class="btn warn" id="evb">우선 편집</button>
+  </section>
+  <section class="panel perk" id="perk" hidden>
+    <div><b id="perkt"></b><small id="perkd"></small><i id="perkbar"></i></div>
+    <button class="btn" id="perkb"></button>
   </section>
   <section class="panel dil" id="dilp" hidden>
     <div class="fh"><b>데스크 판단</b><span class="cnt" id="dils"></span></div>
@@ -455,7 +460,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.15-2202</span>
+  <span class="iver">v2026.11.15-2215</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -475,12 +480,12 @@ const BASE = [2, 1.6, 1, 1.4, 1.8];
 const RANKS = [{ n: '지역 뉴스', at: 0 }, { n: '저녁 종합', at: 5e3 }, { n: '8시 메인', at: 2e5 }, { n: '24시 채널', at: 1e7 }];
 const MILESTONES = [10, 25, 50, 100];
 const UPGRADES = [
-  { id: 'ing', n: '인제스트 서버', d: '등록 속도 +12%', base: 50, g: 1.12, st: 1, pct: .12 },
+  { id: 'ing', n: '인제스트 서버', d: '등록 속도 +15%', base: 50, g: 1.12, st: 1, pct: .15 },
   { id: 'edit', n: '편집기자 충원', d: '편집 속도 +15%', base: 200, g: 1.15, st: 2, pct: .15 },
-  { id: 'cg', n: 'CG 템플릿', d: 'CG 처리 +12%', base: 800, g: 1.15, st: 3, pct: .12 },
-  { id: 'out', n: '송출 자동화', d: '송출 처리 +10%', base: 3000, g: 1.17, st: 4, pct: .10 },
+  { id: 'cg', n: 'CG 템플릿', d: 'CG 처리 +15%', base: 800, g: 1.15, st: 3, pct: .15 },
+  { id: 'out', n: '송출 자동화', d: '송출 처리 +15%', base: 3000, g: 1.15, st: 4, pct: .15 },
   { id: 'live', n: '중계 장비', d: '속보 보상 +5%', base: 4000, g: 1.18, st: -1, pct: .05, nm: true },
-  { id: 'crew', n: '취재팀 확장', d: '취재 유입 +15%', base: 15000, g: 1.2, st: 0, pct: .15 },
+  { id: 'crew', n: '취재팀 확장', d: '취재 유입 +15%', base: 15000, g: 1.17, st: 0, pct: .15 },
   { id: 'qual', n: '방송 품질', d: '점수 +20%', base: 300, g: 1.4, st: -1, pct: .2, nm: true },
 ];
 // 속보 목록. 2026년 11월 실제 주요 뉴스를 바탕으로 각색한 가상 속보(실명·회사명 없이 역할로만, 인명 피해·범죄·루머 기사는 제외)
@@ -700,7 +705,20 @@ const WEEK_EVENTS = [
 // 예전(√(점수/5000), 포인트당 +5%)은 점수가 커질수록 포인트가 폭증해 2시간 만에 1800경까지 갔다 → 세제곱근·+2%로 완만하게
 // 성장 속도 조절(밸런스): 한두 달에 걸쳐 콘텐츠가 열리도록 맞춘 값
 // mile: 업그레이드 10·25·50·100레벨 달성마다 곱하는 배수, rank: 승급 단계마다 배수, gold: 특종 현금(생산량 N초치), frenzy: 특종 배속, gAdd: 업그레이드 비용 증가율 가산
-const BAL = { mile: 1.5, rank: 1.5, gold: 180, frenzy: 3, gAdd: 0.1, mis: 120 };
+// 미니게임 등급별 보상(평소 생산량 N분치)
+const MG_MIN = { S: 12, A: 6, B: 3, C: 1 };
+// 8시 뉴스 시청률 성과급: 시청률 이상이면 평소 생산량 N분치(+티켓)
+const PAY = [{ r: 20, min: 40, tk: 1 }, { r: 15, min: 25 }, { r: 10, min: 12 }, { r: 6, min: 5 }];
+// 소소한 이벤트: 접속 중 4~7분마다 하나. k = 효과 종류(speed 2분간 모든 층 x1.5 / cash 생산량 N분치 / rp 연구 포인트 / ticket 스카우트 티켓)
+const PERKS = [
+  { id: 'coffee', t: '커피타임', d: '막내가 커피를 돌렸어요! 2분 동안 모든 층 속도 x1.5', b: '한 잔 받기', k: 'speed', w: 3 },
+  { id: 'snack', t: '야식 배달', d: '치킨이 식기 전에! 생산량 5분치', b: '받으러 가기', k: 'cash', n: 5, w: 3 },
+  { id: 'call', t: '시청자 제보 전화', d: '쓸 만한 제보예요. 연구 포인트 +2', b: '전화 받기', k: 'rp', n: 2, w: 2 },
+  { id: 'tip', t: '선배의 꿀팁', d: '편집 단축키를 배웠어요. 생산량 3분치 + 연구 포인트 +1', b: '배우기', k: 'cash', n: 3, rp: 1, w: 2 },
+  { id: 'praise', t: '보도국장 칭찬', d: '오늘 방송 좋았다는 칭찬! 스카우트 티켓 1장', b: '감사합니다', k: 'ticket', n: 1, w: .6 },
+  { id: 'fix', t: '장비 점검 완료', d: '엔지니어가 장비를 손봤어요. 2분 동안 모든 층 속도 x1.5', b: '확인', k: 'speed', w: 1.5 },
+];
+const BAL = { mile: 1.5, rank: 1.5, gold: 180, frenzy: 3, gAdd: 0.12, mis: 120 };
 const PRESTIGE = { div: 1e6, pow: 1 / 3, per: .02 };
 
 // 층별 말풍선 대사 (데이터). 인덱스: 0취재 1인제스트 2편집 3CG 4송출 5중계 6방송품질 7영상편집팀장
@@ -722,19 +740,19 @@ const URGENT = ['속보입니다!', '지금 바로 올려요!', '일단 나갑�
 const UNLOCKS = [
   { id: 'spd', at: 300, t: '속도 부스트', d: '광고를 보면 2분 동안 모든 층이 2배로 빨라져요.', tab: 'desk', target: 'spdb' },
   { id: 'mg', at: 1000, t: '매니저', d: '층마다 매니저를 고용하면 그 층이 자동으로 2배 빨라져요.', tab: 'desk', target: 'floors' },
-  { id: 'mini', at: 1500, t: '미니게임', d: '왼쪽 아래에 빨간 미니게임 아이콘이 가끔 떠요. 눌러서 미니게임을 하면 보너스 점수! 놓쳐도 손해는 없어요. 위쪽 🎮 버튼에서 연습할 수 있어요.' },
-  { id: 'mis', at: 2000, t: '오늘의 미션', d: '게임 속 하루(5분)마다 미션 3개. 모두 달성하면 스카우트 티켓!', tab: 'desk', target: 'misp' },
-  { id: 'hq', at: 3000, t: '본사(HQ) 업그레이드', d: '중계 장비는 속보 보상을, 방송 품질은 모든 점수를 올려요.', tab: 'desk', target: 'hqsec' },
-  { id: 'scout', at: 5000, t: '스카우트', d: '직원 카드를 모으면 층 속도가 영구로 올라가요. 아래 스카우트 탭이 열렸어요.', tab: 'scout', target: 'scout' },
-  { id: 'grow', at: 1e4, t: '커리어', d: '승진할 때마다 영구 점수 +5%. 성장 탭에서 다음 승진 조건을 볼 수 있어요.', tab: 'grow', g: 'car', target: 'carp' },
-  { id: 'rank', at: 2e4, t: '순위', d: '다른 방송국과 순위와 이번 달 시즌 등급을 겨뤄요.', tab: 'rank', target: 'board' },
+  { id: 'mini', at: 5e3, t: '미니게임', d: '왼쪽 아래에 빨간 미니게임 아이콘이 가끔 떠요. 눌러서 미니게임을 하면 보너스 점수! 놓쳐도 손해는 없어요. 위쪽 🎮 버튼에서 연습할 수 있어요.' },
+  { id: 'mis', at: 1e4, t: '오늘의 미션', d: '게임 속 하루(5분)마다 미션 3개. 모두 달성하면 스카우트 티켓!', tab: 'desk', target: 'misp' },
+  { id: 'hq', at: 3e4, t: '본사(HQ) 업그레이드', d: '중계 장비는 속보 보상을, 방송 품질은 모든 점수를 올려요.', tab: 'desk', target: 'hqsec' },
+  { id: 'scout', at: 1e5, t: '스카우트', d: '직원 카드를 모으면 층 속도가 영구로 올라가요. 아래 스카우트 탭이 열렸어요.', tab: 'scout', target: 'scout' },
+  { id: 'grow', at: 3e5, t: '커리어', d: '승진할 때마다 영구 점수 +5%. 성장 탭에서 다음 승진 조건을 볼 수 있어요.', tab: 'grow', g: 'car', target: 'carp' },
+  { id: 'rank', at: 1e6, t: '순위', d: '다른 방송국과 순위와 이번 달 시즌 등급을 겨뤄요.', tab: 'rank', target: 'board' },
   { id: 'chief', at: 1e11, t: '영상편집팀장', d: '5,000억 점에 팀장을 고용하면 속보 때 우선 편집을 자동으로 해 줘요. 개편하면 다시 고용해야 해요.', tab: 'desk', target: 'flc' },
-  { id: 'br', at: 2e4, t: '지국 확장', d: '아래 "지국" 탭이 열렸어요. 부산 지국부터 해외 특파원까지 열면 점수가 오르고, 담당 분야 속보가 더 커져요.', tab: 'br', target: 'brp' },
-  { id: 'deco', at: 3e4, t: '사무실 꾸미기', d: '소품을 사면 장면에 나타나고 하나당 점수 +2%예요.', tab: 'grow', g: 'deco', target: 'decop' },
-  { id: 'dil', at: 5e4, t: '데스크 판단', d: '이제 일부 속보는 단독으로 바로 낼지, 확인 후 낼지 골라야 해요. 단독 성공 시 점수 2배!' },
-  { id: 'res', at: 1e5, t: '방송 기술 연구소', d: '8시 뉴스·미션·단독으로 모은 연구 포인트로 영구 강화를 해요.', tab: 'grow', g: 'res', target: 'resp' },
-  { id: 'week', at: 1e5, t: '주간 한정 이벤트', d: '매주 월요일 바뀌는 이벤트. 목표를 채우면 티켓 2장과 한정 배지!', tab: 'desk', target: 'wevp' },
-  { id: 'pres', at: 1e6, t: '개편', d: '진행이 느려지면 개편하세요. 처음부터 다시 시작하지만 점수가 영구히 올라가요.', tab: 'grow', g: 'pres', target: 'presp' },
+  { id: 'br', at: 3e6, t: '지국 확장', d: '아래 "지국" 탭이 열렸어요. 부산 지국부터 해외 특파원까지 열면 점수가 오르고, 담당 분야 속보가 더 커져요.', tab: 'br', target: 'brp' },
+  { id: 'deco', at: 1e7, t: '사무실 꾸미기', d: '소품을 사면 장면에 나타나고 하나당 점수 +2%예요.', tab: 'grow', g: 'deco', target: 'decop' },
+  { id: 'dil', at: 3e7, t: '데스크 판단', d: '이제 일부 속보는 단독으로 바로 낼지, 확인 후 낼지 골라야 해요. 단독 성공 시 점수 2배!' },
+  { id: 'res', at: 1e8, t: '방송 기술 연구소', d: '8시 뉴스·미션·단독으로 모은 연구 포인트로 영구 강화를 해요.', tab: 'grow', g: 'res', target: 'resp' },
+  { id: 'week', at: 1e8, t: '주간 한정 이벤트', d: '매주 월요일 바뀌는 이벤트. 목표를 채우면 티켓 2장과 한정 배지!', tab: 'desk', target: 'wevp' },
+  { id: 'pres', at: 1e9, t: '개편', d: '진행이 느려지면 개편하세요. 처음부터 다시 시작하지만 점수가 영구히 올라가요.', tab: 'grow', g: 'pres', target: 'presp' },
   { id: 'chal', when: s => s.pts > 0, t: '챌린지', d: '제약 속에서 목표를 달성하면 영구 점수 +10%.', tab: 'grow', g: 'pres', target: 'chalp' },
 ];
 const isUnlocked = (s, id) => !!(s.unl && s.unl[id]);
@@ -786,6 +804,7 @@ function rates(s) {
   r[jobOf(s).st] *= 1.5; // 내 직업 주력 층 +50%
   if (s.ev) r[0] *= s.ev.inf;
   if (s.clock < s.spdEnd) r.forEach((v, i) => { r[i] = v * 2; });
+  if (s.clock < (s.cofEnd || 0)) r.forEach((v, i) => { r[i] = v * 1.5; }); // 커피타임·장비 점검
   return r;
 }
 // 지국: 전체 점수 배수, 담당 분야 속보 배수
@@ -799,7 +818,7 @@ function scoreMul(s) {
 }
 const goldGap = (s, r) => (60 + r * 60) * (1 - .08 * rl(s, 'gold')) * ((weekEvent(s) || {}).gold || 1);
 const perSec = s => Math.min(...rates(s)) * 10 * scoreMul(s);
-const basePS = s => perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0 }); // 보상 계산용: 속보·부스트·특종 배수를 뺀 평소 생산량
+const basePS = s => perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0, cofEnd: 0 }); // 보상 계산용: 속보·부스트·특종 배수를 뺀 평소 생산량
 // 특종(Cookie Clicker의 황금 쿠키): 10분치 점수 또는 20초간 점수 x7
 const goldReward = (s, r) => r < .5 ? { cash: Math.max(100, Math.floor(basePS(s) * BAL.gold)) } : { frenzy: true };
 // 도감 보너스: 층(i)에 해당하는 카드(또는 전 층 카드)의 등급 보너스 x 별 배율의 합
@@ -919,10 +938,10 @@ const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0, br: {}, evH: 0, lr: null, guild: null,
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0, br: {}, evH: 0, cofEnd: 0, perkN: 0, lr: null, guild: null,
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild', 'evH'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild', 'evH', 'perkN'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -960,6 +979,7 @@ function reducer(st, a) {
         const e = evaluateDay(s, a.rnd, a.r2, a.r3), rec = e.rating > s.bestRating && s.day > 1;
         s.prevRating = s.lastRating; s.lastRating = e.rating; s.bestRating = Math.max(s.bestRating, e.rating); s.views += e.views; s.lastViews = e.views;
         s.hist = [...s.hist, e.rating].slice(-7); s.score += e.bonus; s.run += e.bonus; s.total += e.bonus;
+        { const p = PAY.find(x => e.rating >= x.r); e.pay = p ? Math.floor(basePS(s) * 60 * p.min) : 0; e.payTk = p && p.tk || 0; if (e.pay) { s.score += e.pay; s.run += e.pay; s.total += e.pay; s.tickets += e.payTk; } } // 시청률 성과급
         if (e.rating >= 6) s.week = bump(s.week, 'rate');
         { const we = weekEvent(s); if (we && we.k === 'win' && e.won && s.wev && !s.wev.done) s.wev = { ...s.wev, p: s.wev.p + 1 }; }
         const rp = 1 + Math.floor(e.rating / 4) + (e.won ? 1 : 0);
@@ -1042,6 +1062,14 @@ function reducer(st, a) {
     case 'TIP': return { ...st, tips: { ...st.tips, [a.id]: 1 } };
     case 'SETN': return { ...st, buyN: a.n };
     case 'GAIN': return earn(st, a.n);
+    case 'PERK': { // 소소한 이벤트 보상
+      const p = PERKS.find(x => x.id === a.id); if (!p) return st; let s = { ...st, perkN: (st.perkN || 0) + 1 };
+      if (p.k === 'speed') s.cofEnd = st.clock + 120;
+      if (p.k === 'cash') s = earn(s, Math.max(200, Math.floor(basePS(st) * 60 * p.n)));
+      if (p.k === 'rp') s.rp = st.rp + p.n; if (p.rp) s.rp = s.rp + p.rp;
+      if (p.k === 'ticket') s.tickets = st.tickets + p.n;
+      return s;
+    }
     case 'SETLR': return { ...st, lr: a.lr || null }; // 오늘의 실제 플레이어 상대
     case 'SETGUILD': return { ...st, guild: a.g || null }; // 연합 정보(버프 계산용)
     case 'GREWARD': return { ...earn(st, a.n), tickets: st.tickets + (a.tk || 0) }; // 공동 특보 보상
@@ -1097,7 +1125,7 @@ const EventScheduler = store => ({
 
 
 
-const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'br', 'lr', 'guild', 'evH'];
+const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'br', 'lr', 'guild', 'evH', 'perkN'];
 // Repository 패턴: 저장 매체(localStorage)를 이 모듈 안에 가둔다
 const Repo = {
   snapshot: s => ({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() }), // 클라우드 저장에도 같은 모양을 쓴다
@@ -1643,6 +1671,7 @@ function paper(name, r) {
   if (r.dW) subs.push(`[단독] 보도국 단독 보도 ${r.dW}건 적중`);
   if (r.dF) subs.push(`[정정] 오보 ${r.dF}건… "깊이 사과드립니다"`);
   subs.push(r.viral ? `[화제] 유튜브 하루 ${fmt(r.views)}회 '대박'` : `[디지털] 유튜브 조회수 +${fmt(r.views)}`);
+  if (r.pay) subs.push(`[사내] 시청률 성과급 ${fmt(r.pay)}점 지급${r.payTk ? ' · 티켓 1장' : ''}`);
   if (r.all) subs.push('[사내] 오늘의 미션 올클리어');
   const q = QUOTES[2], who = ['영상편집기자', '그래픽 디자이너', '영상편집팀장'], k = r.day % 3, pool = [q, QUOTES[3], QUOTES[7]][k];
   subs.push(`[인터뷰] ${who[k]} "${pool[(r.day * 7) % pool.length]}"`);
@@ -2464,6 +2493,7 @@ function Hud(bus) {
       document.querySelectorAll('#gsub [data-g]').forEach(b => { const g = b.dataset.g; b.hidden = g === 'res' ? !U_('res') : g === 'deco' ? !U_('deco') : g === 'pres' ? !(U_('pres') || s.pts > 0) : false; });
       if ($('gsub').querySelector(`[data-g="${gsub}"]`).hidden) showSub('car');
       for (let i = 1; i < 5; i++) if (s.q[i] > wv) { wv = s.q[i]; w = i; }
+      if (w < 0 && !s.ev && r[0] <= Math.min(...r)) w = 0; // 대기열이 없고 취재가 가장 느리면 취재가 병목
       FLOORS.forEach(([n, sub, id], i) => {
         const u = byId[id], l = s.lv[id], { k, total } = bulk(s, u, s.buyN), nx = MILESTONES.find(m => m > l) || 100, pv = MILESTONES.filter(m => m <= l).pop() || 0, tier = MILESTONES.filter(m => l >= m).length;
         const info = i === 0 ? `${r[0].toFixed(1)}/s` : i < 5 ? `대기 ${Math.floor(s.q[i])}` : `${id === 'live' ? '속보 보상' : '점수'} x${mult(s, u).toFixed(2)}`;
@@ -2864,7 +2894,7 @@ MINI.init({
   pop(t, c) { const e = $i('mcj'); e.textContent = t; e.className = 'mcj ' + c; clearTimeout(mgPop); mgPop = setTimeout(() => { e.textContent = ''; }, 700); },
   combo(t) { $i('mcc').textContent = t; },
   done(r) {
-    const { g, practice } = mgPlay, s = store.getState(), MIN = { S: 4, A: 3, B: 2, C: 1 }[r.grade], job = mgMine(s, g) ? 1.5 : 1, per = Math.max(perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0 }), 5); // 속보·부스트·특종 배수는 빼고 평소 생산량 기준
+    const { g, practice } = mgPlay, s = store.getState(), MIN = MG_MIN[r.grade], job = mgMine(s, g) ? 1.5 : 1, per = Math.max(perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0 }), 5); // 속보·부스트·특종 배수는 빼고 평소 생산량 기준
     const prev = (s.mgBest || {})[g.id]; store.dispatch({ type: 'MGREC', id: g.id, grade: r.grade, practice }); if (!practice) gExtra += 5; // 연합 공동 특보 기여
     $i('mcgr').textContent = r.grade; $i('mcst').textContent = r.stat; $i('mcshot').hidden = true;
     $i('mcl').textContent = r.perfect ? '완벽!' : '완료'; $i('mcs').textContent = '';
@@ -2904,6 +2934,17 @@ function mgMenu() {
 $i('mgmb').onclick = () => mgMenu();
 $i('imini').onclick = () => enter(mgMenu);
 $i('mgmok').onclick = () => { $i('mgmenu').hidden = true; markPop(); };
+// 소소한 이벤트(커피타임·야식·제보 전화…): 접속 중 4~7분마다 보도국 화면 위에 25초 동안 뜬다. 놓쳐도 손해 없음
+let pkNext = Date.now() + (150 + Math.random() * 120) * 1000, pkNow = null, pkUntil = 0;
+const pkPick = () => { const tot = PERKS.reduce((a, p) => a + p.w, 0); let x = Math.random() * tot; return PERKS.find(p => (x -= p.w) < 0) || PERKS[0]; };
+const pkHide = () => { $i('perk').hidden = true; pkNow = null; pkUntil = 0; pkNext = Date.now() + (240 + Math.random() * 180) * 1000; };
+setInterval(() => {
+  const s = store.getState(), now = Date.now(); if (!s.name || !isUnlocked(s, 'mis')) return;
+  if (pkNow) { if (now > pkUntil) pkHide(); else $i('perkbar').style.transform = `scaleX(${(pkUntil - now) / 25000})`; return; }
+  if (now >= pkNext && $i('intro').hidden && !document.hidden && !tutOn(s)) { pkNow = pkPick(); pkUntil = now + 25000; $i('perkt').textContent = pkNow.t; $i('perkd').textContent = pkNow.d; $i('perkb').textContent = pkNow.b; $i('perk').hidden = false; Sfx.play('buy'); }
+}, 500);
+if (location.hash === '#perk') pkNext = Date.now() + 2000; // 테스트용
+$i('perkb').onclick = () => { if (!pkNow) return; const p = pkNow; store.dispatch({ type: 'PERK', id: p.id }); Sfx.play('rank'); ui.toast(`${p.t}! ${p.d}`); pkHide(); };
 // 신문: 바로 띄우지 않고 '신문 도착' 버튼으로 (원할 때 본다)
 let paperNow = null;
 $i('pnew').onclick = () => { if (paperNow) { ui.showPaper(paperNow); paperNow = null; ui.paperReady(false); } };
@@ -3052,7 +3093,7 @@ store.subscribe((s, p) => {
   if (s.lastSeason && s.lastSeason !== p.lastSeason) { const l = s.lastSeason; Sfx.play('rank'); ui.toast(`시즌 종료: ${TIERS[l.tier].n} 달성 · 스카우트 티켓 +${l.tk}장`); }
   if (s.daily && s.daily !== p.daily) { const d = s.daily; Sfx.play('rank'); ui.toast(`출석 ${d.streak}일째! 보너스 +${fmt(d.gain)}점${d.tk ? ' · 스카우트 티켓 +1' : ''}`); }
   if (s.report && s.report !== p.report && online()) { const r = s.report; board.call('rate', r.rating, r.real ? r.oppId : null, r.real ? r.rival : null).catch(() => { }).then(() => setTimeout(duelRefresh, 1500)); }
-  if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; paperNow = paper(s.name, r); ui.paperReady(true); ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}%${r.rival != null ? (r.won ? ' · 라이벌에 승리!' : ' · 라이벌에 패배') : ''} · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
+  if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; paperNow = paper(s.name, r); ui.paperReady(true); ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}%${r.pay ? ` · 성과급 +${fmt(r.pay)}` : ''}${r.rival != null ? (r.won ? ' · 라이벌에 승리!' : ' · 라이벌에 패배') : ''} · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
   if (s.judge && s.judge !== p.judge) { const j = s.judge.res; Sfx.play(j === 'fail' ? 'fail' : j === 'win' ? 'rank' : 'buy'); ui.toast(j === 'win' ? '단독 성공! 이번 속보 점수 x2 · 오늘 시청률 +0.8' : j === 'fail' ? '오보! 정정 보도 나갑니다... 오늘 시청률 -1.2' : '팩트 체크 완료, 안전하게 송출 (점수 x1.2)'); }
   if (s.misHit && s.misHit !== p.misHit) { const m = s.misHit; Sfx.play('rank'); ui.toast(m.all ? `오늘의 미션 올클리어! +${fmt(m.gain)}점 · 스카우트 티켓 +1` : `미션 달성! +${fmt(m.gain)}점`); }
   if (s.promo && s.promo !== p.promo) { for (let k = popQ.length - 1; k >= 0; k--) if (popQ[k].kind === 'promo') popQ.splice(k, 1); popQ.push({ kind: 'promo', i: s.promo.i, tk: s.promo.tk }); } // 대기 중인 승진 창은 최신 것 하나만

@@ -1,4 +1,4 @@
-import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES, SCOOP_P, DIL_SEC, RESEARCH, DECOS, jobOf, careerOf, BRANCHES, BR_MAX, brCost, BAL } from '../data/config.js';
+import { UPGRADES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, WEEKLY, CHALLENGES, SCOOP_P, DIL_SEC, RESEARCH, DECOS, jobOf, careerOf, BRANCHES, BR_MAX, brCost, BAL, PERKS, PAY } from '../data/config.js';
 import { weekEvent, weekFor } from '../systems/weekly.js';
 import { UNLOCKS, unlockReady } from '../data/tips.js';
 import { newMissions, progress } from '../systems/missions.js';
@@ -14,10 +14,10 @@ export const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0, br: {}, evH: 0, lr: null, guild: null,
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, mgBest: {}, mgN: 0, br: {}, evH: 0, cofEnd: 0, perkN: 0, lr: null, guild: null,
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild', 'evH'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild', 'evH', 'perkN'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -55,6 +55,7 @@ export function reducer(st, a) {
         const e = evaluateDay(s, a.rnd, a.r2, a.r3), rec = e.rating > s.bestRating && s.day > 1;
         s.prevRating = s.lastRating; s.lastRating = e.rating; s.bestRating = Math.max(s.bestRating, e.rating); s.views += e.views; s.lastViews = e.views;
         s.hist = [...s.hist, e.rating].slice(-7); s.score += e.bonus; s.run += e.bonus; s.total += e.bonus;
+        { const p = PAY.find(x => e.rating >= x.r); e.pay = p ? Math.floor(basePS(s) * 60 * p.min) : 0; e.payTk = p && p.tk || 0; if (e.pay) { s.score += e.pay; s.run += e.pay; s.total += e.pay; s.tickets += e.payTk; } } // 시청률 성과급
         if (e.rating >= 6) s.week = bump(s.week, 'rate');
         { const we = weekEvent(s); if (we && we.k === 'win' && e.won && s.wev && !s.wev.done) s.wev = { ...s.wev, p: s.wev.p + 1 }; }
         const rp = 1 + Math.floor(e.rating / 4) + (e.won ? 1 : 0);
@@ -137,6 +138,14 @@ export function reducer(st, a) {
     case 'TIP': return { ...st, tips: { ...st.tips, [a.id]: 1 } };
     case 'SETN': return { ...st, buyN: a.n };
     case 'GAIN': return earn(st, a.n);
+    case 'PERK': { // 소소한 이벤트 보상
+      const p = PERKS.find(x => x.id === a.id); if (!p) return st; let s = { ...st, perkN: (st.perkN || 0) + 1 };
+      if (p.k === 'speed') s.cofEnd = st.clock + 120;
+      if (p.k === 'cash') s = earn(s, Math.max(200, Math.floor(basePS(st) * 60 * p.n)));
+      if (p.k === 'rp') s.rp = st.rp + p.n; if (p.rp) s.rp = s.rp + p.rp;
+      if (p.k === 'ticket') s.tickets = st.tickets + p.n;
+      return s;
+    }
     case 'SETLR': return { ...st, lr: a.lr || null }; // 오늘의 실제 플레이어 상대
     case 'SETGUILD': return { ...st, guild: a.g || null }; // 연합 정보(버프 계산용)
     case 'GREWARD': return { ...earn(st, a.n), tickets: st.tickets + (a.tk || 0) }; // 공동 특보 보상

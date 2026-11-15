@@ -75,6 +75,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 #brmap{display:block;width:100%;image-rendering:pixelated;margin:6px 0;box-shadow:0 0 0 3px var(--ink)}.brrow.off{opacity:.45}.brk{color:var(--y)}
 .opp{display:flex;flex-direction:column;gap:2px;padding:8px;background:var(--ink);margin:6px 0}.opp b{font-size:17px;color:var(--y)}.opp small{color:var(--sub);font-size:12px}
 .dlog li.w b{color:#a7f070}.dlog li.l b{color:#ff8a8a}.gcode{font-size:12px;color:var(--sub)}.gcode b{font:12px "Press Start 2P",monospace;color:var(--y);letter-spacing:1px}.gstory{color:#ff8a8a;font-weight:700;margin:8px 0 4px}#gin .rt{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}#gin .rt strong{font-size:18px}#gname,#gcode{flex:1;margin:4px 0}#glv{margin-top:6px}
+.perk{display:flex;gap:10px;align-items:center;border-left:4px solid var(--g)}.perk>div{flex:1}.perk b{display:block;color:#a7f070}.perk small{display:block;color:var(--sub);font-size:12px;margin-top:2px}.perk i{display:block;height:3px;margin-top:6px;background:var(--g);transform-origin:left}.perk .btn{min-height:40px;font-size:10px}
 .lbpg{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0}.lbpg span{min-width:56px;text-align:center;font-size:13px}.lbpg .btn:disabled{opacity:.4}
 #cards{cursor:pointer}
 .wg{margin:10px 0}.row2{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}.row2 span:first-child{flex:1}

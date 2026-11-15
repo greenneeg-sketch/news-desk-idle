@@ -26,6 +26,7 @@ export function rates(s) {
   r[jobOf(s).st] *= 1.5; // 내 직업 주력 층 +50%
   if (s.ev) r[0] *= s.ev.inf;
   if (s.clock < s.spdEnd) r.forEach((v, i) => { r[i] = v * 2; });
+  if (s.clock < (s.cofEnd || 0)) r.forEach((v, i) => { r[i] = v * 1.5; }); // 커피타임·장비 점검
   return r;
 }
 // 지국: 전체 점수 배수, 담당 분야 속보 배수
@@ -39,7 +40,7 @@ export function scoreMul(s) {
 }
 export const goldGap = (s, r) => (60 + r * 60) * (1 - .08 * rl(s, 'gold')) * ((weekEvent(s) || {}).gold || 1);
 export const perSec = s => Math.min(...rates(s)) * 10 * scoreMul(s);
-export const basePS = s => perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0 }); // 보상 계산용: 속보·부스트·특종 배수를 뺀 평소 생산량
+export const basePS = s => perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0, cofEnd: 0 }); // 보상 계산용: 속보·부스트·특종 배수를 뺀 평소 생산량
 // 특종(Cookie Clicker의 황금 쿠키): 10분치 점수 또는 20초간 점수 x7
 export const goldReward = (s, r) => r < .5 ? { cash: Math.max(100, Math.floor(basePS(s) * BAL.gold)) } : { frenzy: true };
 // 도감 보너스: 층(i)에 해당하는 카드(또는 전 층 카드)의 등급 보너스 x 별 배율의 합

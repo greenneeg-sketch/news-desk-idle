@@ -8,7 +8,7 @@ import { scoutCost } from './systems/cards.js';
 import { seasonKey } from './systems/season.js';
 import { toEntry } from './systems/ranking.js';
 import { checkName } from './systems/nameFilter.js';
-import { BAL, UPGRADES, MILESTONES, RANKS, MANAGER, CHIEF, STAGES, ACHIEVEMENTS, LEADERBOARD, CARDS, RARITY, WEEKLY, CHALLENGES, TIERS, RIVAL, JOBS } from './data/config.js';
+import { BAL, MG_MIN, PERKS, UPGRADES, MILESTONES, RANKS, MANAGER, CHIEF, STAGES, ACHIEVEMENTS, LEADERBOARD, CARDS, RARITY, WEEKLY, CHALLENGES, TIERS, RIVAL, JOBS } from './data/config.js';
 import { Repo } from './services/storage.js';
 import { createBoard } from './services/leaderboard.js';
 import { Sfx } from './services/audio.js';
@@ -176,7 +176,7 @@ MINI.init({
   pop(t, c) { const e = $i('mcj'); e.textContent = t; e.className = 'mcj ' + c; clearTimeout(mgPop); mgPop = setTimeout(() => { e.textContent = ''; }, 700); },
   combo(t) { $i('mcc').textContent = t; },
   done(r) {
-    const { g, practice } = mgPlay, s = store.getState(), MIN = { S: 4, A: 3, B: 2, C: 1 }[r.grade], job = mgMine(s, g) ? 1.5 : 1, per = Math.max(perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0 }), 5); // 속보·부스트·특종 배수는 빼고 평소 생산량 기준
+    const { g, practice } = mgPlay, s = store.getState(), MIN = MG_MIN[r.grade], job = mgMine(s, g) ? 1.5 : 1, per = Math.max(perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0 }), 5); // 속보·부스트·특종 배수는 빼고 평소 생산량 기준
     const prev = (s.mgBest || {})[g.id]; store.dispatch({ type: 'MGREC', id: g.id, grade: r.grade, practice }); if (!practice) gExtra += 5; // 연합 공동 특보 기여
     $i('mcgr').textContent = r.grade; $i('mcst').textContent = r.stat; $i('mcshot').hidden = true;
     $i('mcl').textContent = r.perfect ? '완벽!' : '완료'; $i('mcs').textContent = '';
@@ -216,6 +216,17 @@ function mgMenu() {
 $i('mgmb').onclick = () => mgMenu();
 $i('imini').onclick = () => enter(mgMenu);
 $i('mgmok').onclick = () => { $i('mgmenu').hidden = true; markPop(); };
+// 소소한 이벤트(커피타임·야식·제보 전화…): 접속 중 4~7분마다 보도국 화면 위에 25초 동안 뜬다. 놓쳐도 손해 없음
+let pkNext = Date.now() + (150 + Math.random() * 120) * 1000, pkNow = null, pkUntil = 0;
+const pkPick = () => { const tot = PERKS.reduce((a, p) => a + p.w, 0); let x = Math.random() * tot; return PERKS.find(p => (x -= p.w) < 0) || PERKS[0]; };
+const pkHide = () => { $i('perk').hidden = true; pkNow = null; pkUntil = 0; pkNext = Date.now() + (240 + Math.random() * 180) * 1000; };
+setInterval(() => {
+  const s = store.getState(), now = Date.now(); if (!s.name || !isUnlocked(s, 'mis')) return;
+  if (pkNow) { if (now > pkUntil) pkHide(); else $i('perkbar').style.transform = `scaleX(${(pkUntil - now) / 25000})`; return; }
+  if (now >= pkNext && $i('intro').hidden && !document.hidden && !tutOn(s)) { pkNow = pkPick(); pkUntil = now + 25000; $i('perkt').textContent = pkNow.t; $i('perkd').textContent = pkNow.d; $i('perkb').textContent = pkNow.b; $i('perk').hidden = false; Sfx.play('buy'); }
+}, 500);
+if (location.hash === '#perk') pkNext = Date.now() + 2000; // 테스트용
+$i('perkb').onclick = () => { if (!pkNow) return; const p = pkNow; store.dispatch({ type: 'PERK', id: p.id }); Sfx.play('rank'); ui.toast(`${p.t}! ${p.d}`); pkHide(); };
 // 신문: 바로 띄우지 않고 '신문 도착' 버튼으로 (원할 때 본다)
 let paperNow = null;
 $i('pnew').onclick = () => { if (paperNow) { ui.showPaper(paperNow); paperNow = null; ui.paperReady(false); } };
@@ -364,7 +375,7 @@ store.subscribe((s, p) => {
   if (s.lastSeason && s.lastSeason !== p.lastSeason) { const l = s.lastSeason; Sfx.play('rank'); ui.toast(`시즌 종료: ${TIERS[l.tier].n} 달성 · 스카우트 티켓 +${l.tk}장`); }
   if (s.daily && s.daily !== p.daily) { const d = s.daily; Sfx.play('rank'); ui.toast(`출석 ${d.streak}일째! 보너스 +${fmt(d.gain)}점${d.tk ? ' · 스카우트 티켓 +1' : ''}`); }
   if (s.report && s.report !== p.report && online()) { const r = s.report; board.call('rate', r.rating, r.real ? r.oppId : null, r.real ? r.rival : null).catch(() => { }).then(() => setTimeout(duelRefresh, 1500)); }
-  if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; paperNow = paper(s.name, r); ui.paperReady(true); ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}%${r.rival != null ? (r.won ? ' · 라이벌에 승리!' : ' · 라이벌에 패배') : ''} · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
+  if (s.report && s.report !== p.report) { const r = s.report; Sfx.play('rank'); paperBonus = r.bonus; paperNow = paper(s.name, r); ui.paperReady(true); ui.toast(`8시 뉴스 시청률 ${r.rating.toFixed(1)}%${r.pay ? ` · 성과급 +${fmt(r.pay)}` : ''}${r.rival != null ? (r.won ? ' · 라이벌에 승리!' : ' · 라이벌에 패배') : ''} · 광고 수입 +${fmt(r.bonus)}점`); refresh(); }
   if (s.judge && s.judge !== p.judge) { const j = s.judge.res; Sfx.play(j === 'fail' ? 'fail' : j === 'win' ? 'rank' : 'buy'); ui.toast(j === 'win' ? '단독 성공! 이번 속보 점수 x2 · 오늘 시청률 +0.8' : j === 'fail' ? '오보! 정정 보도 나갑니다... 오늘 시청률 -1.2' : '팩트 체크 완료, 안전하게 송출 (점수 x1.2)'); }
   if (s.misHit && s.misHit !== p.misHit) { const m = s.misHit; Sfx.play('rank'); ui.toast(m.all ? `오늘의 미션 올클리어! +${fmt(m.gain)}점 · 스카우트 티켓 +1` : `미션 달성! +${fmt(m.gain)}점`); }
   if (s.promo && s.promo !== p.promo) { for (let k = popQ.length - 1; k >= 0; k--) if (popQ[k].kind === 'promo') popQ.splice(k, 1); popQ.push({ kind: 'promo', i: s.promo.i, tk: s.promo.tk }); } // 대기 중인 승진 창은 최신 것 하나만

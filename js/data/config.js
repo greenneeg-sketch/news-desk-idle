@@ -4,12 +4,12 @@ export const BASE = [2, 1.6, 1, 1.4, 1.8];
 export const RANKS = [{ n: '지역 뉴스', at: 0 }, { n: '저녁 종합', at: 5e3 }, { n: '8시 메인', at: 2e5 }, { n: '24시 채널', at: 1e7 }];
 export const MILESTONES = [10, 25, 50, 100];
 export const UPGRADES = [
-  { id: 'ing', n: '인제스트 서버', d: '등록 속도 +12%', base: 50, g: 1.12, st: 1, pct: .12 },
+  { id: 'ing', n: '인제스트 서버', d: '등록 속도 +15%', base: 50, g: 1.12, st: 1, pct: .15 },
   { id: 'edit', n: '편집기자 충원', d: '편집 속도 +15%', base: 200, g: 1.15, st: 2, pct: .15 },
-  { id: 'cg', n: 'CG 템플릿', d: 'CG 처리 +12%', base: 800, g: 1.15, st: 3, pct: .12 },
-  { id: 'out', n: '송출 자동화', d: '송출 처리 +10%', base: 3000, g: 1.17, st: 4, pct: .10 },
+  { id: 'cg', n: 'CG 템플릿', d: 'CG 처리 +15%', base: 800, g: 1.15, st: 3, pct: .15 },
+  { id: 'out', n: '송출 자동화', d: '송출 처리 +15%', base: 3000, g: 1.15, st: 4, pct: .15 },
   { id: 'live', n: '중계 장비', d: '속보 보상 +5%', base: 4000, g: 1.18, st: -1, pct: .05, nm: true },
-  { id: 'crew', n: '취재팀 확장', d: '취재 유입 +15%', base: 15000, g: 1.2, st: 0, pct: .15 },
+  { id: 'crew', n: '취재팀 확장', d: '취재 유입 +15%', base: 15000, g: 1.17, st: 0, pct: .15 },
   { id: 'qual', n: '방송 품질', d: '점수 +20%', base: 300, g: 1.4, st: -1, pct: .2, nm: true },
 ];
 // 속보 목록. 2026년 11월 실제 주요 뉴스를 바탕으로 각색한 가상 속보(실명·회사명 없이 역할로만, 인명 피해·범죄·루머 기사는 제외)
@@ -229,5 +229,18 @@ export const WEEK_EVENTS = [
 // 예전(√(점수/5000), 포인트당 +5%)은 점수가 커질수록 포인트가 폭증해 2시간 만에 1800경까지 갔다 → 세제곱근·+2%로 완만하게
 // 성장 속도 조절(밸런스): 한두 달에 걸쳐 콘텐츠가 열리도록 맞춘 값
 // mile: 업그레이드 10·25·50·100레벨 달성마다 곱하는 배수, rank: 승급 단계마다 배수, gold: 특종 현금(생산량 N초치), frenzy: 특종 배속, gAdd: 업그레이드 비용 증가율 가산
-export const BAL = { mile: 1.5, rank: 1.5, gold: 180, frenzy: 3, gAdd: 0.1, mis: 120 };
+// 미니게임 등급별 보상(평소 생산량 N분치)
+export const MG_MIN = { S: 12, A: 6, B: 3, C: 1 };
+// 8시 뉴스 시청률 성과급: 시청률 이상이면 평소 생산량 N분치(+티켓)
+export const PAY = [{ r: 20, min: 40, tk: 1 }, { r: 15, min: 25 }, { r: 10, min: 12 }, { r: 6, min: 5 }];
+// 소소한 이벤트: 접속 중 4~7분마다 하나. k = 효과 종류(speed 2분간 모든 층 x1.5 / cash 생산량 N분치 / rp 연구 포인트 / ticket 스카우트 티켓)
+export const PERKS = [
+  { id: 'coffee', t: '커피타임', d: '막내가 커피를 돌렸어요! 2분 동안 모든 층 속도 x1.5', b: '한 잔 받기', k: 'speed', w: 3 },
+  { id: 'snack', t: '야식 배달', d: '치킨이 식기 전에! 생산량 5분치', b: '받으러 가기', k: 'cash', n: 5, w: 3 },
+  { id: 'call', t: '시청자 제보 전화', d: '쓸 만한 제보예요. 연구 포인트 +2', b: '전화 받기', k: 'rp', n: 2, w: 2 },
+  { id: 'tip', t: '선배의 꿀팁', d: '편집 단축키를 배웠어요. 생산량 3분치 + 연구 포인트 +1', b: '배우기', k: 'cash', n: 3, rp: 1, w: 2 },
+  { id: 'praise', t: '보도국장 칭찬', d: '오늘 방송 좋았다는 칭찬! 스카우트 티켓 1장', b: '감사합니다', k: 'ticket', n: 1, w: .6 },
+  { id: 'fix', t: '장비 점검 완료', d: '엔지니어가 장비를 손봤어요. 2분 동안 모든 층 속도 x1.5', b: '확인', k: 'speed', w: 1.5 },
+];
+export const BAL = { mile: 1.5, rank: 1.5, gold: 180, frenzy: 3, gAdd: 0.12, mis: 120 };
 export const PRESTIGE = { div: 1e6, pow: 1 / 3, per: .02 };

@@ -13,6 +13,7 @@ export function paper(name, r) {
   if (r.dW) subs.push(`[단독] 보도국 단독 보도 ${r.dW}건 적중`);
   if (r.dF) subs.push(`[정정] 오보 ${r.dF}건… "깊이 사과드립니다"`);
   subs.push(r.viral ? `[화제] 유튜브 하루 ${fmt(r.views)}회 '대박'` : `[디지털] 유튜브 조회수 +${fmt(r.views)}`);
+  if (r.pay) subs.push(`[사내] 시청률 성과급 ${fmt(r.pay)}점 지급${r.payTk ? ' · 티켓 1장' : ''}`);
   if (r.all) subs.push('[사내] 오늘의 미션 올클리어');
   const q = QUOTES[2], who = ['영상편집기자', '그래픽 디자이너', '영상편집팀장'], k = r.day % 3, pool = [q, QUOTES[3], QUOTES[7]][k];
   subs.push(`[인터뷰] ${who[k]} "${pool[(r.day * 7) % pool.length]}"`);

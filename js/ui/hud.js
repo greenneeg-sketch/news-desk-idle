@@ -131,6 +131,7 @@ export function Hud(bus) {
       document.querySelectorAll('#gsub [data-g]').forEach(b => { const g = b.dataset.g; b.hidden = g === 'res' ? !U_('res') : g === 'deco' ? !U_('deco') : g === 'pres' ? !(U_('pres') || s.pts > 0) : false; });
       if ($('gsub').querySelector(`[data-g="${gsub}"]`).hidden) showSub('car');
       for (let i = 1; i < 5; i++) if (s.q[i] > wv) { wv = s.q[i]; w = i; }
+      if (w < 0 && !s.ev && r[0] <= Math.min(...r)) w = 0; // 대기열이 없고 취재가 가장 느리면 취재가 병목
       FLOORS.forEach(([n, sub, id], i) => {
         const u = byId[id], l = s.lv[id], { k, total } = bulk(s, u, s.buyN), nx = MILESTONES.find(m => m > l) || 100, pv = MILESTONES.filter(m => m <= l).pop() || 0, tier = MILESTONES.filter(m => l >= m).length;
         const info = i === 0 ? `${r[0].toFixed(1)}/s` : i < 5 ? `대기 ${Math.floor(s.q[i])}` : `${id === 'live' ? '속보 보상' : '점수'} x${mult(s, u).toFixed(2)}`;
