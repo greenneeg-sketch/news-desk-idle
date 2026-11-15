@@ -249,7 +249,7 @@ export function Hud(bus) {
       }
       $('alert').hidden = !s.ev;
       if (s.ev) { $('evt').textContent = `속보 · ${s.ev.name}`; $('evd').textContent = `${s.ev.k} · 유입 x${s.ev.inf} · 점수 x${s.ev.sc}${s.ev.boost ? ' (+50%)' : ''} · ${Math.max(0, Math.ceil(s.ev.end - s.clock))}초`; $('evb').disabled = s.ev.boost; $('evb').textContent = s.ev.boost ? '편집 중' : '우선 편집'; }
-      $('presd').textContent = `이번 회차 ${fmt(s.run)}점 · 개편 시 포인트 +${prestigeGain(s)} · 보유 ${s.pts}`;
+      { const g = prestigeGain(s); $('presd').textContent = `이번 회차 ${fmt(s.run)}점 · 개편하면 포인트 +${fmt(g)} (점수 배율 x${prestigeBonus(s).toFixed(2)} → x${prestigeBonus({ pts: s.pts + g }).toFixed(2)}) · 포인트 1당 +2%, 개편 직후엔 처음부터 다시 시작해요`; }
     },
   };
 }

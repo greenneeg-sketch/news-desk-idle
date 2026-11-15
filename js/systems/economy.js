@@ -1,4 +1,4 @@
-import { BASE, UPGRADES, RANKS, MILESTONES, CARDS, RARITY, jobOf } from '../data/config.js';
+import { BASE, UPGRADES, RANKS, MILESTONES, CARDS, RARITY, jobOf, PRESTIGE } from '../data/config.js';
 import { weekEvent, heroCount } from './weekly.js';
 // 순수 함수 모음: 상태를 받아 계산만 한다 (부작용 없음)
 const U = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
@@ -16,8 +16,8 @@ export function bulk(s, u, n) {
   return { k, total: tot };
 }
 export const rank = s => RANKS.filter(r => s.run >= r.at).length - 1;
-export const prestigeBonus = s => 1 + .05 * s.pts;
-export const prestigeGain = s => Math.floor(Math.sqrt(s.run / 5000));
+export const prestigeBonus = s => 1 + PRESTIGE.per * s.pts;
+export const prestigeGain = s => Math.floor((s.run / PRESTIGE.div) ** PRESTIGE.pow);
 export function rates(s) {
   const r = BASE.slice();
   UPGRADES.forEach(u => { if (u.st >= 0) r[u.st] *= mult(s, u); });

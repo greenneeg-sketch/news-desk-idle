@@ -13,7 +13,7 @@ export const UNLOCKS = [
   { id: 'dil', at: 5e4, t: '데스크 판단', d: '이제 일부 속보는 단독으로 바로 낼지, 확인 후 낼지 골라야 해요. 단독 성공 시 점수 2배!' },
   { id: 'res', at: 1e5, t: '방송 기술 연구소', d: '8시 뉴스·미션·단독으로 모은 연구 포인트로 영구 강화를 해요.', tab: 'grow', g: 'res', target: 'resp' },
   { id: 'week', at: 1e5, t: '주간 한정 이벤트', d: '매주 월요일 바뀌는 이벤트. 목표를 채우면 티켓 2장과 한정 배지!', tab: 'desk', target: 'wevp' },
-  { id: 'pres', at: 5e5, t: '개편', d: '진행이 느려지면 개편하세요. 처음부터 다시 시작하지만 점수가 영구히 올라가요.', tab: 'grow', g: 'pres', target: 'presp' },
+  { id: 'pres', at: 1e6, t: '개편', d: '진행이 느려지면 개편하세요. 처음부터 다시 시작하지만 점수가 영구히 올라가요.', tab: 'grow', g: 'pres', target: 'presp' },
   { id: 'chal', when: s => s.pts > 0, t: '챌린지', d: '제약 속에서 목표를 달성하면 영구 점수 +10%.', tab: 'grow', g: 'pres', target: 'chalp' },
 ];
 export const isUnlocked = (s, id) => !!(s.unl && s.unl[id]);
