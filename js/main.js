@@ -99,7 +99,11 @@ $i('iname2').onclick = () => enter(() => bus.emit('rename'));
 // 처음엔 PRESS START만. 화면을 누르면 타이틀이 위에서, 메뉴가 아래에서 나오고 5초 동안 조작이 없으면 역순으로 사라진다
 let itimer = 0;
 const openMenu = () => { $i('intro').classList.add('open'); clearTimeout(itimer); itimer = setTimeout(() => $i('intro').classList.remove('open'), 5000); };
-$i('intro').addEventListener('pointerdown', () => { openMenu(); Music.play('title'); }); // 브라우저는 화면을 눌러야 소리를 낼 수 있다
+$i('intro').addEventListener('pointerdown', openMenu);
+// 소리 켜기: 브라우저(특히 아이폰)는 화면을 누르고 뗄 때만 소리를 허락한다 → 그때마다 오디오를 깨우고 지금 화면에 맞는 곡을 튼다
+const songNow = () => !$i('intro').hidden ? 'title' : store.getState().ev ? 'breaking' : 'desk';
+const wakeAudio = () => { Music.unlock(); Sfx.unlock(); if (Music.on) Music.play(songNow()); };
+['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, wakeAudio, { capture: true, passive: true }));
 // 배경음악 켜기·끄기 (타이틀 메뉴, 성장 탭 설정)
 const bgmLabel = () => { const t = Music.on ? 'BGM ON' : 'BGM OFF'; $i('ibgm').textContent = t; $i('bgmb').textContent = t; };
 $i('ibgm').onclick = $i('bgmb').onclick = () => { Music.toggle(); if (Music.on) Music.play($i('intro').hidden ? (store.getState().ev ? 'breaking' : 'desk') : 'title'); bgmLabel(); };

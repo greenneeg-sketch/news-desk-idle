@@ -38,6 +38,9 @@ function parse(bars) {
 }
 const PARSED = Object.fromEntries(Object.entries(SONGS).map(([k, s]) => [k, { bpm: s.bpm, lead: parse(s.lead), bass: parse(s.bass), drum: s.drum.join(' ').split(/\s+/) }]));
 
+// 아이폰 대책: 무음 스위치가 켜져 있으면 Web Audio가 꺼진다 → 미디어 재생 모드로 바꾸기(audioSession) + 무음 <audio> 재생
+const SILENT = 'data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+let unlocked = false, el = null;
 let ac = null, master = null, noise = null, on = true, cur = null, want = null, step = 0, nextT = 0, timer = 0;
 try { on = localStorage.getItem('newsDeskBgm') !== 'off'; } catch (e) { }
 function init() {
@@ -85,10 +88,21 @@ return {
   },
   toggle() {
     on = !on; try { localStorage.setItem('newsDeskBgm', on ? 'on' : 'off'); } catch (e) { }
-    if (on) { const w = want || 'title'; cur = null; this.play(w); } else { clearInterval(timer); timer = 0; cur = null; }
+    if (on) { const w = want || 'title'; cur = null; this.unlock(); this.play(w); } else { clearInterval(timer); timer = 0; cur = null; if (el) el.pause(); }
     return on;
   },
-  pause() { if (ac && ac.state === 'running') ac.suspend().catch(() => { }); },
+  // 화면을 '누르고 뗄 때'(touchend/click) 불러야 한다. 아이폰은 그때만 소리를 허락한다
+  unlock() {
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { } // iOS 17+: 무음 스위치와 무관하게 재생
+    if (!init()) return;
+    if (ac.state !== 'running') ac.resume().catch(() => { });
+    if (!unlocked) { try { const b = ac.createBuffer(1, 1, 22050), s = ac.createBufferSource(); s.buffer = b; s.connect(ac.destination); s.start(0); } catch (e) { } unlocked = true; }
+    if (!navigator.audioSession && on) { // 옛 iOS: 무음 오디오를 함께 틀면 무음 스위치를 무시하고 소리가 난다
+      if (!el) { el = new Audio(SILENT); el.loop = true; el.setAttribute('playsinline', ''); }
+      el.play().catch(() => { });
+    }
+  },
+  pause() { if (ac && ac.state === 'running') ac.suspend().catch(() => { }); if (el) el.pause(); },
   resume() { if (ac && on && cur && ac.state === 'suspended') ac.resume().catch(() => { }); },
 };
 })();

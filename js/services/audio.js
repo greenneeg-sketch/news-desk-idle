@@ -3,10 +3,12 @@ const SEQ = { buy: [[660, .06], [880, .08]], alert: [[440, .1], [330, .1], [440,
 let ac, on = true;
 export const Sfx = {
   toggle() { on = !on; return on; },
+  unlock() { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state !== 'running') ac.resume().catch(() => { }); } catch (e) { } }, // 아이폰: 터치할 때 깨워 둔다
   play(name) {
     if (!on) return;
     try {
       ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state !== 'running') ac.resume().catch(() => { });
       let t = ac.currentTime;
       (SEQ[name] || []).forEach(([f, d]) => {
         const o = ac.createOscillator(), g = ac.createGain();
