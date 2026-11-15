@@ -64,7 +64,8 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .mgicon{position:fixed;left:max(14px,calc(50% - 226px));bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:12;border:0;cursor:pointer;background:var(--r);color:#fff;padding:8px 10px;font:inherit;box-shadow:0 -3px 0 var(--ink),0 3px 0 var(--ink),-3px 0 0 var(--ink),3px 0 0 var(--ink),inset 0 -4px #5d275d;animation:mgb 1s steps(2) infinite}
 .mgicon b{display:block;font:12px "Press Start 2P","DotGothic16",monospace;color:var(--y)}.mgicon small{font-size:11px}.mgicon i{display:block;height:3px;margin-top:4px;background:var(--y);transform-origin:left}
 @keyframes mgb{50%{transform:translateY(-4px)}}
-.mcstage{position:relative;margin:8px 0;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}.mcstage canvas{display:block;width:100%;image-rendering:pixelated;box-shadow:0 0 0 3px var(--ink),0 0 0 6px #566c86}
+.mcstage{position:relative;margin:8px 0;touch-action:none;cursor:pointer}
+.mcut,.mcut *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent} /* 길게 누를 때 아이폰 단어 선택·팝업 메뉴 막기 */.mcstage canvas{display:block;width:100%;height:auto;aspect-ratio:240/150;image-rendering:pixelated;box-shadow:0 0 0 3px var(--ink),0 0 0 6px #566c86}
 .mcj{position:absolute;left:0;right:0;top:40%;text-align:center;font:14px "Press Start 2P",monospace;text-shadow:2px 2px 0 var(--ink);pointer-events:none}.mcj.p{color:#a7f070}.mcj.g{color:var(--g)}.mcj.miss{color:#ff5050}
 .mcc{position:absolute;right:6px;top:6px;font:9px "Press Start 2P",monospace;color:var(--y);text-shadow:1px 1px 0 var(--ink);pointer-events:none}
 .mcg{display:flex;align-items:center;gap:12px;margin:6px 0}.mcg strong{font:28px "Press Start 2P",monospace;color:var(--y)}.mcg span{font-size:13px;color:var(--sub)}

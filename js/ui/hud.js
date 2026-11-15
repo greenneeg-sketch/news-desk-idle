@@ -11,7 +11,7 @@ const $ = id => document.getElementById(id);
 // 큰 수 표기: 만·억·조·경·해, 100 이상이면 소수점 없이 (예: 1000조, 12.5억)
 const UNITS = [[1e20, '해'], [1e16, '경'], [1e12, '조'], [1e8, '억'], [1e4, '만']];
 export const fmt = n => { n = Math.floor(n); for (const [v, u] of UNITS) if (n >= v) { const x = n / v; return (x >= 100 ? Math.floor(x).toLocaleString('ko-KR') : x.toFixed(1).replace(/\.0$/, '')) + u; } return n.toLocaleString('ko-KR'); };
-const FLOORS = [['취재', '카메라 기자 · 취재 기자', 'crew'], ['인제스트', '인제스트실', 'ing'], ['편집', '영상편집기자', 'edit'], ['CG', '그래픽 디자이너', 'cg'], ['송출', '뉴스 스튜디오', 'out'], ['중계 장비', '중계 차량 · 리포터', 'live'], ['방송 품질', '화질 · 시청률', 'qual']];
+const FLOORS = [['취재', '카메라 기자 · 취재 기자', 'crew'], ['인제스트', '인제스트실', 'ing'], ['편집', '영상편집기자', 'edit'], ['CG', '그래픽 디자이너', 'cg'], ['송출', '뉴스 스튜디오 · 방송 엔지니어', 'out'], ['중계 장비', '중계 차량 · 리포터', 'live'], ['방송 품질', '화질 · 시청률', 'qual']];
 const byId = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
 const floorHtml = i => `<section class="panel floor" id="fl${i}"><div class="fh"><div><b>${FLOORS[i][0]}</b><i class="mj" id="mj${i}" hidden>주력</i><i class="bnb" id="bnb${i}" hidden>병목</i> <small>${FLOORS[i][1]}</small><div class="cnt" id="c${i}"></div></div><div class="bs"><button class="btn mini" data-id="${FLOORS[i][2]}" id="fb${i}"></button>${i < 5 ? `<button class="btn mini" data-hire="${i}" id="mb${i}"></button>` : ''}</div></div><div class="ms"><i id="m${i}"></i></div><canvas width="320" height="64"></canvas></section>`;
 // View: DOM을 만들고 갱신만 한다. 사용자 입력은 버스 이벤트로만 내보낸다

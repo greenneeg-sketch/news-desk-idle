@@ -187,6 +187,7 @@ MINI.init({
 window.__mini = MINI; // 테스트용
 { // 화면 입력: 누르기·문지르기를 캔버스 좌표로 바꿔 지금 게임에 넘긴다
   const st = $i('mcstage'), xy = e => { const r = st.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * 240, (e.clientY - r.top) / r.height * 150]; };
+  $i('mcut').addEventListener('contextmenu', e => e.preventDefault()); // 길게 누르기 메뉴 막기
   st.addEventListener('pointerdown', e => { e.preventDefault(); const g = MINI.cur; if (!g) return; try { st.setPointerCapture(e.pointerId); } catch (x) { } g.down(...xy(e)); });
   st.addEventListener('pointermove', e => { const g = MINI.cur; if (g) g.move(...xy(e)); });
   ['pointerup', 'pointercancel'].forEach(k => st.addEventListener(k, () => { const g = MINI.cur; if (g) g.up(); }));

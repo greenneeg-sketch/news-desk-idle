@@ -183,19 +183,21 @@ const MATCH = (() => {
   const TERMS = [['엠바고', '보도유예'], ['풀', '공동취재'], ['데스크', '기사검토'], ['큐시트', '방송순서'], ['리드', '첫 문장'], ['인서트', '삽입화면'], ['스탠딩', '기자등장'], ['바이라인', '기자이름'], ['크로마키', '합성배경'], ['클로징', '마무리말'], ['VCR', '녹화영상'], ['슈퍼', '화면자막']];
   const ICONS = ['mic', 'cam', 'heli', 'sat', 'globe', 'gavel', 'scale', 'shield', 'dome', 'tv'], FACES = 6;
   const TOP = 4, GAP = 4;
+  const WCOL = [['#ffe1e1', '#b13e53'], ['#dff3ff', '#3b5dc9'], ['#e2f7d9', '#257179'], ['#fff1c9', '#a05a00'], ['#efe2ff', '#5d275d'], ['#ffe6d4', '#c0502a'], ['#dcf5f2', '#1f6f6a'], ['#f2f2f2', '#1a1c2c'], ['#fde2f3', '#a0306e'], ['#e6ebff', '#29366f']]; // 단어 카드 [바탕, 글자]
   let st = null;
   const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   function deal(k) {
     const S = STAGES[k], n = S.c * S.r / 2; let cards = []; st.pairsAll += st.got || 0;
-    if (S.kind === 'term') shuffle(TERMS.slice()).slice(0, n).forEach((t, i) => cards.push({ p: i, t: 'txt', v: t[0], term: 1 }, { p: i, t: 'txt', v: t[1] }));
-    else {
-      const pool = S.kind === 'icon' ? ICONS.map(v => ({ t: 'icon', v })) : S.kind === 'word' ? WORDS.map(v => ({ t: 'txt', v })) : [...ICONS.map(v => ({ t: 'icon', v })), ...Array.from({ length: FACES }, (_, v) => ({ t: 'face', v }))];
-      shuffle(pool.slice()).slice(0, n).forEach((x, i) => cards.push({ p: i, ...x }, { p: i, ...x }));
-    }
+    // 단어 단계도 절반은 쉬운 그림(아이콘·얼굴)을 섞는다. 단어는 짝마다 색이 다르다
+    const pics = shuffle([...ICONS.map(v => ({ t: 'icon', v })), ...Array.from({ length: FACES }, (_, v) => ({ t: 'face', v }))]);
+    const nw = S.kind === 'icon' || S.kind === 'mix' ? 0 : Math.floor(n / 2), col = shuffle(WCOL.slice());
+    if (S.kind === 'term') shuffle(TERMS.slice()).slice(0, nw).forEach((t, i) => cards.push({ p: i, t: 'txt', v: t[0], term: 1, col: col[i] }, { p: i, t: 'txt', v: t[1], col: col[i] }));
+    else if (nw) shuffle(WORDS.slice()).slice(0, nw).forEach((v, i) => cards.push({ p: i, t: 'txt', v, col: col[i] }, { p: i, t: 'txt', v, col: col[i] }));
+    (S.kind === 'icon' ? pics.filter(x => x.t === 'icon') : pics).slice(0, n - nw).forEach((x, i) => cards.push({ p: nw + i, ...x }, { p: nw + i, ...x }));
     const cw = (MG_W - GAP * (S.c + 1)) / S.c, ch = (MG_H - TOP - GAP * (S.r + 1)) / S.r;
     st.cards = shuffle(cards).map((c, i) => ({ ...c, x: GAP + (i % S.c) * (cw + GAP), y: TOP + GAP + Math.floor(i / S.c) * (ch + GAP), w: cw, h: ch, up: 1, done: 0, flip: 0 }));
     st.k = k; st.open = []; st.lock = 0; st.phase = 'show'; st.t0 = performance.now(); st.pairs = n; st.got = 0;
-    ui.label(`STAGE ${k + 1}/${STAGES.length}`, S.kind === 'term' ? '용어와 뜻을 짝지어요. 잘 봐 두세요!' : `카드 ${S.c * S.r}장 · 잘 봐 두세요!`);
+    ui.label(`STAGE ${k + 1}/${STAGES.length}`, S.kind === 'term' ? '그림끼리, 용어와 뜻끼리 짝지어요. 잘 봐 두세요!' : `카드 ${S.c * S.r}장 · 잘 봐 두세요!`);
   }
   function tap(x, y) {
     if (!st || st.phase !== 'play' || st.lock) return;
@@ -218,7 +220,7 @@ const MATCH = (() => {
   }
   function frame(now) {
     const S = STAGES[st.k], t = (now - st.t0) / 1000;
-    if (st.phase === 'show' && t >= S.show) { st.phase = 'play'; st.t0 = now; st.cards.forEach(c => { c.up = 0; c.flip = now; }); ui.label(`STAGE ${st.k + 1}/${STAGES.length}`, '같은 그림끼리 탭해서 짝을 맞춰요!'); }
+    if (st.phase === 'show' && t >= S.show) { st.phase = 'play'; st.t0 = now; st.cards.forEach(c => { c.up = 0; c.flip = now; }); ui.label(`STAGE ${st.k + 1}/${STAGES.length}`, S.kind === 'term' ? '그림은 같은 그림끼리, 용어는 뜻과 짝!' : '같은 카드끼리 탭해서 짝을 맞춰요!'); }
     if (st.phase === 'play' && t >= S.lim) { ui.pop('시간 초과!', 'miss'); ui.sfx('fail'); end(); draw(now); return false; }
     if (st.phase === 'clear' && now - st.tc > 900) { if (st.k + 1 < STAGES.length) deal(st.k + 1); else { end(); draw(now); return false; } }
     draw(now);
@@ -231,14 +233,16 @@ const MATCH = (() => {
       const ft = Math.min(1, (now - c.flip) / 140), sx = c.flip ? Math.abs(1 - 2 * ft) : 1, face = c.flip && ft < .5 ? !c.up : c.up; // 뒤집기: 가로로 접혔다 펴진다
       const w = Math.max(1, c.w * sx), x = c.x + (c.w - w) / 2;
       if (c.done) cx.globalAlpha = .45;
-      if (face) { cx.fillStyle = c.term ? '#ffe9b0' : '#f4f4f4'; cx.fillRect(x, c.y, w, c.h); if (sx > .6) art(c, c.x + c.w / 2, c.y + c.h / 2, Math.min(c.w, c.h)); }
+      if (face) { cx.fillStyle = c.col ? c.col[0] : '#f4f4f4'; cx.fillRect(x, c.y, w, c.h); if (sx > .6) art(c, c.x + c.w / 2, c.y + c.h / 2, Math.min(c.w, c.h)); }
       else { cx.fillStyle = '#3b5dc9'; cx.fillRect(x, c.y, w, c.h); cx.fillStyle = '#41a6f6'; for (let i = 0; i < c.h; i += 6) cx.fillRect(x, c.y + i, w, 2); cx.fillStyle = '#b13e53'; cx.fillRect(x, c.y + c.h / 2 - 4, w, 8); cx.fillStyle = '#f4f4f4'; if (w > 20) { cx.font = '6px "Press Start 2P",monospace'; cx.textAlign = 'center'; cx.fillText('NEWS', c.x + c.w / 2, c.y + c.h / 2 + 3); cx.textAlign = 'left'; } }
       if (c.done) { cx.globalAlpha = 1; cx.fillStyle = '#38b764'; cx.fillRect(c.x + c.w - 9, c.y + 2, 7, 7); cx.fillStyle = '#f4f4f4'; cx.fillRect(c.x + c.w - 7, c.y + 5, 2, 2); cx.fillRect(c.x + c.w - 5, c.y + 4, 2, 2); }
     });
   }
   // 카드 그림: 텍스트 / 가상 아이콘(실제 기관 상징 아님) / 가상 얼굴
   function art(c, x, y, s) {
-    if (c.t === 'txt') { const n = c.v.length; cx.fillStyle = c.term ? '#b13e53' : '#1a1c2c'; cx.font = `${n >= 4 ? 9 : 11}px "DotGothic16",sans-serif`; cx.textAlign = 'center'; cx.fillText(c.v, x, y + 4); cx.textAlign = 'left'; return; }
+    if (c.t === 'txt') { // 글자: 굵은 고딕, 용어 카드는 위에 작은 '용어' 표시
+      const n = c.v.length; cx.fillStyle = c.col ? c.col[1] : '#1a1c2c'; cx.font = `bold ${n >= 4 ? 9.5 : 11.5}px "Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif`; cx.textAlign = 'center'; cx.fillText(c.v, x, y + 4);
+      if (c.term) { cx.font = 'bold 6px "Apple SD Gothic Neo","Noto Sans KR",sans-serif'; cx.globalAlpha = .7; cx.fillText('용어', x, y - 8); cx.globalAlpha = 1; } cx.textAlign = 'left'; return; }
     const u = Math.max(2, Math.floor(s / 12)), P = (dx, dy, w, h, col) => { cx.fillStyle = col; cx.fillRect(Math.round(x + dx * u), Math.round(y + dy * u), Math.round(w * u), Math.round(h * u)); };
     if (c.t === 'face') { const hair = ['#1a1c2c', '#5d275d', '#ef7d57', '#94b0c2', '#ffcd75', '#257179'][c.v];
       P(-4, -4, 8, 8, '#f4c2a0'); P(-4, -5, 8, 2 + (c.v % 3), hair); if (c.v % 2) P(-5, -4, 1, 5, hair), P(4, -4, 1, 5, hair);
@@ -270,16 +274,16 @@ const MATCH = (() => {
 // 막대가 초록 구간 안에 있으면 '송출 안정' 게이지가 차고, 벗어나면 줄어든다. 게이지를 채우면 복구! 사고 4건, 점점 어려워진다.
 const SIGNAL = (() => {
   const CASES = [
-    { n: '영상 신호 끊김', band: .30, jump: [1.0, 1.8], ease: 2.0 },
-    { n: '오디오 레벨 폭주', band: .26, jump: [.8, 1.5], ease: 2.6 },
-    { n: '위성 링크 흔들림', band: .22, jump: [.7, 1.3], ease: 3.2 },
-    { n: '중계차 전송 장애', band: .19, jump: [.6, 1.1], ease: 3.8 },
+    { n: '영상 신호 끊김', band: .40, jump: [2.2, 3.2], ease: 1.0 },
+    { n: '오디오 레벨 폭주', band: .36, jump: [1.9, 2.8], ease: 1.2 },
+    { n: '위성 링크 흔들림', band: .32, jump: [1.6, 2.5], ease: 1.4 },
+    { n: '중계차 전송 장애', band: .29, jump: [1.4, 2.2], ease: 1.6 },
   ];
-  const LIM = 16, UP = 2.4, DOWN = 1.9, VMAX = 1.3, FILL = .17, DRAIN = .13;
+  const LIM = 20, UP = 1.5, DOWN = 1.2, VMAX = .7, FILL = .22, DRAIN = .07; // 감도: 천천히 오르내리고, 게이지는 빨리 차고 천천히 준다
   const MX = 166, MY = 8, MW = 30, MH = 134, GX = 206, GW = 22;
   let st = null;
   function incident(i) {
-    st.i = i; st.c = CASES[i]; st.pos = .15; st.vel = 0; st.tgt = .55; st.goal = .55; st.nextJ = 0; st.gauge = .4; st.phase = 'ready'; st.t0 = performance.now() + 1200; st.last = 0; st.res = '';
+    st.i = i; st.c = CASES[i]; st.pos = .35; st.vel = 0; st.tgt = .55; st.goal = .55; st.nextJ = 0; st.gauge = .45; st.phase = 'ready'; st.t0 = performance.now() + 1200; st.last = 0; st.res = '';
     ui.label(`사고 ${i + 1}/${CASES.length}`, `${st.c.n}! 화면을 누르고 있으면 레벨이 올라가요. 초록 구간 안에 붙잡아 두세요`); ui.sfx('alert');
   }
   function frame(now) {
@@ -287,7 +291,7 @@ const SIGNAL = (() => {
     if (st.phase === 'ready' && t >= 0) { st.phase = 'play'; ui.label(`사고 ${st.i + 1}/${CASES.length}`, st.c.n); }
     if (st.phase === 'play') {
       // 정상 신호 구간: 가끔 새 목표로 튀고, 부드럽게 따라간다
-      if (t >= st.nextJ) { const c = st.c; st.goal = .12 + Math.random() * .76; st.nextJ = t + c.jump[0] + Math.random() * (c.jump[1] - c.jump[0]); }
+      if (t >= st.nextJ) { const c = st.c; st.goal = Math.max(.15, Math.min(.85, st.tgt + (Math.random() < .5 ? -1 : 1) * (.15 + Math.random() * .3))); st.nextJ = t + c.jump[0] + Math.random() * (c.jump[1] - c.jump[0]); }
       st.tgt += (st.goal - st.tgt) * Math.min(1, dt * st.c.ease);
       st.vel = Math.max(-VMAX, Math.min(VMAX, st.vel + (st.hold ? UP : -DOWN) * dt)); st.pos += st.vel * dt;
       if (st.pos < 0) { st.pos = 0; st.vel = Math.max(0, -st.vel * .25); } if (st.pos > 1) { st.pos = 1; st.vel = Math.min(0, -st.vel * .25); }
@@ -350,7 +354,7 @@ return {
     { id: 'match', n: '긴급 수정', icon: '긴급', sub: '수정', jobs: ['designer'], d: '카드를 잠깐 보여 준 뒤 뒤집어요. 같은 그림끼리 짝 맞추기! 4단계, 마지막은 보도 용어 ↔ 뜻.' },
     { id: 'signal', n: '송출 사고', icon: '송출', sub: '사고', jobs: ['engineer'], d: '화면을 누르고 있으면 레벨이 올라가요. 흔들리는 초록 구간 안에 붙잡아 송출을 복구! 사고 4건.' },
   ],
-  init(u) { ui = u; cx = u.canvas.getContext('2d'); cx.imageSmoothingEnabled = false; },
+  init(u) { ui = u; u.canvas.width = MG_W * 3; u.canvas.height = MG_H * 3; cx = u.canvas.getContext('2d'); cx.setTransform(3, 0, 0, 3, 0, 0); cx.imageSmoothingEnabled = false; }, // 실제 픽셀 3배: 글자가 깨지지 않게
   start(id) { this.stop(); cur = GAMES[id]; cur.start(); return cur; },
   stop() { cancelAnimationFrame(raf); if (cur) cur.stop(); cur = null; },
   get cur() { return cur; },
