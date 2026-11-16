@@ -35,6 +35,9 @@ import { isUnlocked } from './data/tips.js';
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
 const ui = Hud(bus), story = StoryUI(bus, () => store.getState()), branches = Branches(bus), social = Social(bus), guide = GuideUI(bus, () => store.getState()), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
+// 태블릿 등 넓은 화면: 게임 화면(폭 480) 전체를 화면 폭에 맞게 키운다. 양옆 빈 공간이 생기지 않게
+function fitZoom() { const w = innerWidth, h = innerHeight, z = w >= 560 ? Math.min(w / 480, Math.max(1, h / 640)) : 1; document.documentElement.style.zoom = z > 1.04 ? z.toFixed(3) : ''; }
+fitZoom(); addEventListener('resize', fitZoom);
 // 보상형 광고: 앱에서는 진짜 광고를 본 뒤에만 ok(), 웹에서는 바로 ok(true)(웹이면 안내 문구를 붙인다)
 const AD_WEB = '실제 앱에서는 보상형 광고가 나와요. ';
 const withAd = ok => Ads.show().then(r => { if (r === 'web') ok(AD_WEB); else if (r) ok(''); else { Sfx.play('fail'); ui.toast('광고를 끝까지 봐야 보상을 받을 수 있어요.'); } });

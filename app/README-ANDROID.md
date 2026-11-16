@@ -10,4 +10,5 @@
 - 로컬에서 직접 빌드(안드로이드 스튜디오가 있을 때): `cd app && npm ci && npm run sync`, 그다음 `app/android`를 안드로이드 스튜디오로 연다
 - 개인정보처리방침: https://greenneeg-sketch.github.io/news-desk-idle/privacy.html
 - 앱에서는 서비스 워커·웹 푸시를 쓰지 않는다(웹 버전만)
+- 태블릿·넓은 화면: `fitZoom()`(main.js)이 화면 폭 560 이상이면 게임 전체를 CSS zoom으로 키운다(폭 480 기준, 세로가 짧으면 덜 키움)
 - 서명 키(GitHub Secrets) 등록 완료: 2026-11-16
