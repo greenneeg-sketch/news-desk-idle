@@ -149,7 +149,7 @@ button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:tra
 .tip{position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top,0px));z-index:12;max-width:456px;margin:0 auto!important;background:#2a4a3a;box-shadow:0 0 0 3px #a7f070,0 6px 0 rgba(0,0,0,.5)}
 .tip .cnt{color:#a7f070}.tip p{margin:6px 0 10px;line-height:1.5}
 .code{font:16px "Press Start 2P",monospace;letter-spacing:2px;color:var(--y);background:#14141f;padding:12px;text-align:center;margin:6px 0;box-shadow:inset 0 0 0 2px #566c86;word-break:break-all}
-#cloudin{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px;background:var(--ink);color:var(--tx);border:0;box-shadow:inset 0 0 0 2px #566c86;text-transform:uppercase}
+#cloudin,#cpnin{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px;background:var(--ink);color:var(--tx);border:0;box-shadow:inset 0 0 0 2px #566c86;text-transform:uppercase}
 .modal .panel{max-height:92vh;overflow-y:auto}
 .jobq{margin:6px 0 4px;color:var(--y);font-size:13px}.jobs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .jobs button{font:inherit;font-size:13px;min-height:44px;padding:6px 4px;color:var(--tx);background:var(--pn);border:0;box-shadow:inset 0 0 0 2px #566c86;cursor:pointer}

@@ -251,7 +251,19 @@ async function shopRestore(quiet) { const ids = await Shop.owned(); let n = 0; i
 $i('shopb').onclick = async () => { $i('shoprs').hidden = !Shop.enabled(); $i('shopnote').textContent = Shop.enabled() ? '' : '구매는 안드로이드 앱(Google Play)에서 할 수 있어요. 웹에서는 상품만 둘러볼 수 있어요.'; shopList(); $i('shop').hidden = false; shopPrice = await Shop.prices(); shopList(); };
 $i('shopok').onclick = () => { $i('shop').hidden = true; markPop(); };
 $i('shoprs').onclick = () => shopRestore(false);
-if (Shop.native()) setTimeout(() => shopRestore(true), 3000); // 재설치·결제 대기 건 자동 지급
+if (Shop.native()) { setTimeout(() => shopRestore(true), 3000); document.addEventListener('visibilitychange', () => { if (!document.hidden) shopRestore(true); }); } // 재설치·결제 대기·Play 프로모션 코드로 받은 상품 자동 지급
+// 쿠폰: 서버(nd_redeem)에서 코드 확인 → 보상 지급
+const CPN_ERR = { none: '없는 쿠폰 코드예요. 다시 확인해 주세요.', used: '이 기기에서 이미 사용한 쿠폰이에요.', full: '이미 다른 분이 사용한 쿠폰이에요.', expired: '사용 기간이 지난 쿠폰이에요.' };
+$i('cpnb').onclick = async () => {
+  const code = $i('cpnin').value.trim().toUpperCase(); if (code.length < 4) return; $i('cpnb').disabled = true; $i('cpnn').textContent = '확인 중…';
+  try { const r = await board.call('redeem', code);
+    if (r && r.ok) { const w = r.reward || {}; store.dispatch({ type: 'COUPON', code, r: w }); Sfx.play('rank'); $i('cpnin').value = '';
+      const parts = [w.tk ? `스카우트 티켓 ${w.tk}장` : '', w.spd ? `속도 x2 ${Math.round(w.spd / 3600 * 10) / 10}시간` : '', w.cof ? `커피타임 ${Math.round(w.cof / 60)}분` : '', w.badge === 'beta' ? '베타 테스터 배지' : ''].filter(Boolean).join(' + ');
+      $i('cpnn').textContent = `${r.note || '쿠폰'} 지급 완료: ${parts}`; ui.toast(`🎁 ${parts}`); }
+    else $i('cpnn').textContent = r && r.err === 'early' ? `${new Date(r.at).toLocaleDateString('ko-KR')}부터 쓸 수 있는 쿠폰이에요.` : CPN_ERR[r && r.err] || '쿠폰을 확인하지 못했어요.';
+  } catch (e) { $i('cpnn').textContent = '서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.'; }
+  $i('cpnb').disabled = false;
+};
 // 스토리 모드
 bus.on('storyGo', id => store.dispatch({ type: 'STORY_GO', id }));
 bus.on('storyClaim', id => store.dispatch({ type: 'STORY_CLAIM', id }));
@@ -439,7 +451,7 @@ store.subscribe((s, p) => {
 });
 
 GameLoop({
-  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } $i('shopb').hidden = false; document.body.classList.toggle('noads', !!(s.iap || {}).nd_noads); { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
+  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } $i('shopb').hidden = false; $i('cpnt').textContent = s.beta ? '★ 베타 테스터' : ''; document.body.classList.toggle('noads', !!(s.iap || {}).nd_noads); { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
   render: t => { scene.draw(store.getState(), t, ui.sel()); if (!$i('brp').closest('.pane').hidden) branches.draw(store.getState(), t); },
 }).start();
 setInterval(() => { if (!restoring) Repo.save(store.getState()); }, 5000); // 자동 저장: 5초마다

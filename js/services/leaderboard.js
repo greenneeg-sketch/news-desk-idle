@@ -57,6 +57,7 @@ const SupabaseAdapter = ({ url, key }) => {
       dev = { id: j.id, key: nk }; try { localStorage.setItem(SB_KEY, JSON.stringify(dev)); } catch (e) { } return j;
     },
     // 푸시 알림 구독·예약: at(ISO 시각)에 알림, at=null이면 예약 취소, sub=null이면 구독 해제. 앱을 닫는 순간에도 보내지게 keepalive
+    redeem: c => rpc('nd_redeem', { p_code: c, p_id: dev.id }), // 쿠폰(supabase: nd_coupon)
     pushSet: (sub, at, keep = false) => rpc('nd_push_set', { p_id: dev.id, p_key: dev.key, p_sub: sub, p_at: at, p_kind: 'offline' }, keep),
   };
 };

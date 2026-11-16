@@ -23,7 +23,9 @@ export const Shop = (() => {
   }
   async function owned() { // 이미 산 상품 ID 목록(앱 재설치·기기 변경 시 복원)
     const p = plugin(); if (!p) return [];
-    try { const r = await p.getPurchases({ productType: 'inapp' }); return (r.purchases || []).filter(t => t.purchaseState == null || t.purchaseState === '1').map(t => t.productIdentifier); } catch (e) { return []; }
+    try { const r = await p.getPurchases({ productType: 'inapp' }), ok = (r.purchases || []).filter(t => t.purchaseState == null || t.purchaseState === '1');
+      for (const t of ok) if (t.isAcknowledged === false && t.purchaseToken) { try { await p.acknowledgePurchase({ purchaseToken: t.purchaseToken }); } catch (e) { } } // 앱 밖(Play 스토어 프로모션 코드)에서 받은 건: 3일 안에 확인 안 하면 구글이 환불한다
+      return ok.map(t => t.productIdentifier); } catch (e) { return []; }
   }
   return { enabled, native, prices, buy, owned };
 })();

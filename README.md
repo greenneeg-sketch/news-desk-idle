@@ -196,3 +196,10 @@ js/ui/                scene(픽셀 렌더러), hud(DOM 뷰)
 - `app/`(Capacitor 프로젝트)와 `.github/workflows/android.yml`(자동 빌드). 자세한 내용은 `app/README-ANDROID.md`
 - 보상형 광고 버튼은 `js/services/ads.js`의 `withAd` 흐름: 앱 = AdMob 광고를 끝까지 봐야 보상, 웹 = 바로 보상(안내 문구)
 - 개인정보처리방침 `privacy.html`
+
+## 쿠폰 (2026-11-16)
+- 설정 → 쿠폰. 서버 함수 `nd_redeem(code, id)`가 확인하고 보상 jsonb를 돌려준다(`supabase/coupons.sql`). 클라이언트는 `COUPON` 액션으로 지급(`s.cpn`에 코드 기록, 같은 코드 중복 지급 방지, 개편해도 유지)
+- 보상 키: `tk` 티켓, `spd` 속도 x2(초), `cof` 커피타임(초), `badge: 'beta'`(설정에 ★ 베타 테스터 표시)
+- 새 쿠폰: `insert into public.nd_coupon(code, reward, max_uses, starts_at, ends_at, note) values ('LAUNCH2026', '{"tk":5}', 100000, '2026-12-10+09', '2027-01-31+09', '정식 출시 기념');`
+- 베타 테스터 코드 20개(1회용, ~2027-06-30) 발급함. 사용 현황: `select code, used from public.nd_coupon where code like 'NDB-%';`
+- 앱 밖에서 받은 Play 프로모션 코드(인앱 상품)는 앱으로 돌아올 때 자동 지급·확인(acknowledge)된다
