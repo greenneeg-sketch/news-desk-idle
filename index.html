@@ -233,6 +233,9 @@ section.gh{display:none!important}
 .meetbg{position:fixed;inset:0;z-index:18;background:#0b0b14e0}
 #meetp.force{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:19;width:calc(100% - 28px);max-width:420px;margin:0;box-shadow:0 0 0 4px var(--y),0 10px 0 4px #0b0b14}
 #meetp.force::before{content:'아침 편집회의';display:block;color:var(--y);font-weight:bold;margin-bottom:6px;font-size:13px}
+/* 좁은 화면(360px 안드로이드 등): 머리 버튼이 잘리지 않게 줄을 바꾸고 조금 작게 */
+.hbtns{flex-wrap:wrap;justify-content:flex-end}.chips{min-width:0}
+@media (max-width:380px){.hbtns{gap:4px;max-width:150px}.hbtns .help{width:28px;height:28px}}
 </style>
 </head>
 <body>
@@ -509,7 +512,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.16-0905</span>
+  <span class="iver">v2026.11.16-0910</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
