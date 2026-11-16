@@ -26,6 +26,7 @@ import { Branches } from './ui/branches.js';
 import { Social } from './ui/social.js';
 import { GuideUI } from './ui/guide.js';
 import { StoryUI } from './ui/story.js';
+import { Ads } from './services/ads.js';
 import { STORY } from './data/story.js';
 import { perSec } from './systems/economy.js';
 import { jobOf } from './data/config.js';
@@ -34,6 +35,10 @@ import { isUnlocked } from './data/tips.js';
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
 const ui = Hud(bus), story = StoryUI(bus, () => store.getState()), branches = Branches(bus), social = Social(bus), guide = GuideUI(bus, () => store.getState()), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
+// 보상형 광고: 앱에서는 진짜 광고를 본 뒤에만 ok(), 웹에서는 바로 ok(true)(웹이면 안내 문구를 붙인다)
+const AD_WEB = '실제 앱에서는 보상형 광고가 나와요. ';
+const withAd = ok => Ads.show().then(r => { if (r === 'web') ok(AD_WEB); else if (r) ok(''); else { Sfx.play('fail'); ui.toast('광고를 끝까지 봐야 보상을 받을 수 있어요.'); } });
+Ads.init();
 let pending = 0, board = null;
 const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -66,7 +71,7 @@ $i('titleb').onclick = () => { $i('setm').hidden = true; goHome(); }; $i('homeb'
 $i('gearb').onclick = () => { $i('setm').hidden = false; }; $i('setok').onclick = () => { $i('setm').hidden = true; markPop(); };
 // 홈 화면 앱(PWA): GitHub Pages에서만 서비스 워커를 켠다. 안드로이드 크롬은 설치 창, 아이폰 사파리는 안내 창
 const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-if ('serviceWorker' in navigator && /github\.io$|^localhost$|^127\./.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => { });
+if ('serviceWorker' in navigator && !Ads.native() && /github\.io$|^localhost$|^127\./.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => { });
 let installEv = null;
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 if (!standalone && isIOS) $i('iinstall').hidden = false;
@@ -204,7 +209,7 @@ window.__mini = MINI; window.__intro = intro; window.__store = store; // 테스�
   addEventListener('keyup', e => { if (mgPlay && MINI.cur && MINI.cur.id === 'signal') MINI.cur.key(e); }); // 송출 사고: 키를 떼면 레벨이 내려간다
 }
 $i('mcok').onclick = () => { if (mgReward) store.dispatch({ type: 'GAIN', n: mgReward }); ui.toast(`${mgGrade}등급! ${fmt(mgReward)}점 획득`); mgReward = 0; mgClose(); };
-$i('mcad').onclick = () => { if (!mgReward) return; store.dispatch({ type: 'GAIN', n: mgReward * 2 }); ui.toast(`실제 앱에서는 보상형 광고가 나와요. ${fmt(mgReward * 2)}점 획득!`); mgReward = 0; Sfx.play('buy'); mgClose(); };
+$i('mcad').onclick = () => { if (!mgReward) return; const n = mgReward * 2; withAd(w => { store.dispatch({ type: 'GAIN', n }); ui.toast(`${w}${fmt(n)}점 획득!`); Sfx.play('buy'); mgReward = 0; mgClose(); if (mgStory) story.open(); }); };
 $i('mcquit').onclick = () => { const p = mgPlay && mgPlay.practice; mgClose(); if (mgStory) story.open(); else if (p) mgMenu(); };
 $i('mcagain').onclick = () => mgOpen(mgPlay.g, true);
 $i('mcback').onclick = () => { mgClose(); if (mgStory) story.open(); else mgMenu(); };
@@ -338,7 +343,7 @@ bus.on('research', id => { const p = store.getState(); store.dispatch({ type: 'R
 bus.on('brup', id => { const p = store.getState(); store.dispatch({ type: 'BRUP', id }); const s = store.getState(); if (s !== p) { Sfx.play('rank'); ui.toast((p.br || {})[id] ? '지국을 확장했어요!' : '새 지국을 열었어요! 지도를 확인해 보세요.'); } else Sfx.play('fail'); });
 bus.on('deco', id => { const p = store.getState(); store.dispatch({ type: 'DECO', id }); if (store.getState() !== p) { Sfx.play('rank'); ui.toast('사무실에 배치했어요! 점수 +2%'); } else { Sfx.play('fail'); ui.toast('점수가 부족해요.'); } });
 let paperBonus = 0;
-bus.on('paperad', () => { if (!paperBonus) return; store.dispatch({ type: 'GAIN', n: paperBonus }); paperBonus = 0; ui.paperAdDone(); Sfx.play('buy'); ui.toast('실제 앱에서는 보상형 광고가 나와요. 광고 수입 2배!'); });
+bus.on('paperad', () => { if (!paperBonus) return; withAd(w => { if (!paperBonus) return; store.dispatch({ type: 'GAIN', n: paperBonus }); paperBonus = 0; ui.paperAdDone(); Sfx.play('buy'); ui.toast(`${w}광고 수입 2배!`); }); });
 bus.on('judge', pick => { const s = store.getState(); if (!s.ev || !s.ev.dil || s.ev.pick) return; store.dispatch({ type: 'JUDGE', pick, r: Math.random() }); });
 bus.on('meet', id => { const p = store.getState(); store.dispatch({ type: 'MEET', id }); if (store.getState() !== p) { Sfx.play('rank'); ui.toast('편집회의 결정! 오늘은 이 분야를 톱으로 갑니다.'); } });
 bus.on('setn', n => store.dispatch({ type: 'SETN', n }));
@@ -348,7 +353,7 @@ bus.on('boost', () => {
   if (s.ev.boost) return;
   store.dispatch({ type: 'BOOST' }); Sfx.play('buy'); ui.toast('우선 편집: 이번 속보 점수 +50%');
 });
-bus.on('claim', k => { store.dispatch({ type: 'GAIN', n: pending * k }); pending = 0; ui.hideOffline(); Sfx.play('buy'); if (k > 1) ui.toast('실제 앱에서는 보상형 광고가 나와요.'); });
+bus.on('claim', k => { const give = w => { if (!pending) return; store.dispatch({ type: 'GAIN', n: pending * k }); pending = 0; ui.hideOffline(); Sfx.play('buy'); if (k > 1) ui.toast(`${w}보상 ${k}배!`); }; if (k > 1) withAd(give); else give(''); });
 bus.on('prestige', () => { if (prestigeGain(store.getState()) < 1) return ui.toast('이번 회차 100만 점부터 개편할 수 있어요.'); store.dispatch({ type: 'PRESTIGE' }); Sfx.play('rank'); ui.toast('개편 완료! 시청률 포인트를 얻었어요.'); });
 bus.on('reset', () => { Repo.clear(); store.dispatch({ type: 'RESET' }); ui.toast('저장 데이터를 지웠어요.'); ui.askName(); });
 bus.on('gold', () => {
@@ -358,18 +363,22 @@ bus.on('gold', () => {
 });
 bus.on('spd', () => {
   const s = store.getState(); if (s.clock < s.spdReady) return ui.toast('부스트는 잠시 후 다시 쓸 수 있어요.');
-  store.dispatch({ type: 'SPD' }); Sfx.play('buy'); ui.toast('실제 앱에서는 보상형 광고가 나와요. 2분 동안 처리 속도 x2');
+  withAd(w => { const s2 = store.getState(); if (s2.clock < s2.spdReady) return; store.dispatch({ type: 'SPD' }); Sfx.play('buy'); ui.toast(`${w}2분 동안 처리 속도 x2`); });
 });
 bus.on('scout', how => {
   const s = store.getState(), h = how === 'free' ? (s.tickets > 0 ? 'ticket' : 'ad') : how;
   if (h === 'paid' && s.score < scoutCost(s)) { Sfx.play('fail'); return ui.toast('점수가 부족해요.'); }
   if (h === 'ad' && s.clock < s.freeReady) return ui.toast('광고 스카우트는 잠시 후 다시 쓸 수 있어요.');
+  if (h === 'ad') return withAd(w => doScout(h, w));
+  doScout(h, '');
+});
+function doScout(h, w) {
   store.dispatch({ type: 'SCOUT', how: h, r: Math.random(), r2: Math.random() }); Sfx.play(store.getState().last.miss ? 'fail' : 'rank');
   const l = store.getState().last;
-  if (l.miss) return ui.toast(`꽝! 이번엔 합격자가 없어요${l.back ? ` · 위로금 +${fmt(l.back)}점` : ''}${h === 'ad' ? ' · 실제 앱에서는 보상형 광고가 나와요' : ''}`);
+  if (l.miss) return ui.toast(`꽝! 이번엔 합격자가 없어요${l.back ? ` · 위로금 +${fmt(l.back)}점` : ''}${w ? ' · ' + w.trim() : ''}`);
   const c = CARDS.find(x => x.id === l.id);
-  ui.toast(`스카우트: ${c.n} (${RARITY[c.rar].n})${l.isNew ? ' NEW!' : l.maxed ? ' 최대 ★ 보너스 +500점' : ' ★ 상승'}${h === 'ad' ? ' · 실제 앱에서는 보상형 광고가 나와요' : ''}`);
-});
+  ui.toast(`스카우트: ${c.n} (${RARITY[c.rar].n})${l.isNew ? ' NEW!' : l.maxed ? ' 최대 ★ 보너스 +500점' : ' ★ 상승'}${w ? ' · ' + w.trim() : ''}`);
+}
 bus.on('goal', id => {
   const s = store.getState(), g = WEEKLY.find(x => x.id === id); if (!g || s.week.done[id] || (s.week.prog[g.k] || 0) < g.goal) return;
   store.dispatch({ type: 'CLAIM', id }); Sfx.play('rank'); ui.toast(`주간 목표 달성: ${g.n} · 보상과 스카우트 티켓 +1`);

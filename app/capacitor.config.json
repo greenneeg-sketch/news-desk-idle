@@ -1,0 +1,8 @@
+{
+  "appId": "io.github.greenneeg.newsdesk",
+  "appName": "NEWS DESK",
+  "webDir": "www",
+  "backgroundColor": "#070a1f",
+  "android": { "backgroundColor": "#070a1f", "allowMixedContent": false },
+  "plugins": {}
+}
