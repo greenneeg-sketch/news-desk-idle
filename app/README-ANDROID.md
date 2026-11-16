@@ -10,3 +10,4 @@
 - 로컬에서 직접 빌드(안드로이드 스튜디오가 있을 때): `cd app && npm ci && npm run sync`, 그다음 `app/android`를 안드로이드 스튜디오로 연다
 - 개인정보처리방침: https://greenneeg-sketch.github.io/news-desk-idle/privacy.html
 - 앱에서는 서비스 워커·웹 푸시를 쓰지 않는다(웹 버전만)
+- 서명 키(GitHub Secrets) 등록 완료: 2026-11-16
