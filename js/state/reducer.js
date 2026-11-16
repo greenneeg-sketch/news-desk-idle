@@ -16,10 +16,10 @@ export const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, story: { done: {}, mis: null }, mgBest: {}, mgN: 0, br: {}, evH: 0, cofEnd: 0, perkN: 0, lr: null, guild: null,
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, story: { done: {}, mis: null }, iap: {}, mgBest: {}, mgN: 0, br: {}, evH: 0, cofEnd: 0, perkN: 0, lr: null, guild: null,
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild', 'evH', 'perkN', 'story'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild', 'evH', 'perkN', 'story', 'iap'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -92,6 +92,12 @@ export function reducer(st, a) {
     case 'GOLD': {
       if (!st.gold) return st; const g = goldReward(st, a.r), n = g.cash || 0;
       return { ...earn(st, n), gold: null, nextGold: st.clock + goldGap(st, a.r), goldCount: st.goldCount + 1, wev: wevBump(st, 'gold'), week: bump(st.week, 'gold'), gbEnd: g.frenzy ? st.clock + 20 : st.gbEnd };
+    }
+    case 'IAP': { // 인앱 구매 지급. restore = 복원(이미 지급한 건 다시 안 줌)
+      const iap = st.iap || {}; if (iap[a.id]) return st;
+      if (a.id === 'nd_noads') return { ...st, iap: { ...iap, nd_noads: 1 } };
+      if (a.id === 'nd_starter') return { ...st, iap: { ...iap, nd_starter: 1 }, tickets: st.tickets + 10, spdEnd: Math.max(st.spdEnd || 0, st.clock) + 7200, cofEnd: Math.max(st.cofEnd || 0, st.clock) + 1800 };
+      return st;
     }
     case 'SPD': return st.clock < st.spdReady ? st : { ...st, spdEnd: st.clock + 120, spdReady: st.clock + 300 };
     case 'BUY': {

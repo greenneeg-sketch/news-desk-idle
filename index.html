@@ -236,17 +236,22 @@ section.gh{display:none!important}
 /* 좁은 화면(360px 안드로이드 등): 머리 버튼이 잘리지 않게 줄을 바꾸고 조금 작게 */
 .hbtns{flex-wrap:wrap;justify-content:flex-end}.chips{min-width:0}
 @media (max-width:380px){.hbtns{gap:4px;max-width:150px}.hbtns .help{width:28px;height:28px}}
+
+/* 상점 */
+body.noads .adw{display:none}
+.shopit{display:flex;gap:10px;align-items:center;padding:10px 4px;border-bottom:2px solid #22325e}.shopit .ic{flex:none;width:44px;height:44px;display:grid;place-items:center;font-size:24px;background:#29366f;box-shadow:0 0 0 2px var(--ink)}
+.shopit b{display:block}.shopit small{display:block;color:var(--sub);font-size:12px;line-height:1.45;margin-top:2px}.shopit .btn{flex:none;min-width:84px}.shopit.own b{color:#a7f070}
 </style>
 </head>
 <body>
 <main class="app">
   <header class="panel hud">
     <div><div class="sname" id="sname"></div><span class="px">SCORE</span><strong id="score">0</strong><small id="rank"></small><div class="ms"><i id="rkb"></i></div></div>
-    <div class="chips"><div class="hbtns"><button class="help home" id="homeb" aria-label="메인 화면으로">⌂</button><button class="help" id="helpb" aria-label="튜토리얼 다시 보기">?</button><button class="help gear" id="gearb" aria-label="설정">⚙</button><button class="help" id="mgmb" aria-label="미니게임" hidden>🎮</button><button class="help" id="storyb" aria-label="스토리" hidden>📖</button></div><span id="ps"></span><span id="pt"></span></div>
+    <div class="chips"><div class="hbtns"><button class="help home" id="homeb" aria-label="메인 화면으로">⌂</button><button class="help" id="helpb" aria-label="튜토리얼 다시 보기">?</button><button class="help gear" id="gearb" aria-label="설정">⚙</button><button class="help" id="mgmb" aria-label="미니게임" hidden>🎮</button><button class="help" id="storyb" aria-label="스토리" hidden>📖</button><button class="help" id="shopb" aria-label="상점" hidden>🛍</button></div><span id="ps"></span><span id="pt"></span></div>
   </header>
   <section class="panel offline" id="offline" hidden>
     <p id="offd"></p>
-    <div class="row"><button class="btn" id="offOk">받기</button><button class="btn alt" id="offAd">2배 (광고 자리)</button></div>
+    <div class="row"><button class="btn" id="offOk">받기</button><button class="btn alt" id="offAd"><span class="adw">광고 보고 </span>2배</button></div>
   </section>
   <section class="panel alert" id="alert" hidden>
     <div><b id="evt"></b><small id="evd"></small></div>
@@ -459,7 +464,7 @@ section.gh{display:none!important}
     <div id="mcres" hidden>
       <div class="mcg"><strong id="mcgr"></strong><span id="mcst"></span></div>
       <p class="mcrw" id="mcrw"></p>
-      <div class="row" id="mcrow"><button class="btn" id="mcok">받기</button><button class="btn warn" id="mcad">광고 보고 2배</button></div>
+      <div class="row" id="mcrow"><button class="btn" id="mcok">받기</button><button class="btn warn" id="mcad"><span class="adw">광고 보고 </span>2배</button></div>
       <div class="row" id="mcprow" hidden><button class="btn" id="mcagain">다시 하기</button><button class="btn alt" id="mcback">목록으로</button></div>
     </div>
     <button class="btn alt mcx" id="mcquit">그만하기</button>
@@ -471,6 +476,15 @@ section.gh{display:none!important}
     <div class="seg" id="gdseg"><button data-g="bc">방송 이야기</button><button data-g="gm">게임 방법</button></div>
     <div id="gdlist" class="gdlist"></div>
     <button class="btn alt" id="gdtut" style="width:100%;margin-top:8px">처음 안내 다시 보기</button>
+  </div>
+</div>
+<div class="modal" id="shop" hidden>
+  <div class="panel">
+    <div class="fh"><h1>상점</h1><button class="btn mini" id="shopok">닫기</button></div>
+    <p class="note">순위 점수를 직접 사는 상품은 없어요. 결제는 Google Play로 안전하게 처리돼요.</p>
+    <div id="shoplist"></div>
+    <div class="row"><button class="btn alt" id="shoprs">구매 복원</button></div>
+    <p class="note" id="shopnote"></p>
   </div>
 </div>
 <div class="modal" id="story" hidden>
@@ -502,7 +516,7 @@ section.gh{display:none!important}
     <h2 id="phead"></h2>
     <ul id="psubs"></ul>
     <p class="pfoot" id="pfoot"></p>
-    <div class="row"><button class="btn" id="pok">확인</button><button class="btn warn" id="pad">광고 보고 수입 2배</button></div>
+    <div class="row"><button class="btn" id="pok">확인</button><button class="btn warn" id="pad"><span class="adw">광고 보고 </span>수입 2배</button></div>
   </div>
 </div>
 <div class="intro" id="intro">
@@ -512,7 +526,7 @@ section.gh{display:none!important}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.16-1143</span>
+  <span class="iver">v2026.11.16-1304</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -1142,10 +1156,10 @@ const initialState = () => ({
   chal: null, chalDone: {}, chalWin: null, season: { key: '', base: 0 }, lastSeason: null, tut: 0,
   outT: 0, buyT: 0, scoopT: 0, win: 0, bestWin: 0, dAdj: 0, mis: null, misAll: 0, misHit: null, judge: null,
   rp: 0, res: {}, deco: {}, dLog: [], dW: 0, dF: 0,
-  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, story: { done: {}, mis: null }, mgBest: {}, mgN: 0, br: {}, evH: 0, cofEnd: 0, perkN: 0, lr: null, guild: null,
+  career: 0, promo: null, wev: null, badges: [], weHit: null, tips: {}, job: '', unl: {}, unlHit: null, presV: 2, lbEp: 2, lbBase: { total: 0, views: 0 }, story: { done: {}, mis: null }, iap: {}, mgBest: {}, mgN: 0, br: {}, evH: 0, cofEnd: 0, perkN: 0, lr: null, guild: null,
   lv: Object.fromEntries(UPGRADES.map(u => [u.id, 0])),
 });
-const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild', 'evH', 'perkN', 'story'];
+const KEEP = ['name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'ach', 'evCount', 'goldCount', 'buyN', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'lr', 'guild', 'evH', 'perkN', 'story', 'iap'];
 const keep = st => ({ ...initialState(), ...Object.fromEntries(KEEP.map(k => [k, st[k]])) });
 const bump = (w, k, n = 1) => ({ ...w, prog: { ...w.prog, [k]: (w.prog[k] || 0) + n } });
 const dn = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
@@ -1218,6 +1232,12 @@ function reducer(st, a) {
     case 'GOLD': {
       if (!st.gold) return st; const g = goldReward(st, a.r), n = g.cash || 0;
       return { ...earn(st, n), gold: null, nextGold: st.clock + goldGap(st, a.r), goldCount: st.goldCount + 1, wev: wevBump(st, 'gold'), week: bump(st.week, 'gold'), gbEnd: g.frenzy ? st.clock + 20 : st.gbEnd };
+    }
+    case 'IAP': { // 인앱 구매 지급. restore = 복원(이미 지급한 건 다시 안 줌)
+      const iap = st.iap || {}; if (iap[a.id]) return st;
+      if (a.id === 'nd_noads') return { ...st, iap: { ...iap, nd_noads: 1 } };
+      if (a.id === 'nd_starter') return { ...st, iap: { ...iap, nd_starter: 1 }, tickets: st.tickets + 10, spdEnd: Math.max(st.spdEnd || 0, st.clock) + 7200, cofEnd: Math.max(st.cofEnd || 0, st.clock) + 1800 };
+      return st;
     }
     case 'SPD': return st.clock < st.spdReady ? st : { ...st, spdEnd: st.clock + 120, spdReady: st.clock + 300 };
     case 'BUY': {
@@ -1346,7 +1366,7 @@ const EventScheduler = store => ({
 
 
 
-const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'br', 'lr', 'guild', 'evH', 'perkN', 'meet', 'story'];
+const SAVE = ['score', 'run', 'pts', 'lv', 'mg', 'chief', 'ach', 'evCount', 'goldCount', 'name', 'uid', 'total', 'maxLv', 'bestRating', 'views', 'day', 'hist', 'lastRating', 'prevRating', 'lastViews', 'cards', 'pulls', 'pity', 'tickets', 'login', 'week', 'chal', 'chalDone', 'season', 'lastSeason', 'tut', 'outT', 'buyT', 'scoopT', 'win', 'bestWin', 'mis', 'misAll', 'rp', 'res', 'deco', 'career', 'wev', 'badges', 'tips', 'job', 'unl', 'presV', 'lbEp', 'lbBase', 'mgBest', 'mgN', 'br', 'lr', 'guild', 'evH', 'perkN', 'meet', 'story', 'iap'];
 // Repository 패턴: 저장 매체(localStorage)를 이 모듈 안에 가둔다
 const Repo = {
   snapshot: s => ({ ...Object.fromEntries(SAVE.map(k => [k, s[k]])), t: Date.now() }), // 클라우드 저장에도 같은 모양을 쓴다
@@ -1606,6 +1626,36 @@ const Ads = (() => {
     } catch (e) { return false; } finally { busy = false; hs.forEach(h => { try { h.remove(); } catch (e) { } }); }
   }
   return { show, init, native };
+})();
+
+// 인앱 결제(Google Play). 안드로이드 앱 안에서만 동작하고, 웹에서는 상점을 숨긴다(주소 끝에 #shoptest를 붙이면 결제 없이 시험 구매).
+// 상품 ID는 Play Console → 수익 창출 → 인앱 상품에서 똑같이 만들어야 한다(app/README-ANDROID.md).
+const SHOP_ITEMS = [
+  { id: 'nd_noads', n: '광고 제거 패스', price: '₩5,900', d: '광고 보상 버튼을 누르면 광고 없이 바로 보상을 받아요. 미니게임 2배 · 신문 광고 수입 2배 · 오프라인 보상 2배 · 속도 부스트 · 무료 스카우트 모두 해당. 한 번 사면 계속 유지돼요.', once: true },
+  { id: 'nd_starter', n: '신입 스타터 팩', price: '₩1,500', d: '스카우트 티켓 10장 + 처리 속도 x2 2시간 + 커피타임 30분. 계정당 한 번만 살 수 있어요.', once: true },
+];
+const Shop = (() => {
+  const cap = () => window.Capacitor, native = () => !!(cap() && cap().isNativePlatform && cap().isNativePlatform());
+  const test = () => /shoptest/.test(location.hash);
+  let P = null; const plugin = () => P || (P = native() ? (cap().Plugins && cap().Plugins.NativePurchases) || (cap().registerPlugin && cap().registerPlugin('NativePurchases')) : null);
+  const enabled = () => native() || test();
+  async function prices() { // 스토어에 등록된 실제 가격(현지 통화). 못 받으면 기본 가격 표시
+    const out = {}; SHOP_ITEMS.forEach(i => out[i.id] = i.price); const p = plugin(); if (!p) return out;
+    try { const r = await p.getProducts({ productIdentifiers: SHOP_ITEMS.map(i => i.id), productType: 'inapp' }); (r.products || []).forEach(x => { if (x.priceString) out[x.identifier] = x.priceString; }); } catch (e) { }
+    return out;
+  }
+  async function buy(id) { // 'ok' · 'pending'(결제 대기) · 'cancel' · 'fail'
+    if (!native()) return test() ? 'ok' : 'fail';
+    const p = plugin(); if (!p) return 'fail';
+    try { const tx = await p.purchaseProduct({ productIdentifier: id, productType: 'inapp', isConsumable: false });
+      if (!tx) return 'fail'; if (tx.purchaseState === '0') return 'pending'; return tx.purchaseState == null || tx.purchaseState === '1' ? 'ok' : 'fail';
+    } catch (e) { return /cancel/i.test(String(e && (e.message || e.code))) ? 'cancel' : 'fail'; }
+  }
+  async function owned() { // 이미 산 상품 ID 목록(앱 재설치·기기 변경 시 복원)
+    const p = plugin(); if (!p) return [];
+    try { const r = await p.getPurchases({ productType: 'inapp' }); return (r.purchases || []).filter(t => t.purchaseState == null || t.purchaseState === '1').map(t => t.productIdentifier); } catch (e) { return []; }
+  }
+  return { enabled, native, prices, buy, owned };
 })();
 
 
@@ -3043,7 +3093,7 @@ function Hud(bus) {
     board(list, me, mode, season, my) { bd = { list, me, mode, season, my }; drawBoard(); },
     toast(m) { const e = $('toast'); e.textContent = m; clearTimeout(tt); tt = setTimeout(() => e.textContent = '', 3500); },
     offline(o) { $('offd').textContent = `${o.min}분 동안 야간 근무로 ${fmt(o.n)}점을 벌었어요.`; $('offline').hidden = false; },
-    showPaper(p) { $('pmast').textContent = p.mast; $('pno').textContent = p.no; $('phead').textContent = p.head; $('pfoot').textContent = p.foot; $('psubs').innerHTML = ''; p.subs.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('psubs').appendChild(li); }); $('pad').disabled = false; $('pad').textContent = '광고 보고 수입 2배'; $('paper').hidden = false; },
+    showPaper(p) { $('pmast').textContent = p.mast; $('pno').textContent = p.no; $('phead').textContent = p.head; $('pfoot').textContent = p.foot; $('psubs').innerHTML = ''; p.subs.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('psubs').appendChild(li); }); $('pad').disabled = false; $('pad').innerHTML = '<span class="adw">광고 보고 </span>수입 2배'; $('paper').hidden = false; },
     showPromo(i, name, s, tk) { const c = careerOf(s)[i]; tk = tk || c.tk; $('prt').textContent = `${name}님을 ${c.n}(으)로 임명합니다.`; $('prwho').textContent = c.who; $('prsay').textContent = c.say.join(' '); $('prrew').textContent = `보상: 영구 점수 +5%/직급 · 스카우트 티켓 ${tk}장`; $('promo').hidden = false; },
     showTip(t) { $('tipt').textContent = t.t; $('tipd').textContent = t.d; $('tipgo').hidden = !t.tab; $('tip').hidden = false; },
     hideTip() { $('tip').hidden = true; },
@@ -3085,7 +3135,7 @@ function Hud(bus) {
       $('chiefb').textContent = s.chief ? '고용 완료' : `고용 ${fmt(CHIEF)}`; $('chiefb').disabled = !!s.chief; $('chiefb').classList.toggle('can', !s.chief && s.score >= CHIEF);
       const g = $('gold'); g.hidden = !s.gold; if (s.gold) { g.style.left = s.gold.x + '%'; g.style.top = s.gold.y + '%'; }
       const on = s.clock < s.spdEnd, cd = s.clock < s.spdReady;
-      $('spdb').textContent = on ? `속도 x2 부스트 ${Math.ceil(s.spdEnd - s.clock)}초` : cd ? `부스트 대기 ${Math.ceil(s.spdReady - s.clock)}초` : '광고 보고 속도 x2 (2분)'; $('spdb').disabled = cd;
+      $('spdb').textContent = on ? `속도 x2 부스트 ${(r => { const m = Math.ceil(r / 60); return r >= 120 ? (m >= 60 ? `${Math.floor(m / 60)}시간 ${m % 60}분` : `${m}분`) : `${r}초`; })(Math.ceil(s.spdEnd - s.clock))}` : cd ? `부스트 대기 ${Math.ceil(s.spdReady - s.clock)}초` : (s.iap && s.iap.nd_noads ? '' : '광고 보고 ') + '속도 x2 (2분)'; $('spdb').disabled = cd;
       document.querySelectorAll('#ach i').forEach((e, i) => e.classList.toggle('on', s.ach.includes(ACHIEVEMENTS[i].id)));
       const na = ACHIEVEMENTS.find(a => !s.ach.includes(a.id)); $('achn').textContent = na ? `다음 업적: ${na.n} · ${na.d}` : '모든 업적을 달성했어요!';
       $('achd').textContent = `${s.ach.length}/${ACHIEVEMENTS.length} · 점수 +${s.ach.length * 2}%`;
@@ -3152,7 +3202,7 @@ function Hud(bus) {
       const ncard = Object.keys(s.cards).length, scost = scoutCost(s), adcd = s.clock < s.freeReady;
       $('scd').textContent = `카드 ${ncard}/${CARDS.length} · 티켓 ${s.tickets}장 · 영웅 보장까지 ${Math.max(0, PITY - s.pity)}회`;
       $('scoutb').textContent = `스카우트 ${fmt(scost)}점`; $('scoutb').classList.toggle('can', s.score >= scost);
-      $('scouta').textContent = s.tickets > 0 ? `티켓 사용 (${s.tickets}장)` : adcd ? `광고 스카우트 ${Math.ceil(s.freeReady - s.clock)}초` : '광고 보고 무료 스카우트'; $('scouta').disabled = s.tickets < 1 && adcd;
+      $('scouta').textContent = s.tickets > 0 ? `티켓 사용 (${s.tickets}장)` : adcd ? `광고 스카우트 ${Math.ceil(s.freeReady - s.clock)}초` : (s.iap && s.iap.nd_noads ? '' : '광고 보고 ') + '무료 스카우트'; $('scouta').disabled = s.tickets < 1 && adcd;
       const c0 = CARDS[selCard] || CARDS[0], n0 = s.cards[c0.id] || 0;
       $('cinfo').textContent = n0 ? `${c0.n} · ${RARITY[c0.rar].n} · ${c0.st < 0 ? '전 층' : FLOORS[c0.st][0]} 속도 +${Math.round(RARITY[c0.rar].b * (1 + .5 * (n0 - 1)) * 100)}% · ★${n0}${c0.hero ? ' · 뉴스 디펜더즈: 거대 로봇 속보 점수 +50%' : ''}${n0 < 3 ? ` · 한 장 더 나오면 ★${n0 + 1} ${n0 === 1 ? '은빛 외형' : '금빛 외형'}` : ' · 최고 등급 외형'}` : (c0.hero ? '??? · 전설의 히어로. 거대 로봇이 나타나면 출동해요.' : '??? · 아직 모르는 직원이에요. 카드를 눌러 확인해 보세요.');
       $('cbonus').textContent = '도감 보너스 ' + FLOORS.slice(0, 5).map(([n], i) => `${n} +${Math.round(cardBonus(s, i) * 100)}%`).join(' · ');
@@ -3501,6 +3551,7 @@ function StoryUI(bus, getS) {
 
 
 
+
 // Composition Root: 모듈을 조립만 하고 로직은 각 모듈에 둔다
 const bus = new EventBus(), store = createStore(reducer, initialState());
 const ui = Hud(bus), story = StoryUI(bus, () => store.getState()), branches = Branches(bus), social = Social(bus), guide = GuideUI(bus, () => store.getState()), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
@@ -3509,7 +3560,7 @@ function fitZoom() { const w = innerWidth, h = innerHeight, z = w >= 560 ? Math.
 fitZoom(); addEventListener('resize', fitZoom);
 // 보상형 광고: 앱에서는 진짜 광고를 본 뒤에만 ok(), 웹에서는 바로 ok(true)(웹이면 안내 문구를 붙인다)
 const AD_WEB = '실제 앱에서는 보상형 광고가 나와요. ';
-const withAd = ok => Ads.show().then(r => { if (r === 'web') ok(AD_WEB); else if (r) ok(''); else { Sfx.play('fail'); ui.toast('광고를 끝까지 봐야 보상을 받을 수 있어요.'); } });
+const withAd = ok => (store.getState().iap || {}).nd_noads ? ok('') : Ads.show().then(r => { if (r === 'web') ok(AD_WEB); else if (r) ok(''); else { Sfx.play('fail'); ui.toast('광고를 끝까지 봐야 보상을 받을 수 있어요.'); } });
 Ads.init();
 let pending = 0, board = null;
 const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -3697,6 +3748,29 @@ function mgMenu() {
   $i('mgmenu').hidden = false;
 }
 $i('mgmb').onclick = () => mgMenu();
+// 상점(인앱 결제): 앱에서만 보인다. 웹은 #shoptest로 시험 구매
+const SHOP_IC = { nd_noads: '🚫', nd_starter: '🎁' }; let shopPrice = {}, shopBusy = false;
+function shopList() {
+  const s = store.getState(), own = s.iap || {}, box = $i('shoplist'); box.replaceChildren();
+  SHOP_ITEMS.forEach(it => {
+    const row = document.createElement('div'), ic = document.createElement('div'), info = document.createElement('div'), b = document.createElement('b'), d = document.createElement('small'), btn = document.createElement('button');
+    row.className = 'shopit' + (own[it.id] ? ' own' : ''); ic.className = 'ic'; ic.textContent = SHOP_IC[it.id] || '★'; b.textContent = it.n + (own[it.id] ? ' · 구매함' : ''); d.textContent = it.d;
+    btn.className = 'btn' + (own[it.id] ? ' alt' : ' warn'); btn.disabled = !!own[it.id] || shopBusy; btn.textContent = own[it.id] ? '보유 중' : shopPrice[it.id] || it.price;
+    btn.onclick = async () => {
+      if (shopBusy) return; shopBusy = true; shopList(); $i('shopnote').textContent = 'Google Play 결제 창을 여는 중…';
+      const r = await Shop.buy(it.id); shopBusy = false;
+      if (r === 'ok') { store.dispatch({ type: 'IAP', id: it.id }); Sfx.play('rank'); ui.toast(`${it.n} 구매 완료! 고마워요.`); $i('shopnote').textContent = ''; }
+      else $i('shopnote').textContent = r === 'pending' ? '결제가 아직 처리 중이에요. 완료되면 다음 실행 때 자동으로 지급돼요.' : r === 'cancel' ? '구매를 취소했어요.' : '결제를 완료하지 못했어요. 잠시 후 다시 시도해 주세요.';
+      shopList();
+    };
+    info.append(b, d); row.append(ic, info, btn); box.append(row);
+  });
+}
+async function shopRestore(quiet) { const ids = await Shop.owned(); let n = 0; ids.forEach(id => { if (!(store.getState().iap || {})[id] && SHOP_ITEMS.some(i => i.id === id)) { store.dispatch({ type: 'IAP', id }); n++; } }); if (!quiet) $i('shopnote').textContent = n ? `${n}개 상품을 복원했어요.` : ids.length ? '이미 모두 받은 상태예요.' : '복원할 구매 내역이 없어요.'; if (!$i('shop').hidden) shopList(); }
+$i('shopb').onclick = async () => { $i('shopnote').textContent = ''; shopList(); $i('shop').hidden = false; shopPrice = await Shop.prices(); shopList(); };
+$i('shopok').onclick = () => { $i('shop').hidden = true; markPop(); };
+$i('shoprs').onclick = () => shopRestore(false);
+if (Shop.native()) setTimeout(() => shopRestore(true), 3000); // 재설치·결제 대기 건 자동 지급
 // 스토리 모드
 bus.on('storyGo', id => store.dispatch({ type: 'STORY_GO', id }));
 bus.on('storyClaim', id => store.dispatch({ type: 'STORY_CLAIM', id }));
@@ -3884,7 +3958,7 @@ store.subscribe((s, p) => {
 });
 
 GameLoop({
-  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
+  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } $i('shopb').hidden = !Shop.enabled(); document.body.classList.toggle('noads', !!(s.iap || {}).nd_noads); { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
   render: t => { scene.draw(store.getState(), t, ui.sel()); if (!$i('brp').closest('.pane').hidden) branches.draw(store.getState(), t); },
 }).start();
 setInterval(() => { if (!restoring) Repo.save(store.getState()); }, 5000); // 자동 저장: 5초마다

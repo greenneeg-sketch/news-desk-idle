@@ -27,6 +27,7 @@ import { Social } from './ui/social.js';
 import { GuideUI } from './ui/guide.js';
 import { StoryUI } from './ui/story.js';
 import { Ads } from './services/ads.js';
+import { Shop, SHOP_ITEMS } from './services/shop.js';
 import { STORY } from './data/story.js';
 import { perSec } from './systems/economy.js';
 import { jobOf } from './data/config.js';
@@ -40,7 +41,7 @@ function fitZoom() { const w = innerWidth, h = innerHeight, z = w >= 560 ? Math.
 fitZoom(); addEventListener('resize', fitZoom);
 // 보상형 광고: 앱에서는 진짜 광고를 본 뒤에만 ok(), 웹에서는 바로 ok(true)(웹이면 안내 문구를 붙인다)
 const AD_WEB = '실제 앱에서는 보상형 광고가 나와요. ';
-const withAd = ok => Ads.show().then(r => { if (r === 'web') ok(AD_WEB); else if (r) ok(''); else { Sfx.play('fail'); ui.toast('광고를 끝까지 봐야 보상을 받을 수 있어요.'); } });
+const withAd = ok => (store.getState().iap || {}).nd_noads ? ok('') : Ads.show().then(r => { if (r === 'web') ok(AD_WEB); else if (r) ok(''); else { Sfx.play('fail'); ui.toast('광고를 끝까지 봐야 보상을 받을 수 있어요.'); } });
 Ads.init();
 let pending = 0, board = null;
 const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -228,6 +229,29 @@ function mgMenu() {
   $i('mgmenu').hidden = false;
 }
 $i('mgmb').onclick = () => mgMenu();
+// 상점(인앱 결제): 앱에서만 보인다. 웹은 #shoptest로 시험 구매
+const SHOP_IC = { nd_noads: '🚫', nd_starter: '🎁' }; let shopPrice = {}, shopBusy = false;
+function shopList() {
+  const s = store.getState(), own = s.iap || {}, box = $i('shoplist'); box.replaceChildren();
+  SHOP_ITEMS.forEach(it => {
+    const row = document.createElement('div'), ic = document.createElement('div'), info = document.createElement('div'), b = document.createElement('b'), d = document.createElement('small'), btn = document.createElement('button');
+    row.className = 'shopit' + (own[it.id] ? ' own' : ''); ic.className = 'ic'; ic.textContent = SHOP_IC[it.id] || '★'; b.textContent = it.n + (own[it.id] ? ' · 구매함' : ''); d.textContent = it.d;
+    btn.className = 'btn' + (own[it.id] ? ' alt' : ' warn'); btn.disabled = !!own[it.id] || shopBusy; btn.textContent = own[it.id] ? '보유 중' : shopPrice[it.id] || it.price;
+    btn.onclick = async () => {
+      if (shopBusy) return; shopBusy = true; shopList(); $i('shopnote').textContent = 'Google Play 결제 창을 여는 중…';
+      const r = await Shop.buy(it.id); shopBusy = false;
+      if (r === 'ok') { store.dispatch({ type: 'IAP', id: it.id }); Sfx.play('rank'); ui.toast(`${it.n} 구매 완료! 고마워요.`); $i('shopnote').textContent = ''; }
+      else $i('shopnote').textContent = r === 'pending' ? '결제가 아직 처리 중이에요. 완료되면 다음 실행 때 자동으로 지급돼요.' : r === 'cancel' ? '구매를 취소했어요.' : '결제를 완료하지 못했어요. 잠시 후 다시 시도해 주세요.';
+      shopList();
+    };
+    info.append(b, d); row.append(ic, info, btn); box.append(row);
+  });
+}
+async function shopRestore(quiet) { const ids = await Shop.owned(); let n = 0; ids.forEach(id => { if (!(store.getState().iap || {})[id] && SHOP_ITEMS.some(i => i.id === id)) { store.dispatch({ type: 'IAP', id }); n++; } }); if (!quiet) $i('shopnote').textContent = n ? `${n}개 상품을 복원했어요.` : ids.length ? '이미 모두 받은 상태예요.' : '복원할 구매 내역이 없어요.'; if (!$i('shop').hidden) shopList(); }
+$i('shopb').onclick = async () => { $i('shopnote').textContent = ''; shopList(); $i('shop').hidden = false; shopPrice = await Shop.prices(); shopList(); };
+$i('shopok').onclick = () => { $i('shop').hidden = true; markPop(); };
+$i('shoprs').onclick = () => shopRestore(false);
+if (Shop.native()) setTimeout(() => shopRestore(true), 3000); // 재설치·결제 대기 건 자동 지급
 // 스토리 모드
 bus.on('storyGo', id => store.dispatch({ type: 'STORY_GO', id }));
 bus.on('storyClaim', id => store.dispatch({ type: 'STORY_CLAIM', id }));
@@ -415,7 +439,7 @@ store.subscribe((s, p) => {
 });
 
 GameLoop({
-  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
+  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } $i('shopb').hidden = !Shop.enabled(); document.body.classList.toggle('noads', !!(s.iap || {}).nd_noads); { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
   render: t => { scene.draw(store.getState(), t, ui.sel()); if (!$i('brp').closest('.pane').hidden) branches.draw(store.getState(), t); },
 }).start();
 setInterval(() => { if (!restoring) Repo.save(store.getState()); }, 5000); // 자동 저장: 5초마다

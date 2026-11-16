@@ -20,11 +20,11 @@
 <main class="app">
   <header class="panel hud">
     <div><div class="sname" id="sname"></div><span class="px">SCORE</span><strong id="score">0</strong><small id="rank"></small><div class="ms"><i id="rkb"></i></div></div>
-    <div class="chips"><div class="hbtns"><button class="help home" id="homeb" aria-label="메인 화면으로">⌂</button><button class="help" id="helpb" aria-label="튜토리얼 다시 보기">?</button><button class="help gear" id="gearb" aria-label="설정">⚙</button><button class="help" id="mgmb" aria-label="미니게임" hidden>🎮</button><button class="help" id="storyb" aria-label="스토리" hidden>📖</button></div><span id="ps"></span><span id="pt"></span></div>
+    <div class="chips"><div class="hbtns"><button class="help home" id="homeb" aria-label="메인 화면으로">⌂</button><button class="help" id="helpb" aria-label="튜토리얼 다시 보기">?</button><button class="help gear" id="gearb" aria-label="설정">⚙</button><button class="help" id="mgmb" aria-label="미니게임" hidden>🎮</button><button class="help" id="storyb" aria-label="스토리" hidden>📖</button><button class="help" id="shopb" aria-label="상점" hidden>🛍</button></div><span id="ps"></span><span id="pt"></span></div>
   </header>
   <section class="panel offline" id="offline" hidden>
     <p id="offd"></p>
-    <div class="row"><button class="btn" id="offOk">받기</button><button class="btn alt" id="offAd">2배 (광고 자리)</button></div>
+    <div class="row"><button class="btn" id="offOk">받기</button><button class="btn alt" id="offAd"><span class="adw">광고 보고 </span>2배</button></div>
   </section>
   <section class="panel alert" id="alert" hidden>
     <div><b id="evt"></b><small id="evd"></small></div>
@@ -237,7 +237,7 @@
     <div id="mcres" hidden>
       <div class="mcg"><strong id="mcgr"></strong><span id="mcst"></span></div>
       <p class="mcrw" id="mcrw"></p>
-      <div class="row" id="mcrow"><button class="btn" id="mcok">받기</button><button class="btn warn" id="mcad">광고 보고 2배</button></div>
+      <div class="row" id="mcrow"><button class="btn" id="mcok">받기</button><button class="btn warn" id="mcad"><span class="adw">광고 보고 </span>2배</button></div>
       <div class="row" id="mcprow" hidden><button class="btn" id="mcagain">다시 하기</button><button class="btn alt" id="mcback">목록으로</button></div>
     </div>
     <button class="btn alt mcx" id="mcquit">그만하기</button>
@@ -249,6 +249,15 @@
     <div class="seg" id="gdseg"><button data-g="bc">방송 이야기</button><button data-g="gm">게임 방법</button></div>
     <div id="gdlist" class="gdlist"></div>
     <button class="btn alt" id="gdtut" style="width:100%;margin-top:8px">처음 안내 다시 보기</button>
+  </div>
+</div>
+<div class="modal" id="shop" hidden>
+  <div class="panel">
+    <div class="fh"><h1>상점</h1><button class="btn mini" id="shopok">닫기</button></div>
+    <p class="note">순위 점수를 직접 사는 상품은 없어요. 결제는 Google Play로 안전하게 처리돼요.</p>
+    <div id="shoplist"></div>
+    <div class="row"><button class="btn alt" id="shoprs">구매 복원</button></div>
+    <p class="note" id="shopnote"></p>
   </div>
 </div>
 <div class="modal" id="story" hidden>
@@ -280,7 +289,7 @@
     <h2 id="phead"></h2>
     <ul id="psubs"></ul>
     <p class="pfoot" id="pfoot"></p>
-    <div class="row"><button class="btn" id="pok">확인</button><button class="btn warn" id="pad">광고 보고 수입 2배</button></div>
+    <div class="row"><button class="btn" id="pok">확인</button><button class="btn warn" id="pad"><span class="adw">광고 보고 </span>수입 2배</button></div>
   </div>
 </div>
 <div class="intro" id="intro">

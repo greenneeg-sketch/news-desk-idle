@@ -11,7 +11,8 @@
     "@capacitor/android": "^8.6.2",
     "@capacitor/app": "^8.1.2",
     "@capacitor/core": "^8.6.2",
-    "@capacitor/status-bar": "^8.0.4"
+    "@capacitor/status-bar": "^8.0.4",
+    "@capgo/native-purchases": "^8.9.16"
   },
   "devDependencies": {
     "@capacitor/assets": "^4.0.0",

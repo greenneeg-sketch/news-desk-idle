@@ -126,7 +126,7 @@ export function Hud(bus) {
     board(list, me, mode, season, my) { bd = { list, me, mode, season, my }; drawBoard(); },
     toast(m) { const e = $('toast'); e.textContent = m; clearTimeout(tt); tt = setTimeout(() => e.textContent = '', 3500); },
     offline(o) { $('offd').textContent = `${o.min}분 동안 야간 근무로 ${fmt(o.n)}점을 벌었어요.`; $('offline').hidden = false; },
-    showPaper(p) { $('pmast').textContent = p.mast; $('pno').textContent = p.no; $('phead').textContent = p.head; $('pfoot').textContent = p.foot; $('psubs').innerHTML = ''; p.subs.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('psubs').appendChild(li); }); $('pad').disabled = false; $('pad').textContent = '광고 보고 수입 2배'; $('paper').hidden = false; },
+    showPaper(p) { $('pmast').textContent = p.mast; $('pno').textContent = p.no; $('phead').textContent = p.head; $('pfoot').textContent = p.foot; $('psubs').innerHTML = ''; p.subs.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('psubs').appendChild(li); }); $('pad').disabled = false; $('pad').innerHTML = '<span class="adw">광고 보고 </span>수입 2배'; $('paper').hidden = false; },
     showPromo(i, name, s, tk) { const c = careerOf(s)[i]; tk = tk || c.tk; $('prt').textContent = `${name}님을 ${c.n}(으)로 임명합니다.`; $('prwho').textContent = c.who; $('prsay').textContent = c.say.join(' '); $('prrew').textContent = `보상: 영구 점수 +5%/직급 · 스카우트 티켓 ${tk}장`; $('promo').hidden = false; },
     showTip(t) { $('tipt').textContent = t.t; $('tipd').textContent = t.d; $('tipgo').hidden = !t.tab; $('tip').hidden = false; },
     hideTip() { $('tip').hidden = true; },
@@ -168,7 +168,7 @@ export function Hud(bus) {
       $('chiefb').textContent = s.chief ? '고용 완료' : `고용 ${fmt(CHIEF)}`; $('chiefb').disabled = !!s.chief; $('chiefb').classList.toggle('can', !s.chief && s.score >= CHIEF);
       const g = $('gold'); g.hidden = !s.gold; if (s.gold) { g.style.left = s.gold.x + '%'; g.style.top = s.gold.y + '%'; }
       const on = s.clock < s.spdEnd, cd = s.clock < s.spdReady;
-      $('spdb').textContent = on ? `속도 x2 부스트 ${Math.ceil(s.spdEnd - s.clock)}초` : cd ? `부스트 대기 ${Math.ceil(s.spdReady - s.clock)}초` : '광고 보고 속도 x2 (2분)'; $('spdb').disabled = cd;
+      $('spdb').textContent = on ? `속도 x2 부스트 ${(r => { const m = Math.ceil(r / 60); return r >= 120 ? (m >= 60 ? `${Math.floor(m / 60)}시간 ${m % 60}분` : `${m}분`) : `${r}초`; })(Math.ceil(s.spdEnd - s.clock))}` : cd ? `부스트 대기 ${Math.ceil(s.spdReady - s.clock)}초` : (s.iap && s.iap.nd_noads ? '' : '광고 보고 ') + '속도 x2 (2분)'; $('spdb').disabled = cd;
       document.querySelectorAll('#ach i').forEach((e, i) => e.classList.toggle('on', s.ach.includes(ACHIEVEMENTS[i].id)));
       const na = ACHIEVEMENTS.find(a => !s.ach.includes(a.id)); $('achn').textContent = na ? `다음 업적: ${na.n} · ${na.d}` : '모든 업적을 달성했어요!';
       $('achd').textContent = `${s.ach.length}/${ACHIEVEMENTS.length} · 점수 +${s.ach.length * 2}%`;
@@ -235,7 +235,7 @@ export function Hud(bus) {
       const ncard = Object.keys(s.cards).length, scost = scoutCost(s), adcd = s.clock < s.freeReady;
       $('scd').textContent = `카드 ${ncard}/${CARDS.length} · 티켓 ${s.tickets}장 · 영웅 보장까지 ${Math.max(0, PITY - s.pity)}회`;
       $('scoutb').textContent = `스카우트 ${fmt(scost)}점`; $('scoutb').classList.toggle('can', s.score >= scost);
-      $('scouta').textContent = s.tickets > 0 ? `티켓 사용 (${s.tickets}장)` : adcd ? `광고 스카우트 ${Math.ceil(s.freeReady - s.clock)}초` : '광고 보고 무료 스카우트'; $('scouta').disabled = s.tickets < 1 && adcd;
+      $('scouta').textContent = s.tickets > 0 ? `티켓 사용 (${s.tickets}장)` : adcd ? `광고 스카우트 ${Math.ceil(s.freeReady - s.clock)}초` : (s.iap && s.iap.nd_noads ? '' : '광고 보고 ') + '무료 스카우트'; $('scouta').disabled = s.tickets < 1 && adcd;
       const c0 = CARDS[selCard] || CARDS[0], n0 = s.cards[c0.id] || 0;
       $('cinfo').textContent = n0 ? `${c0.n} · ${RARITY[c0.rar].n} · ${c0.st < 0 ? '전 층' : FLOORS[c0.st][0]} 속도 +${Math.round(RARITY[c0.rar].b * (1 + .5 * (n0 - 1)) * 100)}% · ★${n0}${c0.hero ? ' · 뉴스 디펜더즈: 거대 로봇 속보 점수 +50%' : ''}${n0 < 3 ? ` · 한 장 더 나오면 ★${n0 + 1} ${n0 === 1 ? '은빛 외형' : '금빛 외형'}` : ' · 최고 등급 외형'}` : (c0.hero ? '??? · 전설의 히어로. 거대 로봇이 나타나면 출동해요.' : '??? · 아직 모르는 직원이에요. 카드를 눌러 확인해 보세요.');
       $('cbonus').textContent = '도감 보너스 ' + FLOORS.slice(0, 5).map(([n], i) => `${n} +${Math.round(cardBonus(s, i) * 100)}%`).join(' · ');

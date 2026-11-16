@@ -219,3 +219,8 @@ section.gh{display:none!important}
 /* 좁은 화면(360px 안드로이드 등): 머리 버튼이 잘리지 않게 줄을 바꾸고 조금 작게 */
 .hbtns{flex-wrap:wrap;justify-content:flex-end}.chips{min-width:0}
 @media (max-width:380px){.hbtns{gap:4px;max-width:150px}.hbtns .help{width:28px;height:28px}}
+
+/* 상점 */
+body.noads .adw{display:none}
+.shopit{display:flex;gap:10px;align-items:center;padding:10px 4px;border-bottom:2px solid #22325e}.shopit .ic{flex:none;width:44px;height:44px;display:grid;place-items:center;font-size:24px;background:#29366f;box-shadow:0 0 0 2px var(--ink)}
+.shopit b{display:block}.shopit small{display:block;color:var(--sub);font-size:12px;line-height:1.45;margin-top:2px}.shopit .btn{flex:none;min-width:84px}.shopit.own b{color:#a7f070}
