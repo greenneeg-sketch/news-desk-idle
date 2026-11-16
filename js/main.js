@@ -236,7 +236,7 @@ function shopList() {
   SHOP_ITEMS.forEach(it => {
     const row = document.createElement('div'), ic = document.createElement('div'), info = document.createElement('div'), b = document.createElement('b'), d = document.createElement('small'), btn = document.createElement('button');
     row.className = 'shopit' + (own[it.id] ? ' own' : ''); ic.className = 'ic'; ic.textContent = SHOP_IC[it.id] || '★'; b.textContent = it.n + (own[it.id] ? ' · 구매함' : ''); d.textContent = it.d;
-    btn.className = 'btn' + (own[it.id] ? ' alt' : ' warn'); btn.disabled = !!own[it.id] || shopBusy; btn.textContent = own[it.id] ? '보유 중' : shopPrice[it.id] || it.price;
+    btn.className = 'btn' + (own[it.id] ? ' alt' : ' warn'); const web = !Shop.enabled(); btn.disabled = !!own[it.id] || shopBusy || web; btn.textContent = own[it.id] ? '보유 중' : web ? '앱에서 구매' : shopPrice[it.id] || it.price;
     btn.onclick = async () => {
       if (shopBusy) return; shopBusy = true; shopList(); $i('shopnote').textContent = 'Google Play 결제 창을 여는 중…';
       const r = await Shop.buy(it.id); shopBusy = false;
@@ -248,7 +248,7 @@ function shopList() {
   });
 }
 async function shopRestore(quiet) { const ids = await Shop.owned(); let n = 0; ids.forEach(id => { if (!(store.getState().iap || {})[id] && SHOP_ITEMS.some(i => i.id === id)) { store.dispatch({ type: 'IAP', id }); n++; } }); if (!quiet) $i('shopnote').textContent = n ? `${n}개 상품을 복원했어요.` : ids.length ? '이미 모두 받은 상태예요.' : '복원할 구매 내역이 없어요.'; if (!$i('shop').hidden) shopList(); }
-$i('shopb').onclick = async () => { $i('shopnote').textContent = ''; shopList(); $i('shop').hidden = false; shopPrice = await Shop.prices(); shopList(); };
+$i('shopb').onclick = async () => { $i('shoprs').hidden = !Shop.enabled(); $i('shopnote').textContent = Shop.enabled() ? '' : '구매는 안드로이드 앱(Google Play)에서 할 수 있어요. 웹에서는 상품만 둘러볼 수 있어요.'; shopList(); $i('shop').hidden = false; shopPrice = await Shop.prices(); shopList(); };
 $i('shopok').onclick = () => { $i('shop').hidden = true; markPop(); };
 $i('shoprs').onclick = () => shopRestore(false);
 if (Shop.native()) setTimeout(() => shopRestore(true), 3000); // 재설치·결제 대기 건 자동 지급
@@ -439,7 +439,7 @@ store.subscribe((s, p) => {
 });
 
 GameLoop({
-  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } $i('shopb').hidden = !Shop.enabled(); document.body.classList.toggle('noads', !!(s.iap || {}).nd_noads); { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
+  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } $i('shopb').hidden = false; document.body.classList.toggle('noads', !!(s.iap || {}).nd_noads); { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
   render: t => { scene.draw(store.getState(), t, ui.sel()); if (!$i('brp').closest('.pane').hidden) branches.draw(store.getState(), t); },
 }).start();
 setInterval(() => { if (!restoring) Repo.save(store.getState()); }, 5000); // 자동 저장: 5초마다
