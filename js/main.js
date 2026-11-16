@@ -343,9 +343,9 @@ function guildRefresh() {
 function guildList() { if (!online()) return; board.call('guildList').then(gs => social.list(gs)).catch(() => social.list(null)); }
 const GERR = e => { const m = String(e && e.message); return /guild full/.test(m) ? '연합 인원이 가득 찼어요.' : /cooldown/.test(m) ? '거절된 연합은 24시간 뒤에 다시 신청할 수 있어요.' : /too many/.test(m) ? '신청은 동시에 3곳까지 할 수 있어요.' : /bad message/.test(m) ? '인사말에 쓸 수 없는 말이 있어요.' : /already/.test(m) ? '이미 연합에 들어가 있어요.' : /no such/.test(m) ? '없어진 연합이에요.' : /no request/.test(m) ? '이미 처리된 신청이에요.' : '처리하지 못했어요. 잠시 후 다시 해 주세요.'; };
 bus.on('glist', guildList);
-bus.on('gapply', (id, msg) => { board.call('guildApply', id, msg).then(r => { if (r && r.joined) { ui.toast('연합에 들어갔어요!'); Sfx.play('rank'); gWasIn = true; guildRefresh(); } else { ui.toast('가입 신청을 보냈어요. 연합장이 수락하면 알려 드려요.'); guildList(); } }).catch(e => { ui.toast(GERR(e)); guildList(); }); });
+bus.on('gapply', ({ id, msg }) => { board.call('guildApply', id, msg || '').then(r => { if (r && r.joined) { ui.toast('연합에 들어갔어요!'); Sfx.play('rank'); gWasIn = true; guildRefresh(); } else { ui.toast('가입 신청을 보냈어요. 연합장이 수락하면 알려 드려요.'); guildList(); } }).catch(e => { ui.toast(GERR(e)); guildList(); }); });
 bus.on('gcancel', id => { board.call('guildCancel', id).then(() => guildList()).catch(e => { ui.toast(GERR(e)); guildList(); }); });
-bus.on('gdecide', (who, ok) => { board.call('guildDecide', who, ok).then(r => { ui.toast(r && r.res === 'ok' ? '가입을 수락했어요.' : r && r.res === 'taken' ? '이미 다른 연합에 들어간 분이에요.' : '신청을 거절했어요.'); guildRefresh(); }).catch(e => { ui.toast(GERR(e)); guildRefresh(); }); });
+bus.on('gdecide', ({ who, ok }) => { board.call('guildDecide', who, !!ok).then(r => { ui.toast(r && r.res === 'ok' ? '가입을 수락했어요.' : r && r.res === 'taken' ? '이미 다른 연합에 들어간 분이에요.' : '신청을 거절했어요.'); guildRefresh(); }).catch(e => { ui.toast(GERR(e)); guildRefresh(); }); });
 bus.on('gmode', m => { board.call('guildMode', m).then(() => { ui.toast(`가입 방식: ${{ approve: '승인 필요', open: '자유 가입', invite: '초대만' }[m]}`); guildRefresh(); }).catch(e => ui.toast(GERR(e))); });
 function guildSend() { // 공동 특보 기여: 지난번 이후 대응한 속보 수(+미니게임 5건씩)를 보낸다
   const s = store.getState(); if (!online() || !s.guild) { gSentEv = s.evCount; return; }

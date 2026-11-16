@@ -47,7 +47,7 @@ export function Social(bus) {
       if (!list.length) { ul.append(el('li', null, '대기 중인 가입 신청이 없어요.')); return; }
       list.forEach(q => { const li = el('li'), info = el('div'), acts = el('div', 'acts'), ok = el('button', 'btn mini', '수락'), no = el('button', 'btn mini alt', '거절');
         info.append(el('b', null, String(q.name).slice(0, 12)), el('small', null, `순위 점수 ${fmt(q.score)}${q.msg ? ' · "' + String(q.msg).slice(0, 20) + '"' : ''}${q.busy ? ' · 다른 연합에 들어감' : ''}`));
-        ok.disabled = !!q.busy; ok.onclick = () => { ok.disabled = no.disabled = true; bus.emit('gdecide', q.id, true); }; no.onclick = () => { ok.disabled = no.disabled = true; bus.emit('gdecide', q.id, false); };
+        ok.disabled = !!q.busy; ok.onclick = () => { ok.disabled = no.disabled = true; bus.emit('gdecide', { who: q.id, ok: true }); }; no.onclick = () => { ok.disabled = no.disabled = true; bus.emit('gdecide', { who: q.id, ok: false }); };
         acts.append(ok, no); li.append(info, acts); ul.append(li); });
     },
     list(gs) { // 연합 찾기
@@ -60,7 +60,7 @@ export function Social(bus) {
         if (full) { b.textContent = '가득 참'; b.disabled = true; b.classList.add('alt'); }
         else if (g.my === 'wait') { b.textContent = '신청 취소'; b.classList.add('alt'); b.onclick = () => { b.disabled = true; bus.emit('gcancel', g.id); }; }
         else if (g.my === 'no') { b.textContent = '거절됨'; b.disabled = true; b.classList.add('alt'); }
-        else { b.textContent = g.mode === 'open' ? '바로 가입' : '신청'; b.onclick = () => { b.disabled = true; bus.emit('gapply', g.id, $s('gmsg').value.trim()); }; }
+        else { b.textContent = g.mode === 'open' ? '바로 가입' : '신청'; b.onclick = () => { b.disabled = true; bus.emit('gapply', { id: g.id, msg: $s('gmsg').value.trim() }); }; }
         li.append(info, b); ul.append(li); });
     },
   };
