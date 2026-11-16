@@ -9,6 +9,10 @@ export function Social(bus) {
   $s('gjn').onclick = () => bus.emit('gjoin', $s('gcode').value.trim().toUpperCase());
   $s('gcp').onclick = () => bus.emit('gcopy');
   $s('gcl').onclick = () => bus.emit('gclaim');
+  $s('gfr').onclick = () => bus.emit('glist');
+  document.querySelectorAll('.gmode .btn').forEach(b => { b.onclick = () => bus.emit('gmode', b.dataset.m); });
+  const MODE = { approve: '승인 필요', open: '자유 가입', invite: '초대만' }, MODEN = { approve: '가입 신청을 연합장이 수락해야 들어올 수 있어요.', open: '연합 찾기에서 신청하면 바로 들어와요.', invite: '연합 찾기에 보이지 않고, 초대 코드로만 들어올 수 있어요.' };
+  const ago = t => { const m = Math.max(0, (Date.now() - Date.parse(t)) / 6e4); return m < 60 ? '방금 활동' : m < 1440 ? `${Math.floor(m / 60)}시간 전 활동` : `${Math.floor(m / 1440)}일 전 활동`; };
   let armLeave = 0; $s('glv').onclick = () => { if (Date.now() - armLeave < 3000) { armLeave = 0; $s('glv').textContent = '탈퇴'; bus.emit('gleave'); } else { armLeave = Date.now(); $s('glv').textContent = '한 번 더 누르면 탈퇴'; } };
   return {
     offline(on) { $s('duelx').hidden = $s('guildx').hidden = on; $s('dueloff').hidden = $s('guildoff').hidden = !on; },
@@ -34,6 +38,30 @@ export function Social(bus) {
       $s('gcl').disabled = g.claimed || pr < 1; $s('gcl').textContent = g.claimed ? '이번 주 보상 받음 ✓' : pr < 1 ? `목표 달성 시 티켓 3장 + ${fmt(perSec * 1800)}점` : `보상 받기: 티켓 3장 + ${fmt(perSec * 1800)}점`;
       const ul = $s('gmem'); ul.replaceChildren();
       (g.members || []).forEach((m, i) => { const li = el('li', m.me ? 'me' : null); li.append(el('b', null, `${i + 1}. ${String(m.name).slice(0, 12)}${m.owner ? ' ★' : ''}`), el('small', null, `이번 주 속보 송출 ${m.c}건`)); ul.append(li); });
+      $s('gown').hidden = !g.isOwner; if (!g.isOwner) return;
+      document.querySelectorAll('.gmode .btn').forEach(b => b.classList.toggle('on', b.dataset.m === (g.mode || 'approve')));
+      $s('gmoden').textContent = MODEN[g.mode || 'approve']; $s('greqn').textContent = g.reqn ? `가입 신청 ${g.reqn}건` : '';
+    },
+    reqs(list) { // 연합장: 대기 중 가입 신청
+      const ul = $s('greq'); ul.replaceChildren(); if (!list) return;
+      if (!list.length) { ul.append(el('li', null, '대기 중인 가입 신청이 없어요.')); return; }
+      list.forEach(q => { const li = el('li'), info = el('div'), acts = el('div', 'acts'), ok = el('button', 'btn mini', '수락'), no = el('button', 'btn mini alt', '거절');
+        info.append(el('b', null, String(q.name).slice(0, 12)), el('small', null, `순위 점수 ${fmt(q.score)}${q.msg ? ' · "' + String(q.msg).slice(0, 20) + '"' : ''}${q.busy ? ' · 다른 연합에 들어감' : ''}`));
+        ok.disabled = !!q.busy; ok.onclick = () => { ok.disabled = no.disabled = true; bus.emit('gdecide', q.id, true); }; no.onclick = () => { ok.disabled = no.disabled = true; bus.emit('gdecide', q.id, false); };
+        acts.append(ok, no); li.append(info, acts); ul.append(li); });
+    },
+    list(gs) { // 연합 찾기
+      const ul = $s('glist'); ul.replaceChildren(); if (!gs) { ul.append(el('li', null, '목록을 불러오지 못했어요.')); return; }
+      const wait = gs.filter(g => g.my === 'wait').length; $s('gfn').textContent = `연합을 골라 가입 신청을 보내면 연합장이 수락해요. 신청 중 ${wait}/3곳 · 신청은 3일 뒤 사라져요.`;
+      if (!gs.length) { ul.append(el('li', null, '아직 공개된 연합이 없어요. 직접 만들어 보세요!')); return; }
+      gs.forEach(g => { const li = el('li'), info = el('div'), name = el('b', null, String(g.name).slice(0, 12)), tag = el('span', 'gtag', MODE[g.mode] || ''), full = g.n >= 20;
+        name.append(tag); info.append(name, el('small', null, `${g.n}/20명 · 연합장 ${String(g.owner || '-').slice(0, 10)} · 이번 주 ${fmt(g.total)}건 · ${g.act ? ago(g.act) : '활동 없음'}`));
+        const b = el('button', 'btn mini');
+        if (full) { b.textContent = '가득 참'; b.disabled = true; b.classList.add('alt'); }
+        else if (g.my === 'wait') { b.textContent = '신청 취소'; b.classList.add('alt'); b.onclick = () => { b.disabled = true; bus.emit('gcancel', g.id); }; }
+        else if (g.my === 'no') { b.textContent = '거절됨'; b.disabled = true; b.classList.add('alt'); }
+        else { b.textContent = g.mode === 'open' ? '바로 가입' : '신청'; b.onclick = () => { b.disabled = true; bus.emit('gapply', g.id, $s('gmsg').value.trim()); }; }
+        li.append(info, b); ul.append(li); });
     },
   };
 }

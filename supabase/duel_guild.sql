@@ -22,3 +22,10 @@ create table public.nd_guild_mem (         -- 연합원(기기당 한 연합), �
 --   nd_guild_info / create(name) / join(code) / leave   연합 정보·만들기·가입(최대 20명)·탈퇴(방장이 나가면 가장 오래된 멤버가 방장)
 --   nd_guild_add(id, key, n)            공동 특보 기여(속보 대응 수). 한 번에 최대 40, 30초에 한 번
 --   nd_guild_claim(id, key)             이번 주 연합 합계가 목표(150 x 멤버 수, 최소 150) 이상이면 한 번 true
+
+-- ── 2026-11-16 추가: 연합 찾기·가입 신청 (마이그레이션 nd_guild_requests, nd_guild_request_fns, nd_guild_info_v2)
+-- nd_guild.mode: approve(승인 필요, 기본) · open(자유 가입) · invite(초대만, 목록에 안 보임)
+-- nd_guild_req(guild, id, msg, status wait/ok/no, at, decided): 신청은 3일 뒤 만료, 거절되면 24시간 뒤 재신청, 동시에 3곳까지
+-- nd_guild_list(id,key) 목록 · nd_guild_apply(id,key,guild,msg) 신청(open이면 바로 가입) · nd_guild_cancel(id,key,guild)
+-- nd_guild_reqs(id,key) 연합장: 대기 신청 · nd_guild_decide(id,key,who,ok) 수락/거절 · nd_guild_mode(id,key,mode)
+-- nd_guild_info: mode·isOwner·reqn 추가, 연합장이 7일 넘게 접속 안 하면 최근 7일 활동한 가장 오래된 멤버에게 자동 이양

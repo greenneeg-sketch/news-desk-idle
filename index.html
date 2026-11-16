@@ -91,7 +91,7 @@ canvas{width:100%;display:block;image-rendering:pixelated;background:var(--bg)}
 .mcrw{font-size:15px;margin:4px 0 10px}.mcx{width:100%;margin-top:8px;min-height:34px}
 #brmap{display:block;width:100%;image-rendering:pixelated;margin:6px 0;box-shadow:0 0 0 3px var(--ink)}.brrow.off{opacity:.45}.brk{color:var(--y)}
 .opp{display:flex;flex-direction:column;gap:2px;padding:8px;background:var(--ink);margin:6px 0}.opp b{font-size:17px;color:var(--y)}.opp small{color:var(--sub);font-size:12px}
-.dlog li.w b{color:#a7f070}.dlog li.l b{color:#ff8a8a}.gcode{font-size:12px;color:var(--sub)}.gcode b{font:12px "Press Start 2P",monospace;color:var(--y);letter-spacing:1px}.gstory{color:#ff8a8a;font-weight:700;margin:8px 0 4px}#gin .rt{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}#gin .rt strong{font-size:18px}#gname,#gcode{flex:1;margin:4px 0}#glv{margin-top:6px}
+.dlog li.w b{color:#a7f070}.dlog li.l b{color:#ff8a8a}.gcode{font-size:12px;color:var(--sub)}.gcode b{font:12px "Press Start 2P",monospace;color:var(--y);letter-spacing:1px}.gstory{color:#ff8a8a;font-weight:700;margin:8px 0 4px}#gin .rt{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}#gin .rt strong{font-size:18px}#gname,#gcode{flex:1;margin:4px 0}.gfind,.gown{margin-top:12px;padding-top:10px;border-top:2px solid #22325e}#gmsg{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:8px;margin:4px 0 6px;background:var(--ink);color:var(--tx);border:0;box-shadow:inset 0 0 0 2px #566c86}.glist{list-style:none;margin:0;padding:0}.glist li{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 2px;border-bottom:1px solid #22325e}.glist li div{min-width:0}.glist b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.glist small{display:block;color:var(--sub);font-size:12px}.glist .btn{flex:none}.glist .acts{display:flex;gap:4px;flex:none}.gmode{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}.gmode .btn.on{background:var(--y);color:#14141f}.gtag{display:inline-block;font-size:11px;padding:1px 5px;margin-left:4px;background:#29366f;color:#a7f070;vertical-align:middle}#glv{margin-top:6px}
 .perk{display:flex;gap:10px;align-items:center;border-left:4px solid var(--g)}.perk>div{flex:1}.perk b{display:block;color:#a7f070}.perk small{display:block;color:var(--sub);font-size:12px;margin-top:2px}.perk i{display:block;height:3px;margin-top:6px;background:var(--g);transform-origin:left}.perk .btn{min-height:40px;font-size:10px}
 .meeto{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}.meeto button{font:inherit;text-align:left;background:var(--ink);color:var(--tx);border:0;padding:8px;cursor:pointer;box-shadow:inset 0 0 0 2px #566c86;min-height:72px}.meeto button b{display:block;font-size:14px;color:var(--y)}.meeto button small{display:block;font-size:11px;color:var(--sub);margin:3px 0;line-height:1.3}.meeto button i{font-style:normal;color:#ffcd75;font-size:12px}.meeto[hidden]{display:none}.meet.done #meeto{display:none}.meet{border-left:4px solid var(--y)}
 .gdlist{max-height:62vh;overflow-y:auto;margin-top:6px}.gdlist details{border-bottom:1px solid var(--ink);padding:2px 0}.gdlist summary{cursor:pointer;padding:9px 4px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:8px;align-items:center}.gdlist summary::-webkit-details-marker{display:none}.gdlist summary::after{content:'+';color:var(--y);font-weight:700}.gdlist details[open] summary::after{content:'−'}.gdlist p{margin:0 4px 10px;font-size:14px;line-height:1.6;color:#dfe6ee}.gdlock{color:var(--sub);font-weight:400;font-size:11px;margin-left:auto}.floor .fh b{cursor:help;text-decoration:underline dotted var(--sub);text-underline-offset:3px}
@@ -334,12 +334,24 @@ body.noads .adw{display:none}
           <p class="note">친구들과 연합을 만들어 매주 "공동 특보"를 함께 막아요. 멤버 한 명당 점수 +2%(최대 +20%).</p>
           <div class="row"><input id="gname" maxlength="12" placeholder="연합 이름 (12자)" autocomplete="off"><button class="btn" id="gmk">만들기</button></div>
           <div class="row"><input id="gcode" maxlength="6" placeholder="초대 코드 6자리" autocomplete="off" autocapitalize="characters"><button class="btn alt" id="gjn">가입</button></div>
+          <div class="gfind">
+            <div class="fh"><b>연합 찾기</b><button class="btn mini alt" id="gfr">새로고침</button></div>
+            <p class="note" id="gfn">연합을 골라 가입 신청을 보내면 연합장이 수락해요. 동시에 3곳까지 신청할 수 있고, 신청은 3일 뒤 사라져요.</p>
+            <input id="gmsg" maxlength="20" placeholder="인사말 (선택, 20자)" autocomplete="off">
+            <ul class="glist" id="glist"></ul>
+          </div>
         </div>
         <div id="gin" hidden>
           <div class="rt"><strong id="gtitle"></strong><span class="gcode">초대 코드 <b id="gcodev"></b> <button class="btn mini alt" id="gcp">복사</button></span></div>
           <p class="gstory" id="gstory"></p>
           <div class="ms"><i id="gbar"></i></div><p class="note" id="gprog"></p>
           <button class="btn warn" id="gcl" style="width:100%"></button>
+          <div class="gown" id="gown" hidden>
+            <div class="fh"><b>연합장 메뉴</b><span class="cnt" id="greqn"></span></div>
+            <div class="gmode"><button class="btn mini alt" data-m="approve">승인 필요</button><button class="btn mini alt" data-m="open">자유 가입</button><button class="btn mini alt" data-m="invite">초대만</button></div>
+            <p class="note" id="gmoden"></p>
+            <ul class="glist" id="greq"></ul>
+          </div>
           <ul class="lb" id="gmem"></ul>
           <button class="btn alt mini" id="glv">탈퇴</button>
         </div>
@@ -531,7 +543,7 @@ body.noads .adw{display:none}
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.16-1847</span>
+  <span class="iver">v2026.11.16-2227</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -1447,6 +1459,12 @@ const SupabaseAdapter = ({ url, key }) => {
     guildLeave: () => rpc('nd_guild_leave', { p_id: dev.id, p_key: dev.key }),
     guildAdd: n => rpc('nd_guild_add', { p_id: dev.id, p_key: dev.key, p_n: n }),
     guildClaim: () => rpc('nd_guild_claim', { p_id: dev.id, p_key: dev.key }),
+    guildList: () => rpc('nd_guild_list', { p_id: dev.id, p_key: dev.key }), // 연합 찾기·가입 신청·연합장 수락/거절(supabase: nd_guild_req)
+    guildApply: (g, m) => rpc('nd_guild_apply', { p_id: dev.id, p_key: dev.key, p_guild: g, p_msg: m }),
+    guildCancel: g => rpc('nd_guild_cancel', { p_id: dev.id, p_key: dev.key, p_guild: g }),
+    guildReqs: () => rpc('nd_guild_reqs', { p_id: dev.id, p_key: dev.key }),
+    guildDecide: (who, ok) => rpc('nd_guild_decide', { p_id: dev.id, p_key: dev.key, p_who: who, p_ok: ok }),
+    guildMode: m => rpc('nd_guild_mode', { p_id: dev.id, p_key: dev.key, p_mode: m }),
     vapid: () => rpc('nd_vapid_public', {}),
     // 클라우드 저장: 저장본을 올리고 복구 코드를 받는다
     savePut: (data, keep = false) => rpc('nd_save_put', { p_id: dev.id, p_key: dev.key, p_data: data }, keep),
@@ -3376,6 +3394,10 @@ function Social(bus) {
   $s('gjn').onclick = () => bus.emit('gjoin', $s('gcode').value.trim().toUpperCase());
   $s('gcp').onclick = () => bus.emit('gcopy');
   $s('gcl').onclick = () => bus.emit('gclaim');
+  $s('gfr').onclick = () => bus.emit('glist');
+  document.querySelectorAll('.gmode .btn').forEach(b => { b.onclick = () => bus.emit('gmode', b.dataset.m); });
+  const MODE = { approve: '승인 필요', open: '자유 가입', invite: '초대만' }, MODEN = { approve: '가입 신청을 연합장이 수락해야 들어올 수 있어요.', open: '연합 찾기에서 신청하면 바로 들어와요.', invite: '연합 찾기에 보이지 않고, 초대 코드로만 들어올 수 있어요.' };
+  const ago = t => { const m = Math.max(0, (Date.now() - Date.parse(t)) / 6e4); return m < 60 ? '방금 활동' : m < 1440 ? `${Math.floor(m / 60)}시간 전 활동` : `${Math.floor(m / 1440)}일 전 활동`; };
   let armLeave = 0; $s('glv').onclick = () => { if (Date.now() - armLeave < 3000) { armLeave = 0; $s('glv').textContent = '탈퇴'; bus.emit('gleave'); } else { armLeave = Date.now(); $s('glv').textContent = '한 번 더 누르면 탈퇴'; } };
   return {
     offline(on) { $s('duelx').hidden = $s('guildx').hidden = on; $s('dueloff').hidden = $s('guildoff').hidden = !on; },
@@ -3401,6 +3423,30 @@ function Social(bus) {
       $s('gcl').disabled = g.claimed || pr < 1; $s('gcl').textContent = g.claimed ? '이번 주 보상 받음 ✓' : pr < 1 ? `목표 달성 시 티켓 3장 + ${fmt(perSec * 1800)}점` : `보상 받기: 티켓 3장 + ${fmt(perSec * 1800)}점`;
       const ul = $s('gmem'); ul.replaceChildren();
       (g.members || []).forEach((m, i) => { const li = el('li', m.me ? 'me' : null); li.append(el('b', null, `${i + 1}. ${String(m.name).slice(0, 12)}${m.owner ? ' ★' : ''}`), el('small', null, `이번 주 속보 송출 ${m.c}건`)); ul.append(li); });
+      $s('gown').hidden = !g.isOwner; if (!g.isOwner) return;
+      document.querySelectorAll('.gmode .btn').forEach(b => b.classList.toggle('on', b.dataset.m === (g.mode || 'approve')));
+      $s('gmoden').textContent = MODEN[g.mode || 'approve']; $s('greqn').textContent = g.reqn ? `가입 신청 ${g.reqn}건` : '';
+    },
+    reqs(list) { // 연합장: 대기 중 가입 신청
+      const ul = $s('greq'); ul.replaceChildren(); if (!list) return;
+      if (!list.length) { ul.append(el('li', null, '대기 중인 가입 신청이 없어요.')); return; }
+      list.forEach(q => { const li = el('li'), info = el('div'), acts = el('div', 'acts'), ok = el('button', 'btn mini', '수락'), no = el('button', 'btn mini alt', '거절');
+        info.append(el('b', null, String(q.name).slice(0, 12)), el('small', null, `순위 점수 ${fmt(q.score)}${q.msg ? ' · "' + String(q.msg).slice(0, 20) + '"' : ''}${q.busy ? ' · 다른 연합에 들어감' : ''}`));
+        ok.disabled = !!q.busy; ok.onclick = () => { ok.disabled = no.disabled = true; bus.emit('gdecide', q.id, true); }; no.onclick = () => { ok.disabled = no.disabled = true; bus.emit('gdecide', q.id, false); };
+        acts.append(ok, no); li.append(info, acts); ul.append(li); });
+    },
+    list(gs) { // 연합 찾기
+      const ul = $s('glist'); ul.replaceChildren(); if (!gs) { ul.append(el('li', null, '목록을 불러오지 못했어요.')); return; }
+      const wait = gs.filter(g => g.my === 'wait').length; $s('gfn').textContent = `연합을 골라 가입 신청을 보내면 연합장이 수락해요. 신청 중 ${wait}/3곳 · 신청은 3일 뒤 사라져요.`;
+      if (!gs.length) { ul.append(el('li', null, '아직 공개된 연합이 없어요. 직접 만들어 보세요!')); return; }
+      gs.forEach(g => { const li = el('li'), info = el('div'), name = el('b', null, String(g.name).slice(0, 12)), tag = el('span', 'gtag', MODE[g.mode] || ''), full = g.n >= 20;
+        name.append(tag); info.append(name, el('small', null, `${g.n}/20명 · 연합장 ${String(g.owner || '-').slice(0, 10)} · 이번 주 ${fmt(g.total)}건 · ${g.act ? ago(g.act) : '활동 없음'}`));
+        const b = el('button', 'btn mini');
+        if (full) { b.textContent = '가득 참'; b.disabled = true; b.classList.add('alt'); }
+        else if (g.my === 'wait') { b.textContent = '신청 취소'; b.classList.add('alt'); b.onclick = () => { b.disabled = true; bus.emit('gcancel', g.id); }; }
+        else if (g.my === 'no') { b.textContent = '거절됨'; b.disabled = true; b.classList.add('alt'); }
+        else { b.textContent = g.mode === 'open' ? '바로 가입' : '신청'; b.onclick = () => { b.disabled = true; bus.emit('gapply', g.id, $s('gmsg').value.trim()); }; }
+        li.append(info, b); ul.append(li); });
     },
   };
 }
@@ -3861,10 +3907,23 @@ function duelRefresh() {
   board.call('rival').then(r => { store.dispatch({ type: 'SETLR', lr: r ? { id: r.id, name: String(r.name).slice(0, 12), rating: +r.rating, live: !!r.live, w: r.w, l: r.l } : null }); social.duel(store.getState(), duelLog); }).catch(() => { });
   board.call('duels').then(d => { duelLog = d; social.duel(store.getState(), d); }).catch(() => { });
 }
+let gWasIn = null, gReqN = 0;
 function guildRefresh() {
   if (!online()) return;
-  board.call('guild').then(g => { gInfo = g; store.dispatch({ type: 'SETGUILD', g: g ? { id: g.id, name: g.name, n: g.n } : null }); social.guild(g, perNow()); }).catch(() => { });
+  board.call('guild').then(g => {
+    if (gWasIn === false && g) { ui.toast(`🎉 ${g.name} 연합에 들어갔어요!`); Sfx.play('rank'); } // 가입 신청이 수락됨
+    gWasIn = !!g; gInfo = g; store.dispatch({ type: 'SETGUILD', g: g ? { id: g.id, name: g.name, n: g.n } : null }); social.guild(g, perNow());
+    if (!g) guildList();
+    else if (g.isOwner) { if (g.reqn > gReqN) ui.toast(`📨 연합 가입 신청 ${g.reqn}건이 와 있어요`); gReqN = g.reqn || 0; board.call('guildReqs').then(r => social.reqs(r)).catch(() => social.reqs(null)); }
+  }).catch(() => { });
 }
+function guildList() { if (!online()) return; board.call('guildList').then(gs => social.list(gs)).catch(() => social.list(null)); }
+const GERR = e => { const m = String(e && e.message); return /guild full/.test(m) ? '연합 인원이 가득 찼어요.' : /cooldown/.test(m) ? '거절된 연합은 24시간 뒤에 다시 신청할 수 있어요.' : /too many/.test(m) ? '신청은 동시에 3곳까지 할 수 있어요.' : /bad message/.test(m) ? '인사말에 쓸 수 없는 말이 있어요.' : /already/.test(m) ? '이미 연합에 들어가 있어요.' : /no such/.test(m) ? '없어진 연합이에요.' : /no request/.test(m) ? '이미 처리된 신청이에요.' : '처리하지 못했어요. 잠시 후 다시 해 주세요.'; };
+bus.on('glist', guildList);
+bus.on('gapply', (id, msg) => { board.call('guildApply', id, msg).then(r => { if (r && r.joined) { ui.toast('연합에 들어갔어요!'); Sfx.play('rank'); gWasIn = true; guildRefresh(); } else { ui.toast('가입 신청을 보냈어요. 연합장이 수락하면 알려 드려요.'); guildList(); } }).catch(e => { ui.toast(GERR(e)); guildList(); }); });
+bus.on('gcancel', id => { board.call('guildCancel', id).then(() => guildList()).catch(e => { ui.toast(GERR(e)); guildList(); }); });
+bus.on('gdecide', (who, ok) => { board.call('guildDecide', who, ok).then(r => { ui.toast(r && r.res === 'ok' ? '가입을 수락했어요.' : r && r.res === 'taken' ? '이미 다른 연합에 들어간 분이에요.' : '신청을 거절했어요.'); guildRefresh(); }).catch(e => { ui.toast(GERR(e)); guildRefresh(); }); });
+bus.on('gmode', m => { board.call('guildMode', m).then(() => { ui.toast(`가입 방식: ${{ approve: '승인 필요', open: '자유 가입', invite: '초대만' }[m]}`); guildRefresh(); }).catch(e => ui.toast(GERR(e))); });
 function guildSend() { // 공동 특보 기여: 지난번 이후 대응한 속보 수(+미니게임 5건씩)를 보낸다
   const s = store.getState(); if (!online() || !s.guild) { gSentEv = s.evCount; return; }
   if (gSentEv == null) gSentEv = s.evCount;
@@ -3875,7 +3934,7 @@ setInterval(guildSend, 60000); setInterval(guildRefresh, 120000); setInterval(du
 $i('tab-rank').addEventListener('click', () => { duelRefresh(); guildRefresh(); });
 bus.on('gcreate', n => { if (!online()) return ui.toast('온라인 서버에 연결된 뒤 할 수 있어요.'); const c = checkName(n); if (c.err) return ui.toast(c.err); board.call('guildCreate', c.name || n).then(g => { Sfx.play('rank'); ui.toast(`연합 "${g.name}"을 만들었어요! 초대 코드 ${g.code}를 친구에게 알려 주세요.`); guildRefresh(); }).catch(err => ui.toast(/name not allowed/.test(err.message) ? '쓸 수 없는 이름이에요.' : '연합을 만들지 못했어요.')); });
 bus.on('gjoin', c => { if (!online()) return ui.toast('온라인 서버에 연결된 뒤 할 수 있어요.'); if (!/^[A-Z0-9]{6}$/.test(c)) return ui.toast('초대 코드 6자리를 확인해 주세요.'); board.call('guildJoin', c).then(g => { Sfx.play('rank'); ui.toast(`"${g.name}" 연합에 가입했어요!`); guildRefresh(); }).catch(err => ui.toast(/guild full/.test(err.message) ? '연합이 가득 찼어요(20명).' : /no such/.test(err.message) ? '없는 초대 코드예요.' : '가입하지 못했어요.')); });
-bus.on('gleave', () => { board.call('guildLeave').then(() => { ui.toast('연합에서 탈퇴했어요.'); gInfo = null; store.dispatch({ type: 'SETGUILD', g: null }); social.guild(null); }).catch(() => ui.toast('탈퇴하지 못했어요.')); });
+bus.on('gleave', () => { board.call('guildLeave').then(() => { ui.toast('연합에서 탈퇴했어요.'); gInfo = null; gWasIn = false; guildList(); store.dispatch({ type: 'SETGUILD', g: null }); social.guild(null); }).catch(() => ui.toast('탈퇴하지 못했어요.')); });
 bus.on('gcopy', () => { const c = gInfo && gInfo.code; if (!c) return; (navigator.clipboard ? navigator.clipboard.writeText(c) : Promise.reject()).then(() => ui.toast('초대 코드를 복사했어요.'), () => ui.toast(`초대 코드: ${c}`)); });
 bus.on('gclaim', () => { board.call('guildClaim').then(ok => { if (!ok) return ui.toast('아직 받을 수 없어요.'); const n = Math.floor(perNow() * 1800); store.dispatch({ type: 'GREWARD', n, tk: 3 }); Sfx.play('rank'); ui.toast(`공동 특보 성공! 티켓 3장 + ${fmt(n)}점`); guildRefresh(); }).catch(() => ui.toast('보상을 받지 못했어요.')); });
 setInterval(syncClock, 600000);

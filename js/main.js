@@ -330,10 +330,23 @@ function duelRefresh() {
   board.call('rival').then(r => { store.dispatch({ type: 'SETLR', lr: r ? { id: r.id, name: String(r.name).slice(0, 12), rating: +r.rating, live: !!r.live, w: r.w, l: r.l } : null }); social.duel(store.getState(), duelLog); }).catch(() => { });
   board.call('duels').then(d => { duelLog = d; social.duel(store.getState(), d); }).catch(() => { });
 }
+let gWasIn = null, gReqN = 0;
 function guildRefresh() {
   if (!online()) return;
-  board.call('guild').then(g => { gInfo = g; store.dispatch({ type: 'SETGUILD', g: g ? { id: g.id, name: g.name, n: g.n } : null }); social.guild(g, perNow()); }).catch(() => { });
+  board.call('guild').then(g => {
+    if (gWasIn === false && g) { ui.toast(`🎉 ${g.name} 연합에 들어갔어요!`); Sfx.play('rank'); } // 가입 신청이 수락됨
+    gWasIn = !!g; gInfo = g; store.dispatch({ type: 'SETGUILD', g: g ? { id: g.id, name: g.name, n: g.n } : null }); social.guild(g, perNow());
+    if (!g) guildList();
+    else if (g.isOwner) { if (g.reqn > gReqN) ui.toast(`📨 연합 가입 신청 ${g.reqn}건이 와 있어요`); gReqN = g.reqn || 0; board.call('guildReqs').then(r => social.reqs(r)).catch(() => social.reqs(null)); }
+  }).catch(() => { });
 }
+function guildList() { if (!online()) return; board.call('guildList').then(gs => social.list(gs)).catch(() => social.list(null)); }
+const GERR = e => { const m = String(e && e.message); return /guild full/.test(m) ? '연합 인원이 가득 찼어요.' : /cooldown/.test(m) ? '거절된 연합은 24시간 뒤에 다시 신청할 수 있어요.' : /too many/.test(m) ? '신청은 동시에 3곳까지 할 수 있어요.' : /bad message/.test(m) ? '인사말에 쓸 수 없는 말이 있어요.' : /already/.test(m) ? '이미 연합에 들어가 있어요.' : /no such/.test(m) ? '없어진 연합이에요.' : /no request/.test(m) ? '이미 처리된 신청이에요.' : '처리하지 못했어요. 잠시 후 다시 해 주세요.'; };
+bus.on('glist', guildList);
+bus.on('gapply', (id, msg) => { board.call('guildApply', id, msg).then(r => { if (r && r.joined) { ui.toast('연합에 들어갔어요!'); Sfx.play('rank'); gWasIn = true; guildRefresh(); } else { ui.toast('가입 신청을 보냈어요. 연합장이 수락하면 알려 드려요.'); guildList(); } }).catch(e => { ui.toast(GERR(e)); guildList(); }); });
+bus.on('gcancel', id => { board.call('guildCancel', id).then(() => guildList()).catch(e => { ui.toast(GERR(e)); guildList(); }); });
+bus.on('gdecide', (who, ok) => { board.call('guildDecide', who, ok).then(r => { ui.toast(r && r.res === 'ok' ? '가입을 수락했어요.' : r && r.res === 'taken' ? '이미 다른 연합에 들어간 분이에요.' : '신청을 거절했어요.'); guildRefresh(); }).catch(e => { ui.toast(GERR(e)); guildRefresh(); }); });
+bus.on('gmode', m => { board.call('guildMode', m).then(() => { ui.toast(`가입 방식: ${{ approve: '승인 필요', open: '자유 가입', invite: '초대만' }[m]}`); guildRefresh(); }).catch(e => ui.toast(GERR(e))); });
 function guildSend() { // 공동 특보 기여: 지난번 이후 대응한 속보 수(+미니게임 5건씩)를 보낸다
   const s = store.getState(); if (!online() || !s.guild) { gSentEv = s.evCount; return; }
   if (gSentEv == null) gSentEv = s.evCount;
@@ -344,7 +357,7 @@ setInterval(guildSend, 60000); setInterval(guildRefresh, 120000); setInterval(du
 $i('tab-rank').addEventListener('click', () => { duelRefresh(); guildRefresh(); });
 bus.on('gcreate', n => { if (!online()) return ui.toast('온라인 서버에 연결된 뒤 할 수 있어요.'); const c = checkName(n); if (c.err) return ui.toast(c.err); board.call('guildCreate', c.name || n).then(g => { Sfx.play('rank'); ui.toast(`연합 "${g.name}"을 만들었어요! 초대 코드 ${g.code}를 친구에게 알려 주세요.`); guildRefresh(); }).catch(err => ui.toast(/name not allowed/.test(err.message) ? '쓸 수 없는 이름이에요.' : '연합을 만들지 못했어요.')); });
 bus.on('gjoin', c => { if (!online()) return ui.toast('온라인 서버에 연결된 뒤 할 수 있어요.'); if (!/^[A-Z0-9]{6}$/.test(c)) return ui.toast('초대 코드 6자리를 확인해 주세요.'); board.call('guildJoin', c).then(g => { Sfx.play('rank'); ui.toast(`"${g.name}" 연합에 가입했어요!`); guildRefresh(); }).catch(err => ui.toast(/guild full/.test(err.message) ? '연합이 가득 찼어요(20명).' : /no such/.test(err.message) ? '없는 초대 코드예요.' : '가입하지 못했어요.')); });
-bus.on('gleave', () => { board.call('guildLeave').then(() => { ui.toast('연합에서 탈퇴했어요.'); gInfo = null; store.dispatch({ type: 'SETGUILD', g: null }); social.guild(null); }).catch(() => ui.toast('탈퇴하지 못했어요.')); });
+bus.on('gleave', () => { board.call('guildLeave').then(() => { ui.toast('연합에서 탈퇴했어요.'); gInfo = null; gWasIn = false; guildList(); store.dispatch({ type: 'SETGUILD', g: null }); social.guild(null); }).catch(() => ui.toast('탈퇴하지 못했어요.')); });
 bus.on('gcopy', () => { const c = gInfo && gInfo.code; if (!c) return; (navigator.clipboard ? navigator.clipboard.writeText(c) : Promise.reject()).then(() => ui.toast('초대 코드를 복사했어요.'), () => ui.toast(`초대 코드: ${c}`)); });
 bus.on('gclaim', () => { board.call('guildClaim').then(ok => { if (!ok) return ui.toast('아직 받을 수 없어요.'); const n = Math.floor(perNow() * 1800); store.dispatch({ type: 'GREWARD', n, tk: 3 }); Sfx.play('rank'); ui.toast(`공동 특보 성공! 티켓 3장 + ${fmt(n)}점`); guildRefresh(); }).catch(() => ui.toast('보상을 받지 못했어요.')); });
 setInterval(syncClock, 600000);

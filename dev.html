@@ -107,12 +107,24 @@
           <p class="note">친구들과 연합을 만들어 매주 "공동 특보"를 함께 막아요. 멤버 한 명당 점수 +2%(최대 +20%).</p>
           <div class="row"><input id="gname" maxlength="12" placeholder="연합 이름 (12자)" autocomplete="off"><button class="btn" id="gmk">만들기</button></div>
           <div class="row"><input id="gcode" maxlength="6" placeholder="초대 코드 6자리" autocomplete="off" autocapitalize="characters"><button class="btn alt" id="gjn">가입</button></div>
+          <div class="gfind">
+            <div class="fh"><b>연합 찾기</b><button class="btn mini alt" id="gfr">새로고침</button></div>
+            <p class="note" id="gfn">연합을 골라 가입 신청을 보내면 연합장이 수락해요. 동시에 3곳까지 신청할 수 있고, 신청은 3일 뒤 사라져요.</p>
+            <input id="gmsg" maxlength="20" placeholder="인사말 (선택, 20자)" autocomplete="off">
+            <ul class="glist" id="glist"></ul>
+          </div>
         </div>
         <div id="gin" hidden>
           <div class="rt"><strong id="gtitle"></strong><span class="gcode">초대 코드 <b id="gcodev"></b> <button class="btn mini alt" id="gcp">복사</button></span></div>
           <p class="gstory" id="gstory"></p>
           <div class="ms"><i id="gbar"></i></div><p class="note" id="gprog"></p>
           <button class="btn warn" id="gcl" style="width:100%"></button>
+          <div class="gown" id="gown" hidden>
+            <div class="fh"><b>연합장 메뉴</b><span class="cnt" id="greqn"></span></div>
+            <div class="gmode"><button class="btn mini alt" data-m="approve">승인 필요</button><button class="btn mini alt" data-m="open">자유 가입</button><button class="btn mini alt" data-m="invite">초대만</button></div>
+            <p class="note" id="gmoden"></p>
+            <ul class="glist" id="greq"></ul>
+          </div>
           <ul class="lb" id="gmem"></ul>
           <button class="btn alt mini" id="glv">탈퇴</button>
         </div>

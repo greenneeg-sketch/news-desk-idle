@@ -48,6 +48,12 @@ const SupabaseAdapter = ({ url, key }) => {
     guildLeave: () => rpc('nd_guild_leave', { p_id: dev.id, p_key: dev.key }),
     guildAdd: n => rpc('nd_guild_add', { p_id: dev.id, p_key: dev.key, p_n: n }),
     guildClaim: () => rpc('nd_guild_claim', { p_id: dev.id, p_key: dev.key }),
+    guildList: () => rpc('nd_guild_list', { p_id: dev.id, p_key: dev.key }), // 연합 찾기·가입 신청·연합장 수락/거절(supabase: nd_guild_req)
+    guildApply: (g, m) => rpc('nd_guild_apply', { p_id: dev.id, p_key: dev.key, p_guild: g, p_msg: m }),
+    guildCancel: g => rpc('nd_guild_cancel', { p_id: dev.id, p_key: dev.key, p_guild: g }),
+    guildReqs: () => rpc('nd_guild_reqs', { p_id: dev.id, p_key: dev.key }),
+    guildDecide: (who, ok) => rpc('nd_guild_decide', { p_id: dev.id, p_key: dev.key, p_who: who, p_ok: ok }),
+    guildMode: m => rpc('nd_guild_mode', { p_id: dev.id, p_key: dev.key, p_mode: m }),
     vapid: () => rpc('nd_vapid_public', {}),
     // 클라우드 저장: 저장본을 올리고 복구 코드를 받는다
     savePut: (data, keep = false) => rpc('nd_save_put', { p_id: dev.id, p_key: dev.key, p_data: data }, keep),
