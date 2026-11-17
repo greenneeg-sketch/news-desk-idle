@@ -1,7 +1,9 @@
 export const SAVE_KEY = 'newsDeskIdle.v2';
 export const STAGES = ['취재', '인제스트', '편집', 'CG', '송출'];
 export const BASE = [2, 1.6, 1, 1.4, 1.8];
-export const RANKS = [{ n: '지역 뉴스', at: 0 }, { n: '저녁 종합', at: 5e3 }, { n: '8시 메인', at: 2e5 }, { n: '24시 채널', at: 1e7 }];
+export const RANKS = [{ n: '지역 뉴스', at: 0 }, { n: '저녁 종합', at: 5e3 }, { n: '8시 메인', at: 2e5 }, { n: '24시 채널', at: 1e7 },
+  // 2026-11-17 추가: 첫날에 등급이 끝나던 문제(시뮬레이터) → 고점수 구간에 5단계. 등급마다 점수 x1.5(BAL.rank)
+  { n: '전국 네트워크', at: 1e11 }, { n: '아시아 뉴스룸', at: 1e15 }, { n: '국제 뉴스룸', at: 1e19 }, { n: '글로벌 미디어', at: 1e23 }, { n: '월드 뉴스 센터', at: 1e27 }];
 export const MILESTONES = [10, 25, 50, 100];
 export const UPGRADES = [
   { id: 'ing', n: '인제스트 서버', d: '등록 속도 +15%', base: 50, g: 1.12, st: 1, pct: .15 },
@@ -258,4 +260,4 @@ export const PERKS = [
   { id: 'fix', t: '장비 점검 완료', d: '엔지니어가 장비를 손봤어요. 2분 동안 모든 층 속도 x1.5', b: '확인', k: 'speed', w: 1.5 },
 ];
 export const BAL = { mile: 1.5, rank: 1.5, gold: 180, frenzy: 3, gAdd: 0.12, mis: 120 };
-export const PRESTIGE = { div: 1e6, pow: 1 / 3, per: .02 };
+export const PRESTIGE = { div: 1e6, pow: .5, per: .02 }; // pow 1/3 → 1/2 (2026-11-17): 후반에 성장이 눕던 문제. 시뮬레이터로 확인

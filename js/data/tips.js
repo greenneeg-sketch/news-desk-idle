@@ -1,26 +1,27 @@
 // 기능 해금(단계적 공개): 처음엔 핵심만 보이고, 누적 점수가 오르면 기능이 하나씩 열린다. 열릴 때 안내 카드가 한 번 뜬다
 // tab/g/target: '보러 가기'를 누르면 이동할 탭·성장 하위 탭·요소
 export const UNLOCKS = [
-  { id: 'spd', at: 300, t: '속도 부스트', d: '광고를 보면 2분 동안 모든 층이 2배로 빨라져요.', tab: 'desk', target: 'spdb' },
-  { id: 'mg', at: 1000, t: '매니저', d: '층마다 매니저를 고용하면 그 층이 자동으로 2배 빨라져요.', tab: 'desk', target: 'floors' },
-  { id: 'mini', at: 5e3, t: '미니게임', d: '왼쪽 아래에 빨간 미니게임 아이콘이 가끔 떠요. 눌러서 미니게임을 하면 보너스 점수! 놓쳐도 손해는 없어요. 위쪽 🎮 버튼에서 연습할 수 있어요.' },
-  { id: 'mis', at: 1e4, t: '오늘의 미션', d: '게임 속 하루(5분)마다 미션 3개. 모두 달성하면 스카우트 티켓!', tab: 'desk', target: 'misp' },
-  { id: 'meet', at: 2e4, t: '아침 편집회의', d: '게임 속 하루가 시작될 때마다 오늘의 톱뉴스 분야를 골라요. 그 분야 속보가 터지면 점수 x1.5에 시청률이 올라가요. ★이 많을수록 유력해요.', tab: 'desk', target: 'meetp' },
-  { id: 'hq', at: 3e4, t: '본사(HQ) 업그레이드', d: '중계 장비는 속보 보상을, 방송 품질은 모든 점수를 올려요.', tab: 'desk', target: 'hqsec' },
-  { id: 'scout', at: 1e5, t: '스카우트', d: '직원 카드를 모으면 층 속도가 영구로 올라가요. 아래 스카우트 탭이 열렸어요.', tab: 'scout', target: 'scout' },
-  { id: 'grow', at: 3e5, t: '커리어', d: '승진할 때마다 영구 점수 +5%. 성장 탭에서 다음 승진 조건을 볼 수 있어요.', tab: 'grow', g: 'car', target: 'carp' },
-  { id: 'rank', at: 1e6, t: '순위', d: '다른 방송국과 순위와 이번 달 시즌 등급을 겨뤄요.', tab: 'rank', target: 'board' },
+  { id: 'spd', at: 300, day: 1, t: '속도 부스트', d: '광고를 보면 2분 동안 모든 층이 2배로 빨라져요.', tab: 'desk', target: 'spdb' },
+  { id: 'mg', at: 1000, day: 2, t: '매니저', d: '층마다 매니저를 고용하면 그 층이 자동으로 2배 빨라져요.', tab: 'desk', target: 'floors' },
+  { id: 'mini', at: 5e3, day: 3, t: '미니게임', d: '왼쪽 아래에 빨간 미니게임 아이콘이 가끔 떠요. 눌러서 미니게임을 하면 보너스 점수! 놓쳐도 손해는 없어요. 위쪽 🎮 버튼에서 연습할 수 있어요.' },
+  { id: 'mis', at: 1e4, day: 4, t: '오늘의 미션', d: '게임 속 하루(5분)마다 미션 3개. 모두 달성하면 스카우트 티켓!', tab: 'desk', target: 'misp' },
+  { id: 'meet', at: 2e4, day: 6, t: '아침 편집회의', d: '게임 속 하루가 시작될 때마다 오늘의 톱뉴스 분야를 골라요. 그 분야 속보가 터지면 점수 x1.5에 시청률이 올라가요. ★이 많을수록 유력해요.', tab: 'desk', target: 'meetp' },
+  { id: 'hq', at: 3e4, day: 7, t: '본사(HQ) 업그레이드', d: '중계 장비는 속보 보상을, 방송 품질은 모든 점수를 올려요.', tab: 'desk', target: 'hqsec' },
+  { id: 'scout', at: 1e5, day: 5, t: '스카우트', d: '직원 카드를 모으면 층 속도가 영구로 올라가요. 아래 스카우트 탭이 열렸어요.', tab: 'scout', target: 'scout' },
+  { id: 'grow', at: 3e5, day: 8, t: '커리어', d: '승진할 때마다 영구 점수 +5%. 성장 탭에서 다음 승진 조건을 볼 수 있어요.', tab: 'grow', g: 'car', target: 'carp' },
+  { id: 'rank', at: 1e6, day: 10, t: '순위', d: '다른 방송국과 순위와 이번 달 시즌 등급을 겨뤄요.', tab: 'rank', target: 'board' },
   { id: 'chief', at: 1e11, t: '영상편집팀장', d: '5,000억 점에 팀장을 고용하면 속보 때 우선 편집을 자동으로 해 줘요. 개편하면 다시 고용해야 해요.', tab: 'desk', target: 'flc' },
-  { id: 'br', at: 3e6, t: '지국 확장', d: '아래 "지국" 탭이 열렸어요. 부산 지국부터 해외 특파원까지 열면 점수가 오르고, 담당 분야 속보가 더 커져요.', tab: 'br', target: 'brp' },
-  { id: 'deco', at: 1e7, t: '사무실 꾸미기', d: '소품을 사면 장면에 나타나고 하나당 점수 +2%예요.', tab: 'grow', g: 'deco', target: 'decop' },
-  { id: 'dil', at: 3e7, t: '데스크 판단', d: '이제 일부 속보는 단독으로 바로 낼지, 확인 후 낼지 골라야 해요. 단독 성공 시 점수 2배!' },
-  { id: 'res', at: 1e8, t: '방송 기술 연구소', d: '8시 뉴스·미션·단독으로 모은 연구 포인트로 영구 강화를 해요.', tab: 'grow', g: 'res', target: 'resp' },
-  { id: 'week', at: 1e8, t: '주간 한정 이벤트', d: '매주 월요일 바뀌는 이벤트. 목표를 채우면 티켓 2장과 한정 배지!', tab: 'desk', target: 'wevp' },
-  { id: 'pres', at: 1e9, t: '개편', d: '진행이 느려지면 개편하세요. 처음부터 다시 시작하지만 점수가 영구히 올라가요.', tab: 'grow', g: 'pres', target: 'presp' },
+  { id: 'br', at: 3e6, day: 12, t: '지국 확장', d: '아래 "지국" 탭이 열렸어요. 부산 지국부터 해외 특파원까지 열면 점수가 오르고, 담당 분야 속보가 더 커져요.', tab: 'br', target: 'brp' },
+  { id: 'deco', at: 1e7, day: 14, t: '사무실 꾸미기', d: '소품을 사면 장면에 나타나고 하나당 점수 +2%예요.', tab: 'grow', g: 'deco', target: 'decop' },
+  { id: 'dil', at: 3e7, day: 17, t: '데스크 판단', d: '이제 일부 속보는 단독으로 바로 낼지, 확인 후 낼지 골라야 해요. 단독 성공 시 점수 2배!' },
+  { id: 'res', at: 1e8, day: 20, t: '방송 기술 연구소', d: '8시 뉴스·미션·단독으로 모은 연구 포인트로 영구 강화를 해요.', tab: 'grow', g: 'res', target: 'resp' },
+  { id: 'week', at: 1e8, day: 20, t: '주간 한정 이벤트', d: '매주 월요일 바뀌는 이벤트. 목표를 채우면 티켓 2장과 한정 배지!', tab: 'desk', target: 'wevp' },
+  { id: 'pres', at: 1e9, day: 12, t: '개편', d: '진행이 느려지면 개편하세요. 처음부터 다시 시작하지만 점수가 영구히 올라가요.', tab: 'grow', g: 'pres', target: 'presp' },
   { id: 'chal', when: s => s.pts > 0, t: '챌린지', d: '제약 속에서 목표를 달성하면 영구 점수 +10%.', tab: 'grow', g: 'pres', target: 'chalp' },
 ];
 export const isUnlocked = (s, id) => !!(s.unl && s.unl[id]);
-export const unlockReady = (s, u) => u.when ? u.when(s) : s.total >= u.at;
+// 점수(total)와 게임 속 날짜(s.day, 접속해서 5분 보낼 때마다 +1)를 둘 다 넘어야 열린다: 숫자가 빨리 불어도 새 기능이 한꺼번에 쏟아지지 않게
+export const unlockReady = (s, u) => (u.when ? u.when(s) : s.total >= u.at) && (s.day || 1) >= (u.day || 1);
 // 상황 안내: 해당 상황을 처음 만났을 때 한 번
 export const TIPS = [
   { id: 'robot', when: s => !!(s.ev && s.ev.id === 'robot'), t: '거대 로봇 속보', d: '뉴스 디펜더즈 히어로 카드 1장당 이번 속보 점수 +50%. 스카우트에서 모아 보세요.', tab: 'scout', target: 'scout' },

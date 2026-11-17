@@ -2,12 +2,14 @@
 // 사용: node sim/economy-sim.mjs [casual|engaged|light] [일수=30] [시드=1]
 // 출력: 진행 요약(JSON) — 시간대별 진행, 마일스톤 도달 시각, 막히는 구간
 import { reducer, initialState } from '../js/state/reducer.js';
-import { UPGRADES, MANAGER, CHIEF, RESEARCH, RANKS, jobOf } from '../js/data/config.js';
+import { UPGRADES, MANAGER, CHIEF, RESEARCH, RANKS, BRANCHES, DECOS, BAL, PRESTIGE, jobOf } from '../js/data/config.js';
 import { rates, scoreMul, perSec, prestigeGain, rank, rl, bulk } from '../js/systems/economy.js';
 import { pickEvent } from '../js/systems/events.js';
 import { scoutCost } from '../js/systems/cards.js';
 import { UNLOCKS } from '../js/data/tips.js';
 
+// 밸런스 실험: OVR='{"BAL.gAdd":0.2,"PRESTIGE.per":0.03}' node sim/economy-sim.mjs ... 처럼 수치를 바꿔 돌려 본다
+for (const [k, v] of Object.entries(JSON.parse(process.env.OVR || '{}'))) { const [o, f] = k.split('.'); ({ BAL, PRESTIGE })[o][f] = v; }
 const profile = process.argv[2] || 'casual', DAYS = +process.argv[3] || 30;
 let seed = +process.argv[4] || 1; const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
 // 하루 접속 계획: [시작 시각(시), 플레이 분]
@@ -28,27 +30,27 @@ function think() { // 플레이어가 한 번 화면을 보고 하는 행동들
   if (s.ev && s.ev.dil && !s.ev.pick) dis({ type: 'JUDGE', pick: rnd() < .5 ? 'risk' : 'safe', r: rnd() });
   if (s.ev && !s.ev.boost && rnd() < .8) dis({ type: 'BOOST' });
   if (s.clock >= s.spdReady && (s.unl || {}).spd) dis({ type: 'SPD' }); // 광고 보고 2분 2배(웹 기준 즉시)
-  for (let i = 0; i < 5; i++) if (!s.mg[i] && s.score >= MANAGER[i] * 1.2) dis({ type: 'HIRE', i });
-  if (!s.chief && s.score >= CHIEF * 1.2) dis({ type: 'CHIEF' });
-  // 업그레이드: 한 단계 샀을 때 생산 증가 ÷ 비용이 가장 좋은 것을 계속 산다
-  for (let guard = 0; guard < 60; guard++) {
+  const U = id => !!(s.unl && s.unl[id]); // 아직 열리지 않은 기능은 쓰지 못한다
+  if (U('mg')) for (let i = 0; i < 5; i++) if (!s.mg[i] && s.score >= MANAGER[i] * 1.2) dis({ type: 'HIRE', i });
+  if (U('chief') && !s.chief && s.score >= CHIEF * 1.2) dis({ type: 'CHIEF' });
+  // 구매: 업그레이드·지국·꾸미기 중 '생산 증가 ÷ 비용'이 가장 좋은 것을 계속 산다
+  const cands = [...UPGRADES.filter(u => (u.id !== 'qual' && u.id !== 'live') || U('hq')).map(u => ({ type: 'BUY', id: u.id, n: '1' })), ...(U('br') ? BRANCHES.map(b => ({ type: 'BRUP', id: b.id })) : []), ...(U('deco') ? DECOS.map(d => ({ type: 'DECO', id: d.id })) : [])];
+  for (let guard = 0; guard < 80; guard++) {
     const base = perSec(s); let best = null;
-    for (const u of UPGRADES) {
-      const { total } = bulk(s, u, '1'); if (s.score < total) continue;
-      const t = reducer(s, { type: 'BUY', id: u.id, n: '1' }); if (t === s) continue;
-      const gain = (u.id === 'qual' || u.id === 'live' ? perSec(t) - base : perSec(t) - base) / total;
-      if (!best || gain > best.gain) best = { u, gain };
+    for (const a of cands) {
+      const t = reducer(s, a); if (t === s) continue; const cost = s.score - t.score;
+      const gain = (perSec(t) - base) / Math.max(1, cost); if (!best || gain > best.gain) best = { a, gain };
     }
-    if (!best) break; dis({ type: 'BUY', id: best.u.id, n: '1' });
+    if (!best) break; dis(best.a);
   }
   if ((s.unl || {}).scout) { // 스카우트: 티켓은 바로, 점수는 업그레이드를 방해하지 않을 만큼 모였을 때만
     while (s.tickets > 0) dis({ type: 'SCOUT', how: 'ticket', r: rnd(), r2: rnd() });
     if (s.score >= scoutCost(s) * 4) dis({ type: 'SCOUT', how: 'paid', r: rnd(), r2: rnd() });
     if (s.clock >= s.freeReady) dis({ type: 'SCOUT', how: 'ad', r: rnd(), r2: rnd() }); // 광고 무료 스카우트(10분마다)
   }
-  for (const r of RESEARCH) dis({ type: 'RESEARCH', id: r.id });
+  if (U('res')) for (const r of RESEARCH) dis({ type: 'RESEARCH', id: r.id });
   const g = prestigeGain(s); // 환생: 얻는 점수가 지금 가진 것의 절반 이상이고 지난 환생 뒤 30분 이상 플레이했을 때
-  if (g >= Math.max(2, s.pts * .5) && activeMin - lastPrestigeActive >= 30) { dis({ type: 'PRESTIGE' }); prestiges++; lastPrestigeActive = activeMin; mark('prestige' + prestiges); }
+  if (U('pres') && g >= Math.max(2, s.pts * .5) && activeMin - lastPrestigeActive >= 30) { dis({ type: 'PRESTIGE' }); prestiges++; lastPrestigeActive = activeMin; mark('prestige' + prestiges); }
 }
 function tickSecs(sec) { // 접속 중 sec초를 0.5초 단위로 진행
   for (let t = 0; t < sec; t += .5) {

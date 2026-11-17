@@ -24,7 +24,7 @@ export const STORY = [
       { who: 'c12', bg: 4, t: '첫날치고 괜찮았어. 내일도 8시는 온다.' },
     ],
     rw: { tk: 1, min: 5 } },
-  { id: 's2', part: 0, n: '19시 55분', at: 5e3, d: '톱 리포트 렌더가 멈췄다. 남은 시간은 5분', clock: 0,
+  { id: 's2', part: 0, n: '19시 55분', at: 5e3, need: 'mini', d: '톱 리포트 렌더가 멈췄다. 남은 시간은 5분', clock: 0,
     lines: [
       { who: null, bg: 2, fx: 'alarm', t: '19시 55분. 톱 리포트 렌더 막대가 87%에서 멈춰 있다.' },
       { who: 'c7', bg: 2, fx: 'alarm', t: '렌더 다시 걸면 늦어. 타임라인에서 바로 컷 잡아서 클린본으로 가자.' },
@@ -67,7 +67,7 @@ export const stProg = (s, ch) => { // 지금 미션 진행도 [현재, 목표]
 export const stStatus = (s, ch) => { // lock · new · mis · claim · done
   const st = s.story || {}, i = STORY.indexOf(ch);
   if (st.done && st.done[ch.id]) return 'done';
-  if ((i > 0 && !(st.done && st.done[STORY[i - 1].id])) || s.total < ch.at) return 'lock';
+  if ((i > 0 && !(st.done && st.done[STORY[i - 1].id])) || s.total < ch.at || (ch.need && !(s.unl && s.unl[ch.need]))) return 'lock';
   if (!(st.mis && st.mis.id === ch.id)) return 'new';
   const [a, b] = stProg(s, ch); return a >= b ? 'claim' : 'mis';
 };
