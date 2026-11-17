@@ -4,5 +4,5 @@
   "webDir": "www",
   "backgroundColor": "#070a1f",
   "android": { "backgroundColor": "#070a1f", "allowMixedContent": false },
-  "plugins": {}
+  "plugins": { "LocalNotifications": { "smallIcon": "ic_stat_nd", "iconColor": "#FFCD75" } }
 }

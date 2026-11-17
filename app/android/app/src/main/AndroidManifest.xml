@@ -41,6 +41,9 @@
         </provider>
     </application>
 
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />

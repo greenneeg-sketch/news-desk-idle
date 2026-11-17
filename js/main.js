@@ -28,6 +28,8 @@ import { GuideUI } from './ui/guide.js';
 import { StoryUI } from './ui/story.js';
 import { Ads } from './services/ads.js';
 import { Shop, SHOP_ITEMS } from './services/shop.js';
+import { Analytics } from './services/analytics.js';
+import { Native } from './services/native.js';
 import { STORY } from './data/story.js';
 import { perSec, setLevel, setRobot } from './systems/economy.js';
 import { jobOf } from './data/config.js';
@@ -41,12 +43,14 @@ function fitZoom() { const w = innerWidth, h = innerHeight, z = w >= 560 ? Math.
 fitZoom(); addEventListener('resize', fitZoom);
 // 보상형 광고: 앱에서는 진짜 광고를 본 뒤에만 ok(), 웹에서는 바로 ok(true)(웹이면 안내 문구를 붙인다)
 const AD_WEB = '실제 앱에서는 보상형 광고가 나와요. ';
-const withAd = ok => (store.getState().iap || {}).nd_noads ? ok('') : Ads.show().then(r => { if (r === 'web') ok(AD_WEB); else if (r) ok(''); else { Sfx.play('fail'); ui.toast('광고를 끝까지 봐야 보상을 받을 수 있어요.'); } });
+const withAd = ok => (store.getState().iap || {}).nd_noads ? ok('') : Ads.show().then(r => { Analytics.log('ad', { r: r === 'web' ? 'web' : r ? 'ok' : 'fail' }); if (r === 'web') ok(AD_WEB); else if (r) ok(''); else { Sfx.play('fail'); ui.toast('광고를 끝까지 봐야 보상을 받을 수 있어요.'); } });
 Ads.init();
+Analytics.init({ url: LEADERBOARD.url, key: LEADERBOARD.key, ver: ((document.querySelector('.iver') || {}).textContent || '').replace(/^v/, '') });
 let pending = 0, board = null;
 const newId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 const saved = Repo.load();
+Analytics.log('open', saved ? { d: saved.s.day || 0, sc: Math.round(Math.log10(1 + (saved.s.total || 0))) } : { first: 1 });
 if (saved) { store.dispatch({ type: 'LOAD', s: saved.s }); if (saved.offline) { pending = saved.offline.n; ui.offline(saved.offline); } }
 const dstr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 let clockOff = 0; // 서버 시각 - 기기 시각 (ms)
@@ -89,7 +93,7 @@ $i('iosok').onclick = () => { $i('iosins').hidden = true; };
 // 푸시 알림: 앱을 닫을 때 '야간 근무 수익이 가득 차는 시각'에 알림을 예약하고, 다시 열면 예약을 취소한다
 const PUSH_KEY = 'newsDeskPush';
 let pushSub = null; try { pushSub = JSON.parse(localStorage.getItem(PUSH_KEY)); } catch (e) { }
-const pushLabel = () => { $i('pushb').textContent = pushSub ? '알림 끄기' : '알림 켜기'; };
+const pushLabel = () => { $i('pushb').textContent = (Native.isApp() ? Native.notifOn() : pushSub) ? '알림 끄기' : '알림 켜기'; };
 const b64u8 = b => { const s = atob((b + '='.repeat((4 - b.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(s, c => c.charCodeAt(0)); };
 async function enablePush() {
   if (isIOS && !standalone) return ui.toast('아이폰은 홈 화면에 추가한 앱에서만 알림을 받을 수 있어요. 타이틀의 "앱 설치"를 먼저 해 주세요.');
@@ -108,7 +112,9 @@ async function disablePush() {
   try { await board.pushSet(null, null); } catch (e) { }
   pushSub = null; try { localStorage.removeItem(PUSH_KEY); } catch (e) { } pushLabel(); ui.toast('알림을 껐어요.');
 }
-$i('pushb').onclick = () => (pushSub ? disablePush() : enablePush()).catch(() => ui.toast('알림을 켜지 못했어요. 잠시 후 다시 시도해 주세요.'));
+$i('pushb').onclick = Native.isApp() ? async () => { // 앱: 기기 안에서 예약하는 알림(웹 푸시 대신)
+  if (Native.notifOn()) { await Native.notifSet(false); ui.toast('알림을 껐어요.'); } else { const ok = await Native.notifSet(true); ui.toast(ok ? '알림을 켰어요. 야간 근무 수익이 가득 차면 알려 드려요.' : '알림 권한이 필요해요. 폰 설정에서 NEWS DESK 알림을 허용해 주세요.'); } pushLabel();
+} : () => (pushSub ? disablePush() : enablePush()).catch(() => ui.toast('알림을 켜지 못했어요. 잠시 후 다시 시도해 주세요.'));
 pushLabel();
 // ---------- 클라우드 저장 ----------
 const CLOUD_KEY = 'newsDeskCloud';
@@ -116,7 +122,8 @@ let cloud = { code: '', at: 0 }; try { cloud = JSON.parse(localStorage.getItem(C
 ui.cloud(cloud.code, cloud.at);
 const cloudSave = (keep = false) => {
   const s = store.getState(); if (!board || board.mode !== 'server' || !s.name) return Promise.resolve(false);
-  return board.savePut(Repo.snapshot(s), keep).then(code => { cloud = { code, at: Date.now() }; try { localStorage.setItem(CLOUD_KEY, JSON.stringify(cloud)); } catch (e) { } ui.cloud(cloud.code, cloud.at); return true; }).catch(() => false);
+  return board.savePut(Repo.snapshot(s), keep).then(code => { cloud = { code, at: Date.now() }; try { localStorage.setItem(CLOUD_KEY, JSON.stringify(cloud)); } catch (e) { } ui.cloud(cloud.code, cloud.at);
+    try { if (!localStorage.getItem('newsDeskCodeTip') && s.day >= 2) { localStorage.setItem('newsDeskCodeTip', '1'); ui.toast('복구 코드가 만들어졌어요! 설정 → 클라우드 저장에서 적어 두면 폰을 바꿔도 이어서 할 수 있어요.'); } } catch (e) { } return true; }).catch(() => false);
 };
 $i('cloudnow').onclick = () => cloudSave().then(ok => ui.toast(ok ? '클라우드에 저장했어요.' : '아직 저장할 수 없어요. 순위 서버 연결과 방송국 등록(1분 정도)을 기다려 주세요.'));
 $i('cloudcp').onclick = () => { const c = cloud.code; (navigator.clipboard ? navigator.clipboard.writeText(c) : Promise.reject()).then(() => ui.toast('복구 코드를 복사했어요. 안전한 곳에 적어 두세요.'), () => ui.toast(`복구 코드: ${c}`)); };
@@ -135,6 +142,10 @@ $i('cloudget').onclick = async () => {
 };
 let restoring = false; // 불러온 직후에는 지금 상태로 덮어쓰지 않는다
 setInterval(() => cloudSave(), 120000);
+$i('hapb').onclick = () => { Native.setHaptic(!Native.hapticOn()); hapRef(); if (Native.hapticOn()) Native.haptic('rank'); };
+const hapRef = () => { $i('hapb').textContent = Native.hapticOn() ? '진동 ON' : '진동 OFF'; $i('hapb').hidden = !Native.isApp(); }; hapRef();
+const anRef = () => { $i('anb').textContent = Analytics.enabled() ? '익명 통계 보내기: 켜짐' : '익명 통계 보내기: 꺼짐'; };
+$i('anb').onclick = () => { Analytics.setOn(!Analytics.enabled()); anRef(); ui.toast(Analytics.enabled() ? '익명 통계를 보냅니다. 게임 개선에만 써요.' : '익명 통계를 보내지 않아요.'); }; anRef();
 
 // ---------- 알림 창 대기열: 창은 한 번에 하나, 튜토리얼·다른 창이 끝난 뒤 간격을 두고 ----------
 // 종류: promo(승진 창), tip(해금·상황 안내 카드)
@@ -288,7 +299,7 @@ $i('perkb').onclick = () => { if (!pkNow) return; const p = pkNow; store.dispatc
 let paperNow = null;
 $i('pnew').onclick = () => { if (paperNow) { ui.showPaper(paperNow); paperNow = null; ui.paperReady(false); } };
 
-const pushSchedule = hidden => { if (!pushSub || !board || !store.getState().name) return; const cap = (8 + ((store.getState().res || {}).night || 0)) * 3600e3; board.pushSet(pushSub, hidden ? new Date(Date.now() + clockOff + cap).toISOString() : null, hidden).catch(() => { }); };
+const pushSchedule = hidden => { if (Native.isApp()) { if (hidden && store.getState().name) Native.schedule((8 + ((store.getState().res || {}).night || 0)) * 3600e3); else Native.cancel(); return; } if (!pushSub || !board || !store.getState().name) return; const cap = (8 + ((store.getState().res || {}).night || 0)) * 3600e3; board.pushSet(pushSub, hidden ? new Date(Date.now() + clockOff + cap).toISOString() : null, hidden).catch(() => { }); };
 // 새로 시작: 모든 기록을 지우므로 두 번 눌러야 실행. 이름 변경: 기록은 그대로 두고 방송국 이름만 바꾼다
 let newT = 0;
 $i('inew').onclick = () => {
@@ -443,6 +454,19 @@ bus.on('mute', () => ui.setMute(Sfx.toggle()));
 // 상태 변화 구독: 효과음과 알림
 store.subscribe((s, p) => {
   pump(s);
+  { const A = Analytics; // 익명 통계: 상태가 바뀐 순간만 센다
+    if (s.name && !p.name) A.log('start', { job: s.job || '' });
+    if (s.tut !== p.tut && p.name) A.log('tut', { step: s.tut });
+    if (s.pulls > p.pulls) A.log('scout', { n: s.pulls, tk: s.tickets < p.tickets ? 1 : 0 });
+    if (s.ach.length > p.ach.length) A.log('ach', { n: s.ach.length });
+    if (rank(s) > rank(p)) A.log('rank', { r: rank(s) });
+    if (s.run < p.run * .5 && s.pts > p.pts) A.log('prestige', { pts: Math.round(s.pts) });
+    if (s.mgN > p.mgN) A.log('minigame', { n: s.mgN });
+    if (s.story && p.story && Object.keys(s.story.done).length > Object.keys(p.story.done).length) A.log('story', { n: Object.keys(s.story.done).length });
+    if (s.iap && p.iap) Object.keys(s.iap).forEach(k => { if (s.iap[k] && !p.iap[k]) A.log('iap', { id: k }); });
+    if (s.misHit && s.misHit !== p.misHit) A.log('mission', { all: s.misHit.all ? 1 : 0 });
+    if (s.report && s.report !== p.report) A.log('news8', { r: Math.round(s.report.rating * 10) / 10 });
+    if (s.chalWin && s.chalWin !== p.chalWin) A.log('chal', {}); }
   if (s.ev && (!p.ev || p.ev.id !== s.ev.id || p.ev.end !== s.ev.end)) Sfx.play('alert');
   if (!!s.ev !== !!p.ev && $i('intro').hidden) Music.play(s.ev ? 'breaking' : 'desk'); // 속보 중에는 긴박한 곡
   if (s.gold && !p.gold) Sfx.play('alert');
@@ -459,7 +483,7 @@ store.subscribe((s, p) => {
   }
   if (s.weHit && s.weHit !== p.weHit) { Sfx.play('rank'); ui.toast('한정 이벤트 달성! 스카우트 티켓 +2 · 한정 배지 획득'); }
   if (s.ev && s.ev.id === 'robot' && (!p.ev || p.ev.id !== 'robot')) ui.toast(heroCount(s) ? `뉴스 디펜더즈 ${heroCount(s)}명 출동! 이번 속보 점수 +${Math.round((heroCount(s) * .5 + setRobot(s)) * 100)}%` : '거대 로봇 습격! 히어로 카드가 있으면 점수가 크게 올라요.');
-  if (s.pulls > p.pulls) CARD_SETS.forEach(g => { const a = setLevel(p, g), b = setLevel(s, g); if (b > a) { Sfx.play('rank'); ui.toast(a ? `세트 강화: ${g.n} ★${b}` : `세트 효과 발동: ${g.n}!`); } });
+  if (s.pulls > p.pulls) CARD_SETS.forEach(g => { const a = setLevel(p, g), b = setLevel(s, g); if (b > a) { Analytics.log('set', { id: g.id, n: b }); Sfx.play('rank'); ui.toast(a ? `세트 강화: ${g.n} ★${b}` : `세트 효과 발동: ${g.n}!`); } });
   if (s.ach.length > p.ach.length) { const a = ACHIEVEMENTS.find(x => x.id === s.ach[s.ach.length - 1]); Sfx.play('rank'); ui.toast(`업적 달성: ${a.n} (점수 +2%)`); }
   if (rank(s) > rank(p)) { Sfx.play('rank'); ui.toast(`승급: ${RANKS[rank(s)].n}`); }
 });

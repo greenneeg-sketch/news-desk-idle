@@ -214,3 +214,11 @@ js/ui/                scene(픽셀 렌더러), hud(DOM 뷰)
 - 도감 카드 4장을 모두 모으면 발동(`CARD_SETS`, js/data/config.js). 4장 모두 ★2면 효과 x1.25, 모두 ★3이면 x1.5. 같은 카드가 여러 세트에 들어갈 수 있다.
 - 효과는 `cardBonus`에 합산되고(economy.js `setBonus`), 뉴스 디펜더즈 세트는 거대 로봇 속보 점수에 `setRobot`만큼 더해진다. 저장 데이터는 늘지 않는다(보유 카드에서 계산).
 - 도감 캔버스는 초당 약 12번, 화면에 보이는 띠만 다시 그린다(아이폰에서 화면이 밀리던 문제 대응).
+
+## 익명 통계·오류 기록 (supabase/analytics.sql)
+- 앱은 `js/services/analytics.js`로 진행 이벤트(open, tut, scout, ad, iap, rank, prestige, set, story, minigame, end …)와 오류(err)를 모아 `nd_log` RPC로 보낸다. 닉네임·기기 열쇠와 연결하지 않는 별도 무작위 id만 쓰고, 설정 → 익명 통계에서 끌 수 있다. 개인정보처리방침에 반영함.
+- 보는 법(Supabase SQL): `select * from nd_an_retention;`(D1·D3·D7) · `nd_an_funnel`(이벤트별 사용자 수) · `nd_an_errors`(오류 묶음). 오래된 기록 정리: `select nd_event_trim(120);`
+- **Play Console의 '데이터 보안' 양식에 앱 활동·앱 정보 및 성능(충돌 로그) 수집을 추가해야 한다.**
+
+## 앱 전용: 진동·복귀 알림 (js/services/native.js)
+- 효과음마다 짧은 진동(설정 → 진동 ON/OFF). 알림은 설정 → 알림 켜기로 권한을 받은 뒤, 앱을 닫을 때 '야간 근무 가득 참'(8시간 + 연구)과 '편집회의' 알림(20시간 뒤)을 예약하고 다시 열면 취소한다. 밤 11시~아침 8시에는 아침 8시 30분으로 미룬다.
