@@ -1,4 +1,4 @@
-import { BASE, UPGRADES, RANKS, MILESTONES, CARDS, RARITY, jobOf, PRESTIGE, BRANCHES, BAL } from '../data/config.js';
+import { BASE, UPGRADES, RANKS, MILESTONES, CARDS, CARD_SETS, RARITY, jobOf, PRESTIGE, BRANCHES, BAL } from '../data/config.js';
 import { weekEvent, heroCount } from './weekly.js';
 // 순수 함수 모음: 상태를 받아 계산만 한다 (부작용 없음)
 const U = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
@@ -35,7 +35,7 @@ export const brEv = (s, id) => BRANCHES.reduce((m, b) => { const lv = (s.br || {
 export function scoreMul(s) {
   const jb = jobOf(s);
   let m = prestigeBonus(s) * boost(mult(s, U.qual), jb.qual) * BAL.rank ** rank(s) * (1 + .02 * s.ach.length) * (1 + .1 * Object.keys(s.chalDone || {}).length) * (1 + .02 * Object.keys(s.deco || {}).length) * (1 + .05 * (s.career || 0)) * (s.clock < s.gbEnd ? BAL.frenzy : 1) * brMul(s) * (s.guild ? 1 + .02 * Math.min(10, s.guild.n || 1) : 1);
-  if (s.ev) { let e = s.ev.sc * boost(mult(s, U.live), jb.live); if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s); e *= jb.ev || 1; e *= brEv(s, s.ev.id); m *= e * (1 + .15 * rl(s, 'event')); }
+  if (s.ev) { let e = s.ev.sc * boost(mult(s, U.live), jb.live); if (s.ev.id === 'sports' && s.lv.live < 1) e *= .5; if (s.ev.boost) e *= 1.5; const we = weekEvent(s); if (we && we.ev === s.ev.id) e *= we.sc; if (s.ev.id === 'robot') e *= 1 + .5 * heroCount(s) + setRobot(s); e *= jb.ev || 1; e *= brEv(s, s.ev.id); m *= e * (1 + .15 * rl(s, 'event')); }
   return m;
 }
 export const goldGap = (s, r) => (60 + r * 60) * (1 - .08 * rl(s, 'gold')) * ((weekEvent(s) || {}).gold || 1);
@@ -44,4 +44,10 @@ export const basePS = s => perSec({ ...s, ev: null, spdEnd: 0, gbEnd: 0, cofEnd:
 // 특종(Cookie Clicker의 황금 쿠키): 10분치 점수 또는 20초간 점수 x7
 export const goldReward = (s, r) => r < .5 ? { cash: Math.max(100, Math.floor(basePS(s) * BAL.gold)) } : { frenzy: true };
 // 도감 보너스: 층(i)에 해당하는 카드(또는 전 층 카드)의 등급 보너스 x 별 배율의 합
-export const cardBonus = (s, i) => CARDS.reduce((a, c) => a + ((c.st === i || c.st < 0) && s.cards[c.id] ? RARITY[c.rar].b * (1 + .5 * (s.cards[c.id] - 1)) : 0), 0);
+const cardBase = (s, i) => CARDS.reduce((a, c) => a + ((c.st === i || c.st < 0) && s.cards[c.id] ? RARITY[c.rar].b * (1 + .5 * (s.cards[c.id] - 1)) : 0), 0);
+// 세트 효과: 세트 카드 4장 중 가장 낮은 별 수(0이면 미완성). 효과는 ★1 x1, ★2 x1.25, ★3 x1.5
+export const setLevel = (s, g) => g.ids.reduce((m, id) => Math.min(m, s.cards[id] || 0), 3);
+export const setMult = n => 1 + .25 * (n - 1);
+export const setBonus = (s, i) => CARD_SETS.reduce((a, g) => { const n = setLevel(s, g); return a + (n && (g.st === i || g.st < 0) ? g.b * setMult(n) : 0); }, 0);
+export const setRobot = s => CARD_SETS.reduce((a, g) => { const n = setLevel(s, g); return a + (n && g.robot ? g.robot * setMult(n) : 0); }, 0);
+export const cardBonus = (s, i) => cardBase(s, i) + setBonus(s, i);

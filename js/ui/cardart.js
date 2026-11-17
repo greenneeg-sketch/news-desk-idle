@@ -40,16 +40,26 @@ export const CARD_LAYOUT = (() => { const items = [], heads = []; let y = 0;
     heads.push({ ri, y, n: list.length }); y += GH; list.forEach(([, i], j) => items.push({ i, x: j % 4 * CW, y: y + (j / 4 | 0) * CH })); y += Math.ceil(list.length / 4) * CH; });
   return { items, heads, h: y }; })();
 export const cardAt = (fx, fy) => { const x = fx * CW * 4, y = fy * CARD_LAYOUT.h, it = CARD_LAYOUT.items.find(o => x >= o.x && x < o.x + CW && y >= o.y && y < o.y + CH); return it ? it.i : -1; };
+// 도감 캔버스는 960x2856으로 커서 매 프레임 전부 다시 그리면 아이폰에서 화면이 밀리고 깨진다(메카 앵커처럼 불꽃이 움직이는 카드를 얻으면 더 심함).
+// 그래서 ① 초당 약 12번만 그리고 ② 화면에 보이는 띠(위아래 여유 포함)만 다시 그리며 ③ 바뀐 게 없고 움직이는 카드도 없으면 건너뛴다.
+let lastT = -9, lastSel = -2, lastCards = null, lastBand = '', dirty = true;
+if (typeof addEventListener === 'function') addEventListener('scroll', () => { dirty = true; }, { passive: true });
 export function drawCards(c, s, t, sel) { // 도감: 4열 격자, 캔버스 3배
-  const W = CW * 4 * 3, H = CARD_LAYOUT.h * 3;
-  if (c.canvas.width !== W || c.canvas.height !== H) { c.canvas.width = W; c.canvas.height = H; }
-  if (c.canvas.closest('.pane') && c.canvas.closest('.pane').hidden) return;
-  c.setTransform(1, 0, 0, 1, 0, 0); c.imageSmoothingEnabled = false; c.fillStyle = '#1a1c2c'; c.fillRect(0, 0, W, H);
-  CARD_LAYOUT.heads.forEach(h => { const r = RARITY[h.ri], got = CARDS.filter(cd => cd.rar === h.ri && s.cards[cd.id]).length;
+  const W = CW * 4 * 3, H = CARD_LAYOUT.h * 3, cv = c.canvas;
+  const resized = cv.width !== W || cv.height !== H; if (resized) { cv.width = W; cv.height = H; }
+  if (cv.closest('.pane') && cv.closest('.pane').hidden) { dirty = true; return; }
+  // 화면에 보이는 세로 띠(캔버스 칸). 태블릿 확대(zoom) 중이거나 크기를 못 재면 전체를 그린다
+  let y0 = 0, y1 = H; const zoomed = document.documentElement.style.zoom;
+  if (!zoomed) { const r = cv.getBoundingClientRect(); if (r.height > 50) { const sc = H / r.height, m = 360; y0 = Math.max(0, -r.top - m) * sc; y1 = Math.min(r.height, innerHeight - r.top + m) * sc; if (y1 <= y0) { dirty = true; return; } } }
+  const band = `${Math.round(y0 / 60)}-${Math.round(y1 / 60)}`;
+  if (!resized && !dirty && sel === lastSel && s.cards === lastCards && band === lastBand && t - lastT < .085) return;
+  dirty = false; lastT = t; lastSel = sel; lastCards = s.cards; lastBand = band;
+  c.setTransform(1, 0, 0, 1, 0, 0); c.imageSmoothingEnabled = false; c.fillStyle = '#1a1c2c'; c.fillRect(0, y0, W, y1 - y0);
+  CARD_LAYOUT.heads.forEach(h => { if (h.y * 3 + GH * 3 < y0 || h.y * 3 > y1) return; const r = RARITY[h.ri], got = CARDS.filter(cd => cd.rar === h.ri && s.cards[cd.id]).length;
     c.fillStyle = shade(r.c, -.7); c.fillRect(0, h.y * 3 + 6, W, (GH - 4) * 3); c.fillStyle = r.c; c.fillRect(0, h.y * 3 + 6, 9, (GH - 4) * 3);
     c.font = `bold ${8 * 3}px ${KOF}`; c.fillStyle = r.c; c.fillText(`${r.n}`, 18, h.y * 3 + 33); const w = c.measureText(r.n).width;
     c.font = `bold ${6.5 * 3}px ${KOF}`; c.fillStyle = '#c2c3c7'; c.fillText(`${got}/${h.n}장 · 1장당 해당 층 속도 +${Math.round(r.b * 100)}%`, 18 + w + 18, h.y * 3 + 32); });
-  CARD_LAYOUT.items.forEach(o => { const cd = CARDS[o.i]; drawCard(c, 3, o.x * 3, o.y * 3, cd, s.cards[cd.id] || 0, t, o.i, o.i === sel); });
+  CARD_LAYOUT.items.forEach(o => { if (o.y * 3 + CH * 3 < y0 || o.y * 3 > y1) return; const cd = CARDS[o.i]; drawCard(c, 3, o.x * 3, o.y * 3, cd, s.cards[cd.id] || 0, t, o.i, o.i === sel); });
   const big = document.getElementById('cbig'); // 크게 보기(선택한 카드)
   if (big) { const g = big.getContext('2d'); if (big.width !== CW * 6) { big.width = CW * 6; big.height = CH * 6; } g.imageSmoothingEnabled = false; g.clearRect(0, 0, big.width, big.height); const cd = CARDS[sel] || CARDS[0]; drawCard(g, 6, 0, 0, cd, s.cards[cd.id] || 0, t, CARDS.indexOf(cd), false, true); }
 }

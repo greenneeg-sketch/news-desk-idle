@@ -67,6 +67,17 @@ export const CARDS = [
   { id: 'h1', n: '캡틴 큐시트', st: -1, rar: 3, hero: 'cap' }, { id: 'h2', n: '프레임 닌자', st: 2, rar: 3, hero: 'ninja' },
   { id: 'h3', n: '메카 앵커', st: 4, rar: 3, hero: 'mecha' }, { id: 'h4', n: '나이트 에디터', st: 3, rar: 3, hero: 'night' },
 ];
+// 카드 세트 효과: 지정한 카드 4장을 모두 모으면 발동한다. 4장 모두 ★2 이상이면 효과 x1.25, 모두 ★3이면 x1.5. 같은 카드가 여러 세트에 들어갈 수 있다
+// st: 효과를 받는 층(0 취재 · 1 인제스트 · 2 편집 · 3 CG · 4 송출, -1이면 전 층), b: 속도 보너스, robot: 거대 로봇 속보 점수 추가 보너스
+export const CARD_SETS = [
+  { id: 'cover', n: '현장 취재팀', ids: ['c1', 'c6', 'c15', 'c9'], st: 0, b: .6 },
+  { id: 'ingest', n: '인제스트 라인', ids: ['c2', 'c13', 'c19', 'c18'], st: 1, b: .6 },
+  { id: 'edit', n: '편집실 에이스', ids: ['c3', 'c7', 'c10', 'h2'], st: 2, b: .6 },
+  { id: 'cg', n: '그래픽 랩', ids: ['c4', 'c8', 'c17', 'h4'], st: 3, b: .6 },
+  { id: 'air', n: '송출 마스터', ids: ['c5', 'c14', 'c16', 'c11'], st: 4, b: .6 },
+  { id: 'legend', n: '보도국 레전드', ids: ['c12', 'c20', 'h1', 'h3'], st: -1, b: .3 },
+  { id: 'defend', n: '뉴스 디펜더즈 합체', ids: ['h1', 'h2', 'h3', 'h4'], st: -1, b: .2, robot: 1 },
+];
 // 주간 목표 (Egg Inc의 계약식): 매주 월요일에 초기화
 export const WEEKLY = [
   { id: 'w1', n: '속보 20건 송출', k: 'ev', goal: 20 }, { id: 'w2', n: '시청률 6% 이상 3일', k: 'rate', goal: 3 }, { id: 'w3', n: '특종 5회 획득', k: 'gold', goal: 5 },

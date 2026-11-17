@@ -8,7 +8,7 @@ import { scoutCost } from './systems/cards.js';
 import { seasonKey } from './systems/season.js';
 import { toEntry } from './systems/ranking.js';
 import { checkName } from './systems/nameFilter.js';
-import { BAL, MG_MIN, PERKS, UPGRADES, MILESTONES, RANKS, MANAGER, CHIEF, STAGES, ACHIEVEMENTS, LEADERBOARD, CARDS, RARITY, WEEKLY, CHALLENGES, TIERS, RIVAL, JOBS } from './data/config.js';
+import { BAL, MG_MIN, PERKS, UPGRADES, MILESTONES, RANKS, MANAGER, CHIEF, STAGES, ACHIEVEMENTS, LEADERBOARD, CARDS, CARD_SETS, RARITY, WEEKLY, CHALLENGES, TIERS, RIVAL, JOBS } from './data/config.js';
 import { Repo } from './services/storage.js';
 import { createBoard } from './services/leaderboard.js';
 import { Sfx } from './services/audio.js';
@@ -29,7 +29,7 @@ import { StoryUI } from './ui/story.js';
 import { Ads } from './services/ads.js';
 import { Shop, SHOP_ITEMS } from './services/shop.js';
 import { STORY } from './data/story.js';
-import { perSec } from './systems/economy.js';
+import { perSec, setLevel, setRobot } from './systems/economy.js';
 import { jobOf } from './data/config.js';
 import { isUnlocked } from './data/tips.js';
 
@@ -458,7 +458,8 @@ store.subscribe((s, p) => {
     const ids = s.unlHit.ids; if (ids.length === 1 && p.name) { const u = UNLOCKS.find(x => x.id === ids[0]); popQ.push({ kind: 'tip', t: { ...u, t: `새 기능: ${u.t}` } }); Sfx.play('rank'); } else ids.forEach(id => store.dispatch({ type: 'TIP', id }));
   }
   if (s.weHit && s.weHit !== p.weHit) { Sfx.play('rank'); ui.toast('한정 이벤트 달성! 스카우트 티켓 +2 · 한정 배지 획득'); }
-  if (s.ev && s.ev.id === 'robot' && (!p.ev || p.ev.id !== 'robot')) ui.toast(heroCount(s) ? `뉴스 디펜더즈 ${heroCount(s)}명 출동! 이번 속보 점수 +${heroCount(s) * 50}%` : '거대 로봇 습격! 히어로 카드가 있으면 점수가 크게 올라요.');
+  if (s.ev && s.ev.id === 'robot' && (!p.ev || p.ev.id !== 'robot')) ui.toast(heroCount(s) ? `뉴스 디펜더즈 ${heroCount(s)}명 출동! 이번 속보 점수 +${Math.round((heroCount(s) * .5 + setRobot(s)) * 100)}%` : '거대 로봇 습격! 히어로 카드가 있으면 점수가 크게 올라요.');
+  if (s.pulls > p.pulls) CARD_SETS.forEach(g => { const a = setLevel(p, g), b = setLevel(s, g); if (b > a) { Sfx.play('rank'); ui.toast(a ? `세트 강화: ${g.n} ★${b}` : `세트 효과 발동: ${g.n}!`); } });
   if (s.ach.length > p.ach.length) { const a = ACHIEVEMENTS.find(x => x.id === s.ach[s.ach.length - 1]); Sfx.play('rank'); ui.toast(`업적 달성: ${a.n} (점수 +2%)`); }
   if (rank(s) > rank(p)) { Sfx.play('rank'); ui.toast(`승급: ${RANKS[rank(s)].n}`); }
 });

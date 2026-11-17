@@ -224,3 +224,13 @@ section.gh{display:none!important}
 body.noads .adw{display:none}
 .shopit{display:flex;gap:10px;align-items:center;padding:10px 4px;border-bottom:2px solid #22325e}.shopit .ic{flex:none;width:44px;height:44px;display:grid;place-items:center;font-size:24px;background:#29366f;box-shadow:0 0 0 2px var(--ink)}
 .shopit b{display:block}.shopit small{display:block;color:var(--sub);font-size:12px;line-height:1.45;margin-top:2px}.shopit .btn{flex:none;min-width:84px}.shopit.own b{color:#a7f070}
+
+/* 카드 세트 효과 */
+#csets{display:grid;gap:8px;margin-top:6px}
+.cset{background:var(--ink);padding:8px 10px;box-shadow:0 0 0 2px #26305a}.cset.on{box-shadow:0 0 0 2px var(--y);background:#2a2a1a}
+.cs-h{display:flex;justify-content:space-between;align-items:baseline}.cs-h b{color:var(--sub)}.cset.on .cs-h b{color:var(--y)}.cs-h span{font-size:12px;color:var(--sub)}.cset.on .cs-h span{color:var(--g)}
+.cs-e{font-size:13px;color:var(--sub);margin:2px 0 6px}.cset.on .cs-e{color:#f4f4f4}
+.cs-c{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+.cs-c button{font:inherit;font-size:12px;border:0;padding:6px 4px;background:#1e2336;color:#566c86;cursor:pointer}.cs-c button.on{background:var(--pn);color:#f4f4f4}
+/* 아이폰에서 고정 요소(탭 바 등)가 스크롤 중 따로 노는 것을 줄이려고 별도 레이어로 */
+.tabs,.gold,.mgicon,body::after{transform:translateZ(0);-webkit-transform:translateZ(0)}

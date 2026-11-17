@@ -1,11 +1,11 @@
 import { MEET_MEMO, MEET_MAX, MEET_ADJ, MEET_MISS } from '../systems/meeting.js';
-import { RANKS, UPGRADES, MILESTONES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, CARDS, RARITY, WEEKLY, ODDS, PITY, TIERS, CHALLENGES, RIVAL, DILEMMAS, SCOOP_P, RESEARCH, DECOS, JOBS, jobOf, careerOf, CAREER_AT, BAL, EVENTS } from '../data/config.js';
+import { RANKS, UPGRADES, MILESTONES, MANAGER, CHIEF, ACHIEVEMENTS, DAY_SEC, CARDS, CARD_SETS, RARITY, WEEKLY, ODDS, PITY, TIERS, CHALLENGES, RIVAL, DILEMMAS, SCOOP_P, RESEARCH, DECOS, JOBS, jobOf, careerOf, CAREER_AT, BAL, EVENTS } from '../data/config.js';
 import { weekEvent, heroCount } from '../systems/weekly.js';
 import { progress, missionText } from '../systems/missions.js';
 import { seasonPts, tierOf, themeOf } from '../systems/season.js';
 import { TUTORIAL } from './tutorial.js';
 import { cardAt } from './cardart.js';
-import { rank, perSec, prestigeGain, prestigeBonus, rates, bulk, mult, cardBonus, rl } from '../systems/economy.js';
+import { rank, perSec, prestigeGain, prestigeBonus, rates, bulk, mult, cardBonus, setLevel, setMult, rl } from '../systems/economy.js';
 import { checkName, isBlocked } from '../systems/nameFilter.js';
 import { scoutCost } from '../systems/cards.js';
 import { UNLOCKS, isUnlocked } from '../data/tips.js';
@@ -23,7 +23,7 @@ export function Hud(bus) {
   $('floors').onclick = click; $('hq').onclick = click;
   $('seg').onclick = e => { const b = e.target.closest('[data-n]'); if (b) bus.emit('setn', b.dataset.n); };
   $('ach').innerHTML = ACHIEVEMENTS.map(() => '<i></i>').join(''); $('gold').onclick = () => bus.emit('gold'); $('spdb').onclick = () => bus.emit('spd');
-  let selCard = 0, armedCh = '', armT, cur = null, bd = null, view = 'all', pg = 0, PG = 10, tab = 'desk', hiId = null, tutShown = -2;
+  let selCard = 0, setSig = '', armedCh = '', armT, cur = null, bd = null, view = 'all', pg = 0, PG = 10, tab = 'desk', hiId = null, tutShown = -2;
   // 탭: 보도국 / 스카우트 / 순위 / 성장. 마지막으로 연 탭을 이 브라우저에 기억한다
   // 잠긴 탭: 해당 기능이 해금돼야 열린다
   const TAB_UNL = { scout: 'scout', grow: 'grow', rank: 'rank', br: 'br' }, need = id => UNLOCKS.find(u => u.id === id);
@@ -104,6 +104,7 @@ export function Hud(bus) {
   $('dilR').onclick = () => bus.emit('judge', 'risk'); $('dilS').onclick = () => bus.emit('judge', 'safe');
   $('wlist').onclick = e => { const b = e.target.closest('[data-goal]'); if (b && !b.disabled) bus.emit('goal', b.dataset.goal); };
   $('scoutb').onclick = () => bus.emit('scout', 'paid'); $('scouta').onclick = () => bus.emit('scout', 'free');
+  $('csets').onclick = e => { const b = e.target.closest('button[data-c]'); if (!b) return; selCard = +b.dataset.c; $('cbig').scrollIntoView({ block: 'center', behavior: 'smooth' }); };
   $('cards').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); const i = cardAt((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height); if (i >= 0) selCard = i; };
   $('hist').innerHTML = '<i></i>'.repeat(7); $('boardb').onclick = () => bus.emit('board');
   let jobSel = 'editor';
@@ -238,6 +239,13 @@ export function Hud(bus) {
       $('scouta').textContent = s.tickets > 0 ? `티켓 사용 (${s.tickets}장)` : adcd ? `광고 스카우트 ${Math.ceil(s.freeReady - s.clock)}초` : (s.iap && s.iap.nd_noads ? '' : '광고 보고 ') + '무료 스카우트'; $('scouta').disabled = s.tickets < 1 && adcd;
       const c0 = CARDS[selCard] || CARDS[0], n0 = s.cards[c0.id] || 0;
       $('cinfo').textContent = n0 ? `${c0.n} · ${RARITY[c0.rar].n} · ${c0.st < 0 ? '전 층' : FLOORS[c0.st][0]} 속도 +${Math.round(RARITY[c0.rar].b * (1 + .5 * (n0 - 1)) * 100)}% · ★${n0}${c0.hero ? ' · 뉴스 디펜더즈: 거대 로봇 속보 점수 +50%' : ''}${n0 < 3 ? ` · 한 장 더 나오면 ★${n0 + 1} ${n0 === 1 ? '은빛 외형' : '금빛 외형'}` : ' · 최고 등급 외형'}` : (c0.hero ? '??? · 전설의 히어로. 거대 로봇이 나타나면 출동해요.' : '??? · 아직 모르는 직원이에요. 카드를 눌러 확인해 보세요.');
+      { const sets = CARD_SETS.map(g => [g, setLevel(s, g)]), sig = sets.map(([g, n]) => n + g.ids.map(id => s.cards[id] || 0).join('')).join('|') + '|' + selCard;
+        $('csd').textContent = `완성 ${sets.filter(([, n]) => n).length}/${CARD_SETS.length}`;
+        const tail = CARDS[selCard] ? CARD_SETS.filter(g => g.ids.includes(CARDS[selCard].id)).map(g => `${g.n} ${g.ids.filter(id => s.cards[id]).length}/4`).join(' · ') : '';
+        if (tail && s.cards[CARDS[selCard].id]) $('cinfo').textContent += ' · 세트: ' + tail;
+        if (sig !== setSig) { setSig = sig; $('csets').innerHTML = sets.map(([g, n]) => { const have = g.ids.filter(id => s.cards[id]).length, m = setMult(n || 1), fl = g.st < 0 ? '전 층' : FLOORS[g.st][0];
+          const eff = `${fl} 속도 +${Math.round(g.b * m * 100)}%` + (g.robot ? ` · 거대 로봇 점수 +${Math.round(g.robot * m * 100)}%` : '');
+          return `<div class="cset${n ? ' on' : ''}"><div class="cs-h"><b>${g.n}</b><span>${n ? `발동 ★${n}` : `${have}/4`}</span></div><div class="cs-e">${eff}${n ? '' : ' (4장 모으면)'}${n && n < 3 ? ` · 4장 모두 ★${n + 1}이면 x${setMult(n + 1)}` : ''}</div><div class="cs-c">${g.ids.map(id => { const i = CARDS.findIndex(c => c.id === id); return `<button data-c="${i}" class="${s.cards[id] ? 'on' : ''}">${CARDS[i].n}${s.cards[id] ? ' ★' + s.cards[id] : ''}</button>`; }).join('')}</div></div>`; }).join(''); } }
       $('cbonus').textContent = '도감 보너스 ' + FLOORS.slice(0, 5).map(([n], i) => `${n} +${Math.round(cardBonus(s, i) * 100)}%`).join(' · ');
       WEEKLY.forEach((g, i) => { const p = Math.min(g.goal, s.week.prog[g.k] || 0), dn = s.week.done[g.id], b = $('wb' + i); $('wp' + i).textContent = `${p}/${g.goal}`; $('wm' + i).style.width = p / g.goal * 100 + '%'; b.textContent = dn ? '완료' : '받기'; b.disabled = !!dn || p < g.goal; b.classList.toggle('can', !dn && p >= g.goal); });
       $('wkd').textContent = `출석 ${s.login.streak}일째 · 7일 연속 시 티켓`;
