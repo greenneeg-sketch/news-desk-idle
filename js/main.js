@@ -30,6 +30,7 @@ import { Ads } from './services/ads.js';
 import { Shop, SHOP_ITEMS } from './services/shop.js';
 import { Analytics } from './services/analytics.js';
 import { Native } from './services/native.js';
+import { TS, initTextScale, setTextStep, setClearFont } from './ui/textscale.js';
 import { STORY } from './data/story.js';
 import { perSec, setLevel, setRobot } from './systems/economy.js';
 import { jobOf } from './data/config.js';
@@ -40,6 +41,7 @@ const bus = new EventBus(), store = createStore(reducer, initialState());
 const ui = Hud(bus), story = StoryUI(bus, () => store.getState()), branches = Branches(bus), social = Social(bus), guide = GuideUI(bus, () => store.getState()), scene = Scene(ui.canvases, ui.cardCanvas), bubbles = Bubbles(ui.canvases), scheduler = EventScheduler(store);
 // 태블릿 등 넓은 화면: 게임 화면(폭 480) 전체를 화면 폭에 맞게 키운다. 양옆 빈 공간이 생기지 않게
 function fitZoom() { const w = innerWidth, h = innerHeight, z = w >= 560 ? Math.min(w / 480, Math.max(1, h / 640)) : 1; document.documentElement.style.zoom = z > 1.04 ? z.toFixed(3) : ''; }
+initTextScale();
 fitZoom(); addEventListener('resize', fitZoom);
 // 보상형 광고: 앱에서는 진짜 광고를 본 뒤에만 ok(), 웹에서는 바로 ok(true)(웹이면 안내 문구를 붙인다)
 const AD_WEB = '실제 앱에서는 보상형 광고가 나와요. ';
@@ -144,6 +146,9 @@ let restoring = false; // 불러온 직후에는 지금 상태로 덮어쓰지 �
 setInterval(() => cloudSave(), 120000);
 $i('hapb').onclick = () => { Native.setHaptic(!Native.hapticOn()); hapRef(); if (Native.hapticOn()) Native.haptic('rank'); };
 const hapRef = () => { $i('hapb').textContent = Native.hapticOn() ? '진동 ON' : '진동 OFF'; $i('hapb').hidden = !Native.isApp(); }; hapRef();
+const fsRef = () => { document.querySelectorAll('.fsrow button').forEach(b => b.classList.toggle('on', +b.dataset.fs === TS.step)); $i('fontb').textContent = TS.clear ? '또렷한 글꼴: 켜짐' : '또렷한 글꼴: 꺼짐'; };
+document.querySelectorAll('.fsrow button').forEach(b => { b.onclick = () => { setTextStep(+b.dataset.fs); fsRef(); }; });
+$i('fontb').onclick = () => { setClearFont(!TS.clear); fsRef(); }; fsRef();
 const anRef = () => { $i('anb').textContent = Analytics.enabled() ? '익명 통계 보내기: 켜짐' : '익명 통계 보내기: 꺼짐'; };
 $i('anb').onclick = () => { Analytics.setOn(!Analytics.enabled()); anRef(); ui.toast(Analytics.enabled() ? '익명 통계를 보냅니다. 게임 개선에만 써요.' : '익명 통계를 보내지 않아요.'); }; anRef();
 

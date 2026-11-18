@@ -37,7 +37,7 @@ function side(x, y, o, flip) {
   c.restore();
 }
 const floorBase = (wall, floor, line) => { for (let y = 0; y < 112; y += 4) R(0, y, 640, 4, sh(wall, y / 112 * .12)); R(0, 112, 640, 16, floor); for (let x = 0; x < 640; x += 32) R(x, 112, 1, 16, sh(floor, -.2)); R(0, 112, 640, 1, line); };
-const bubble = (s, cx, y, col = '#ffffff') => { c.font = `bold 13px ${KO}`; const w = Math.ceil(c.measureText(s).width) + 16, x = Math.max(4, Math.min(636 - w, cx - w / 2)); R(x - 2, y - 2, w + 4, 23, '#14141f'); R(x, y, w, 19, col); R(cx - 3, y + 19, 6, 4, '#14141f'); R(cx - 1, y + 19, 2, 3, col); T(s, x + 8, y + 14, 13, '#14141f', KO); };
+const bubble = (s, cx, y, col = '#ffffff') => { c.font = `bold ${Math.round(13 * TS.fs)}px ${KO}`; const w = Math.ceil(c.measureText(s).width) + 16, x = Math.max(4, Math.min(636 - w, cx - w / 2)); R(x - 2, y - 2, w + 4, 23, '#14141f'); R(x, y, w, 19, col); R(cx - 3, y + 19, 6, 4, '#14141f'); R(cx - 1, y + 19, 2, 3, col); T(s, x + 8, y + 14, 13, '#14141f', KO); };
 
 // ── 취재: 밤거리
 function s0(t) {
