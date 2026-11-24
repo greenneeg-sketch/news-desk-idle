@@ -576,7 +576,7 @@ html[data-font="clear"] *{font-family:"Apple SD Gothic Neo","Malgun Gothic","Not
     <p class="iname" id="iname"></p>
   </div>
   <span class="iclock" id="iclock"></span>
-  <span class="iver">v2026.11.18-1624</span>
+  <span class="iver">v2026.11.25-0855</span>
   <p class="ipress">PRESS START</p>
   <div class="ifoot">
     <div class="imenu"><button class="btn" id="istart">게임 시작</button><button class="btn warn" id="inew">새로 시작</button><button class="btn alt" id="iname2">이름·직업</button><button class="btn alt" id="irank">순위 보기</button><button class="btn alt" id="iguide">가이드</button><button class="btn alt" id="imini" hidden>미니게임</button><button class="btn alt" id="isound">SOUND ON</button><button class="btn alt" id="ibgm">BGM ON</button><button class="btn warn" id="iinstall" hidden>앱 설치</button></div>
@@ -1713,6 +1713,9 @@ const Ads = (() => {
 
 // 인앱 결제(Google Play). 안드로이드 앱 안에서만 동작하고, 웹에서는 상점을 숨긴다(주소 끝에 #shoptest를 붙이면 결제 없이 시험 구매).
 // 상품 ID는 Play Console → 수익 창출 → 인앱 상품에서 똑같이 만들어야 한다(app/README-ANDROID.md).
+// 상점 사용 여부. 정식 출시 첫 버전은 인앱 상품 없이 광고만으로 내보내려고 꺼 둔다(사업자 등록 전).
+// 나중에 켜려면 true로 바꾸고 app/package.json에 @capgo/native-purchases를 다시 추가한다.
+const SHOP_ON = false;
 const SHOP_ITEMS = [
   { id: 'nd_noads', n: '광고 제거 패스', price: '₩5,900', d: '광고 보상 버튼을 누르면 광고 없이 바로 보상을 받아요. 미니게임 2배 · 신문 광고 수입 2배 · 오프라인 보상 2배 · 속도 부스트 · 무료 스카우트 모두 해당. 한 번 사면 계속 유지돼요.', once: true },
   { id: 'nd_starter', n: '신입 스타터 팩', price: '₩1,500', d: '스카우트 티켓 10장 + 처리 속도 x2 2시간 + 커피타임 30분. 계정당 한 번만 살 수 있어요.', once: true },
@@ -1721,7 +1724,7 @@ const Shop = (() => {
   const cap = () => window.Capacitor, native = () => !!(cap() && cap().isNativePlatform && cap().isNativePlatform());
   const test = () => /shoptest/.test(location.hash);
   let P = null; const plugin = () => P || (P = native() ? (cap().Plugins && cap().Plugins.NativePurchases) || (cap().registerPlugin && cap().registerPlugin('NativePurchases')) : null);
-  const enabled = () => native() || test();
+  const enabled = () => SHOP_ON && (native() || test());
   async function prices() { // 스토어에 등록된 실제 가격(현지 통화). 못 받으면 기본 가격 표시
     const out = {}; SHOP_ITEMS.forEach(i => out[i.id] = i.price); const p = plugin(); if (!p) return out;
     try { const r = await p.getProducts({ productIdentifiers: SHOP_ITEMS.map(i => i.id), productType: 'inapp' }); (r.products || []).forEach(x => { if (x.priceString) out[x.identifier] = x.priceString; }); } catch (e) { }
@@ -4001,7 +4004,7 @@ async function shopRestore(quiet) { const ids = await Shop.owned(); let n = 0; i
 $i('shopb').onclick = async () => { $i('shoprs').hidden = !Shop.enabled(); $i('shopnote').textContent = Shop.enabled() ? '' : '구매는 안드로이드 앱(Google Play)에서 할 수 있어요. 웹에서는 상품만 둘러볼 수 있어요.'; shopList(); $i('shop').hidden = false; shopPrice = await Shop.prices(); shopList(); };
 $i('shopok').onclick = () => { $i('shop').hidden = true; markPop(); };
 $i('shoprs').onclick = () => shopRestore(false);
-if (Shop.native()) { setTimeout(() => shopRestore(true), 3000); document.addEventListener('visibilitychange', () => { if (!document.hidden) shopRestore(true); }); } // 재설치·결제 대기·Play 프로모션 코드로 받은 상품 자동 지급
+if (SHOP_ON && Shop.native()) { setTimeout(() => shopRestore(true), 3000); document.addEventListener('visibilitychange', () => { if (!document.hidden) shopRestore(true); }); } // 재설치·결제 대기·Play 프로모션 코드로 받은 상품 자동 지급
 // 쿠폰: 서버(nd_redeem)에서 코드 확인 → 보상 지급
 const CPN_ERR = { none: '없는 쿠폰 코드예요. 다시 확인해 주세요.', used: '이 기기에서 이미 사용한 쿠폰이에요.', full: '이미 다른 분이 사용한 쿠폰이에요.', expired: '사용 기간이 지난 쿠폰이에요.' };
 $i('cpnb').onclick = async () => {
@@ -4228,7 +4231,7 @@ store.subscribe((s, p) => {
 });
 
 GameLoop({
-  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } $i('shopb').hidden = false; $i('cpnt').textContent = s.beta ? '★ 베타 테스터' : ''; document.body.classList.toggle('noads', !!(s.iap || {}).nd_noads); { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
+  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } $i('shopb').hidden = !SHOP_ON; $i('cpnt').textContent = s.beta ? '★ 베타 테스터' : ''; document.body.classList.toggle('noads', !!(s.iap || {}).nd_noads); { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
   render: t => { scene.draw(store.getState(), t, ui.sel()); if (!$i('brp').closest('.pane').hidden) branches.draw(store.getState(), t); },
 }).start();
 setInterval(() => { if (!restoring) Repo.save(store.getState()); }, 5000); // 자동 저장: 5초마다

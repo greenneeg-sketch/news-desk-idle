@@ -239,3 +239,7 @@ js/ui/                scene(픽셀 렌더러), hud(DOM 뷰)
 ## 글자 크기 (가독성)
 - 기본 글자는 "크게"(1.2배). 설정 → 글자 크기에서 보통 / 크게 / 아주 크게, "또렷한 글꼴" 토글 선택 가능.
 - CSS 변수 `--fs`/`--fmin`과 `js/ui/textscale.js`의 `TS`로 HTML·캔버스 글자를 함께 조절. 도감은 크게 이상에서 3열.
+
+## 상점 끄기 (사업자 등록 전 출시)
+- `js/services/shop.js`의 `SHOP_ON = false`: 상점 버튼·구매 복원을 끈다. 결제 플러그인(`@capgo/native-purchases`)도 `app/package.json`에서 뺐다.
+- 인앱 결제를 다시 켜려면 `SHOP_ON = true`로 바꾸고 플러그인을 다시 설치(`npm i @capgo/native-purchases`)한 뒤 Play Console에서 `nd_noads`·`nd_starter`를 활성화한다. 한국 개발자는 사업자 등록 번호 등이 필요하다.

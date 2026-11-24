@@ -27,7 +27,7 @@ import { Social } from './ui/social.js';
 import { GuideUI } from './ui/guide.js';
 import { StoryUI } from './ui/story.js';
 import { Ads } from './services/ads.js';
-import { Shop, SHOP_ITEMS } from './services/shop.js';
+import { Shop, SHOP_ITEMS, SHOP_ON } from './services/shop.js';
 import { Analytics } from './services/analytics.js';
 import { Native } from './services/native.js';
 import { TS, initTextScale, setTextStep, setClearFont } from './ui/textscale.js';
@@ -267,7 +267,7 @@ async function shopRestore(quiet) { const ids = await Shop.owned(); let n = 0; i
 $i('shopb').onclick = async () => { $i('shoprs').hidden = !Shop.enabled(); $i('shopnote').textContent = Shop.enabled() ? '' : '구매는 안드로이드 앱(Google Play)에서 할 수 있어요. 웹에서는 상품만 둘러볼 수 있어요.'; shopList(); $i('shop').hidden = false; shopPrice = await Shop.prices(); shopList(); };
 $i('shopok').onclick = () => { $i('shop').hidden = true; markPop(); };
 $i('shoprs').onclick = () => shopRestore(false);
-if (Shop.native()) { setTimeout(() => shopRestore(true), 3000); document.addEventListener('visibilitychange', () => { if (!document.hidden) shopRestore(true); }); } // 재설치·결제 대기·Play 프로모션 코드로 받은 상품 자동 지급
+if (SHOP_ON && Shop.native()) { setTimeout(() => shopRestore(true), 3000); document.addEventListener('visibilitychange', () => { if (!document.hidden) shopRestore(true); }); } // 재설치·결제 대기·Play 프로모션 코드로 받은 상품 자동 지급
 // 쿠폰: 서버(nd_redeem)에서 코드 확인 → 보상 지급
 const CPN_ERR = { none: '없는 쿠폰 코드예요. 다시 확인해 주세요.', used: '이 기기에서 이미 사용한 쿠폰이에요.', full: '이미 다른 분이 사용한 쿠폰이에요.', expired: '사용 기간이 지난 쿠폰이에요.' };
 $i('cpnb').onclick = async () => {
@@ -494,7 +494,7 @@ store.subscribe((s, p) => {
 });
 
 GameLoop({
-  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } $i('shopb').hidden = false; $i('cpnt').textContent = s.beta ? '★ 베타 테스터' : ''; document.body.classList.toggle('noads', !!(s.iap || {}).nd_noads); { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
+  step: dt => { const s = store.getState(); if (!s.name) { ui.render(s); return; } $i('shopb').hidden = !SHOP_ON; $i('cpnt').textContent = s.beta ? '★ 베타 테스터' : ''; document.body.classList.toggle('noads', !!(s.iap || {}).nd_noads); { const sts = story.refresh(s); if (stPrev && sts.some((x, i) => (x === 'new' && stPrev[i] === 'lock') || (x === 'claim' && stPrev[i] === 'mis'))) { const i = sts.findIndex((x, j) => x !== stPrev[j]); ui.toast(sts[i] === 'new' ? `📖 새 이야기 「${STORY[i].n}」가 열렸어요` : `📖 스토리 미션 완료! 보상을 받으세요`); Sfx.play('alert'); } stPrev = sts; } bubbles.update(dt, s, !document.querySelector('.pane[data-tab="desk"]').hidden); store.dispatch({ type: 'TICK', dt, rnd: Math.random(), r2: Math.random(), r3: Math.random() }); scheduler.update(); ui.render(store.getState()); if (!$i('brp').closest('.pane').hidden) branches.render(store.getState()); },
   render: t => { scene.draw(store.getState(), t, ui.sel()); if (!$i('brp').closest('.pane').hidden) branches.draw(store.getState(), t); },
 }).start();
 setInterval(() => { if (!restoring) Repo.save(store.getState()); }, 5000); // 자동 저장: 5초마다
